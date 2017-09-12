@@ -6,6 +6,7 @@ import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 import microhttpd.*
+import jansson.rand
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -40,7 +41,7 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
     withJson(KJsonObject()) {
         json -> Unit
 
-        json_object_set_new(json.json, "url", json_string(url))
+        json.setString("url", url)
         when {
             url.startsWith("/json/click") -> click(db, session.color, json)
             url.startsWith("/json/stats") -> stats(db, session.color, json)
