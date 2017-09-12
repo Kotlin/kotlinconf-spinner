@@ -1,1 +1,1 @@
-# kotlin-conf-demos
+ Demo source code for KotlinConf 2017. 
