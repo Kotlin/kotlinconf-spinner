@@ -29,7 +29,7 @@ fun main(args: Array<String>) {
 
             withJson(content) {
                 json -> Unit
-                println("Got $json")
+                println("Got $json, my color is ${json.getInt("color")}")
             }
         }
     }
