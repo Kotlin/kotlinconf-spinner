@@ -89,6 +89,26 @@ class KJsonObject : KJsonBase {
             throw JsonError("wrong type")
         return KJsonObject(value)
     }
+
+    fun setLong(key: String, value: Long) {
+        json_object_set_new(json, key, json_integer(value))
+    }
+
+    fun setInt(key: String, value: Int) {
+        json_object_set_new(json, key, json_integer(value.toLong()))
+    }
+
+    fun setString(key: String, value: String) {
+        json_object_set_new(json, key, json_string(value))
+    }
+
+    fun setArray(key: String, value: KJsonArray) {
+        json_object_set_new(json, key, value.json)
+    }
+
+    fun setObject(key: String, value: KJsonObject) {
+        json_object_set_new(json, key, value.json)
+    }
 }
 
 class KJsonArray : KJsonBase {
@@ -149,6 +169,34 @@ class KJsonArray : KJsonBase {
             throw JsonError("wrong type")
         return KJsonObject(value)
     }
+
+    fun setLong(index: Int, value: Long) =
+            json_array_set(json, index.toLong(), json_integer(value))
+
+    fun setInt(index: Int, value: Int) =
+            setLong(index, value.toLong())
+
+    fun setString(index: Int, value: String) =
+            json_array_set(json, index.toLong(), json_string(value))
+
+    fun setArray(index: Int, value: KJsonArray) =
+            json_array_set(json, index.toLong(), value.json)
+
+    fun setObject(index: Int, value: KJsonObject) =
+            json_array_set(json, index.toLong(), value.json)
+
+    fun appendLong(value: Long) = json_array_append_new(json, json_integer(value))
+
+    fun appendInt(value: Int) = appendLong(value.toLong())
+
+    fun appendString(value: String) = json_array_append_new(json, json_string(value))
+
+    fun appendObject(value: KJsonObject) =
+        json_array_append_new(json, value.json)
+
+    fun appendArray(value: KJsonArray) =
+        json_array_append_new(json, value.json)
+
 }
 
 public inline fun withJson(text: String, function: (KJsonObject) -> Unit) {

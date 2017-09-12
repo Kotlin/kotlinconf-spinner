@@ -5,9 +5,8 @@ import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 import microhttpd.*
-import sqlite3.*
+import ksqlite.*
 
-typealias DbConnection = CPointerVar<sqlite3>
 typealias HttpConnection = CPointer<MHD_Connection>?
 
 val MAX_COLORS = 5
@@ -16,29 +15,29 @@ data class Session(val color: Int, val name: String, val cookie: String)
 
 // REST API goes here.
 
-fun stats(db: DbConnection, color: Int, json: KJson) {
-    val colors = json_array()
-    dbExecute(db, "SELECT counter, color FROM colors") {
+fun stats(db: KSqlite, color: Int, json: KJsonObject) {
+    val colors = KJsonArray()
+    db.execute("SELECT counter, color FROM colors") {
         _, data -> Int
-        val record = json_object()
-        json_object_set_new(record, "counter", json_integer(data[0].toLong()))
-        json_object_set_new(record, "color", json_integer(data[1].toLong()))
-        json_array_append_new(colors, record)
+        val record = KJsonObject()
+        record.setInt("counter", data[0].toInt())
+        record.setInt("color", data[1].toInt())
+        colors.appendObject(record)
         0
     }
-    json_object_set_new(json.json, "colors", colors)
-    json_object_set_new(json.json, "color", json_integer(color.toLong()))
+    json.setArray("colors", colors)
+    json.setInt("color", color)
 }
 
-fun click(db: DbConnection, color: Int, json: KJson) {
-    dbExecute(db, "UPDATE colors SET counter = counter + 1 WHERE color=$color")
+fun click(db: KSqlite, color: Int, json: KJsonObject) {
+    db.execute("UPDATE colors SET counter = counter + 1 WHERE color=$color")
     stats(db, color, json)
 }
 
 // End of the REST API.
 
-fun makeJson(url: String, db: DbConnection, session: Session): String {
-    withJson(KJson()) {
+fun makeJson(url: String, db: KSqlite, session: Session): String {
+    withJson(KJsonObject()) {
         json -> Unit
 
         json_object_set_new(json.json, "url", json_string(url))
@@ -51,7 +50,7 @@ fun makeJson(url: String, db: DbConnection, session: Session): String {
     return ""
 }
 
-fun makeHtml(url: String, db: DbConnection, session: Session): String {
+fun makeHtml(url: String, db: KSqlite, session: Session): String {
     return """
         <html><head>
             <title>Kotlin</title></head>
@@ -62,14 +61,13 @@ fun makeHtml(url: String, db: DbConnection, session: Session): String {
 """
 }
 
-fun makeResponse(db: DbConnection, method: String, url: String, session: Session): Pair<String, String> {
+fun makeResponse(db: KSqlite, method: String, url: String, session: Session): Pair<String, String> {
     if (url.startsWith("/json"))
         return "application/json" to makeJson(url, db, session)
 
     return "text/html" to makeHtml(url, db, session)
 }
 
-val dbName = "/tmp/clients.dblite"
 // `rowid` column is always there in sqlite, so no need to create explicit
 // primary key.
 val createDbCommand = """
@@ -85,51 +83,16 @@ val createDbCommand = """
 
 """
 
-fun dbOpen(): DbConnection {
-    val db = nativeHeap.alloc<DbConnection>()
-    if (sqlite3_open(dbName, db.ptr) != 0) {
-        throw Error("Cannot open db: ${sqlite3_errmsg(db.value)}")
-    }
-    return db
-}
-
-fun fromCArray(ptr: CPointer<CPointerVar<ByteVar>>, count: Int): Array<String> = Array<String>(count, {
-    index -> (ptr+index)!!.pointed.value!!.toKString()
-})
-
-fun dbExecute(db: DbConnection,
-              command: String, callback: ((Array<String>, Array<String>)-> Int)? = null) {
-    memScoped {
-        val error = this.alloc<CPointerVar<ByteVar>>()
-        val callbackStable = if (callback != null) StableObjPtr.create(callback) else null
-        try {
-            if (sqlite3_exec(db.value, command, if (callback != null)
-                        staticCFunction {
-                            ptr, count, data, columns -> Int
-                            val callbackFunction =
-                                StableObjPtr.fromValue(ptr!!).get() as (Array<String>, Array<String>)-> Int
-                            val columnsArray = fromCArray(columns!!, count)
-                            val dataArray = fromCArray(data!!, count)
-                            callbackFunction(columnsArray, dataArray)
-                        } else null, callbackStable?.value, error.ptr) != 0)
-                throw Error("DB error: ${error.value!!.toKString()}")
-        } finally {
-            callbackStable?.dispose()
-            sqlite3_free(error.value)
-        }
-    }
-}
-
-fun makeSession(name: String, db: DbConnection): Session {
+fun makeSession(name: String, db: KSqlite): Session {
     println("Making session")
     val freshBakery = "${rand().toString(16)}${rand().toString(16)}${rand().toString(16)}"
     val color = rand() % MAX_COLORS + 1
-    dbExecute(db,
+    db.execute(
             "INSERT INTO sessions (cookie, color, name) VALUES ('$freshBakery', $color, '$name')")
     return Session(color, name, freshBakery)
 }
 
-fun initSession(http: HttpConnection, db: DbConnection): Session {
+fun initSession(http: HttpConnection, db: KSqlite): Session {
     var name = MHD_lookup_connection_value(http, MHD_GET_ARGUMENT_KIND, "name") ?. toKString() ?: "Unknown"
     val cookieC = MHD_lookup_connection_value(http, MHD_COOKIE_KIND, "cookie")
     return if (cookieC == null) {
@@ -141,7 +104,7 @@ fun initSession(http: HttpConnection, db: DbConnection): Session {
         var color = -1
 
         val suppliedName = name
-        dbExecute(db, "SELECT color,name FROM sessions WHERE cookie='$cookie'") {
+        db.execute("SELECT color,name FROM sessions WHERE cookie='$cookie'") {
             _, data -> Int
 
             color = data[0].toInt()
@@ -165,14 +128,14 @@ fun main(args: Array<String>) {
         exitProcess(1)
     }
     val port = args[0].toInt().toShort()
-    val dbMain = dbOpen()
-    dbExecute(dbMain, createDbCommand)
-    dbExecute(dbMain, "SELECT count(*) FROM colors") {
+    val dbMain = KSqlite("/tmp/clients.dblite")
+    dbMain.execute(createDbCommand)
+    dbMain.execute("SELECT count(*) FROM colors") {
         _, data -> Int
         var count = data[0].toInt()
         if (count < MAX_COLORS) {
            while (count++ < MAX_COLORS)
-                dbExecute(dbMain, "INSERT INTO colors (counter) VALUES (0)")
+                dbMain.execute("INSERT INTO colors (counter) VALUES (0)")
         }
         0
     }
@@ -186,7 +149,7 @@ fun main(args: Array<String>) {
             // Do this, as otherwise exception may be not caught.
             // TODO: is it correct?
             try {
-                val db = cls!!.reinterpret<CPointerVar<sqlite3>>().pointed
+                val db = KSqlite(cls)
                 val session = initSession(connection, db)
                 val url = urlC?.toKString() ?: ""
                 val method = methodC?.toKString() ?: ""
@@ -211,7 +174,7 @@ fun main(args: Array<String>) {
                 return@staticCFunction MHD_NO
             }
 
-        }, dbMain.ptr,
+        }, dbMain.cpointer,
         MHD_OPTION_CONNECTION_TIMEOUT, 120,
         MHD_OPTION_STRICT_FOR_CLIENT, 1,
         MHD_OPTION_END)
