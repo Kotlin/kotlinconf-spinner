@@ -64,7 +64,7 @@ class KUrl(val url: String, val cookies: String? = null)  {
             buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? -> size_t
 
             if (buffer == null) return@staticCFunction 0.toLong()
-            val header = buffer.toKString((size * nitems).toInt()).trim()
+            val header = buffer.toKString((size * nitems).toInt())
             if (userdata != null) {
                 val thiz = StableObjPtr.fromValue(userdata).get() as KUrl
                 thiz.data(header)

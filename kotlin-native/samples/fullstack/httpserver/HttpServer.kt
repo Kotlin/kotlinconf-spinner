@@ -1,11 +1,11 @@
-import jansson.*
 import kjson.*
+import ksqlite.*
+
 import konan.initRuntimeIfNeeded
 import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 import microhttpd.*
-import ksqlite.*
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -50,7 +50,7 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
     return ""
 }
 
-fun makeHtml(url: String, db: KSqlite, session: Session): String {
+fun makeHtml(url: String, session: Session): String {
     return """
         <html><head>
             <title>Kotlin</title></head>
@@ -61,11 +61,11 @@ fun makeHtml(url: String, db: KSqlite, session: Session): String {
 """
 }
 
-fun makeResponse(db: KSqlite, method: String, url: String, session: Session): Pair<String, String> {
+fun makeResponse(db: KSqlite, url: String, session: Session): Pair<String, String> {
     if (url.startsWith("/json"))
         return "application/json" to makeJson(url, db, session)
 
-    return "text/html" to makeHtml(url, db, session)
+    return "text/html" to makeHtml(url, session)
 }
 
 // `rowid` column is always there in sqlite, so no need to create explicit
@@ -155,7 +155,7 @@ fun main(args: Array<String>) {
                 val method = methodC?.toKString() ?: ""
                 println("Connection to $url method $method")
                 if (method != "GET") return@staticCFunction MHD_NO
-                val (contentType, responseText) = makeResponse(db, method, url, session)
+                val (contentType, responseText) = makeResponse(db, url, session)
                 return@staticCFunction memScoped {
                     val responseArray = toUtf8Array(responseText, 0, responseText.length)
                     val response = MHD_create_response_from_buffer(
@@ -185,4 +185,5 @@ fun main(args: Array<String>) {
     println("Server started, connect to http://localhost:$port, press Enter to exit...")
     readLine()
     MHD_stop_daemon(daemon)
+    dbMain.close()
 }
