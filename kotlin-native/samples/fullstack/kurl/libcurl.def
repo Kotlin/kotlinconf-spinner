@@ -1,0 +1,4 @@
+package = libcurl
+headers = curl/curl.h
+linkerOpts.osx = -L/opt/local/lib -lcurl
+linkerOpts.linux = -L/usr/lib/x86_64-linux-gnu -lcurl
