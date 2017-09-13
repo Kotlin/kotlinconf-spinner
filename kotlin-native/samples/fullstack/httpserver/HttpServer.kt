@@ -6,7 +6,7 @@ import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 import microhttpd.*
-import common.*
+import kommon.*
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -82,10 +82,12 @@ val createDbCommand = """
 
 """
 
+fun rnd() = kommon.random()
+
 fun makeSession(name: String, db: KSqlite): Session {
     println("Making session")
-    val freshBakery = "${random().toString(16)}${random().toString(16)}${random().toString(16)}"
-    val color = (random() % MAX_COLORS + 1).toInt()
+    val freshBakery = "${rnd().toString(16)}${rnd().toString(16)}${rnd().toString(16)}"
+    val color = (rnd() % MAX_COLORS + 1).toInt()
     db.execute(
             "INSERT INTO sessions (cookie, color, name) VALUES ('$freshBakery', $color, '$name')")
     return Session(color, name, freshBakery)
@@ -127,7 +129,7 @@ fun main(args: Array<String>) {
         exitProcess(1)
     }
 
-    srandomdev()
+    kommon.randomInit()
 
     val port = args[0].toInt().toShort()
     val dbMain = KSqlite("/tmp/clients.dblite")
@@ -142,8 +144,9 @@ fun main(args: Array<String>) {
         0
     }
 
-    val daemon = MHD_start_daemon(MHD_USE_AUTO or MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_ERROR_LOG,
-        port, null, null, staticCFunction {
+    // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG
+    val options = MHD_USE_POLL_INTERNALLY
+    val daemon = MHD_start_daemon(options, port, null, null, staticCFunction {
             cls, connection, urlC, methodC, _, _, _, _ ->
             // This handler could (and will) be invoked in another per-connection
             // thread, so reinit runtime.
@@ -179,7 +182,7 @@ fun main(args: Array<String>) {
 
         }, dbMain.cpointer,
         MHD_OPTION_CONNECTION_TIMEOUT, 120,
-        MHD_OPTION_STRICT_FOR_CLIENT, 1,
+        // MHD_OPTION_STRICT_FOR_CLIENT, 1,
         MHD_OPTION_END)
     if (daemon == null) {
         println("Cannot start daemon")

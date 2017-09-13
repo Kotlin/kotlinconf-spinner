@@ -13,10 +13,17 @@ private fun CPointer<ByteVar>.toKString(length: Int): String {
     return kotlin.text.fromUtf8Array(bytes, 0, bytes.size)
 }
 
-class KUrl(val url: String, val cookies: String? = null) {
-    fun fetch(onData: HttpHandler, onHeader: HttpHandler?) {
-        val curl = curl_easy_init();
+class KUrl(val cookies: String? = null) {
+    var curl = curl_easy_init()
 
+    fun escape(string: String) =
+      curl_easy_escape(curl, string, 0) ?. let {
+        val result = it.toKString()
+        curl_free(it)
+        result
+      } ?: ""
+
+    fun fetch(url: String, onData: HttpHandler, onHeader: HttpHandler?) {
         curl_easy_setopt(curl, CURLOPT_URL, url)
 
         if (cookies != null) {
@@ -29,8 +36,8 @@ class KUrl(val url: String, val cookies: String? = null) {
                 curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, staticCFunction { buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
 
                     if (buffer == null) return@staticCFunction 0.toLong()
-                    if (userdata != null) {
-                        val handler = StableObjPtr.fromValue(userdata).get() as HttpHandler
+                    val handler = StableObjPtr.fromValue(userdata!!).get() as? HttpHandler
+                    if (handler != null) {
                         handler(buffer.toKString((size * nitems).toInt()).trim())
                     }
                     return@staticCFunction size * nitems
@@ -44,8 +51,8 @@ class KUrl(val url: String, val cookies: String? = null) {
 
                 if (buffer == null) return@staticCFunction 0.toLong()
                 val header = buffer.toKString((size * nitems).toInt())
-                if (userdata != null) {
-                    val handler = StableObjPtr.fromValue(userdata).get() as HttpHandler
+                val handler = StableObjPtr.fromValue(userdata!!).get() as? HttpHandler
+                if (handler != null) {
                     handler(header)
                 }
                 return@staticCFunction size * nitems
@@ -59,15 +66,27 @@ class KUrl(val url: String, val cookies: String? = null) {
             stables.forEach {
                 it.dispose()
             }
-            if (cookies != null)
-                curl_easy_setopt(curl, CURLOPT_COOKIEJAR, cookies)
-            curl_easy_cleanup(curl)
         }
 
         if (result != CURLE_OK)
             throw KUrlError("curl_easy_perform() failed: ${curl_easy_strerror(result)?.toKString() ?: ""}")
     }
 
+    fun close() {
+         if (curl == null) return
+         if (cookies != null)
+                curl_easy_setopt(curl, CURLOPT_COOKIEJAR, cookies)
+         curl_easy_cleanup(curl)
+         curl = null
+    }
+
     // So that we can use DSL syntax.
-    fun fetch(onData: HttpHandler) = fetch(onData, null)
+    fun fetch(url: String, onData: HttpHandler) = fetch(url, onData, null)
 }
+
+public inline fun <T> withUrl(url: KUrl, function: (KUrl) -> T): T =
+    try {
+        function(url)
+    } finally {
+        url.close()
+    }

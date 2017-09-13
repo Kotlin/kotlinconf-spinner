@@ -8,7 +8,7 @@ fun machineName() =
     memScoped {
         val u = alloc<utsname>()
         if (uname(u.ptr) == 0) {
-            "${u.sysname?.toKString()} ${u.machine?.toKString()}"
+            "${u.sysname.toKString()} ${u.machine.toKString()}"
         } else {
             "unknown"
         }
@@ -34,9 +34,12 @@ fun main(args: Array<String>) {
     }
     val machine = machineName()
     println("Connecting to $server as $name from $machine")
-    KUrl("$server/json/$command?name=$name&client=cli&machine=$machine", "cookies.txt").fetch {
+    var kurl = KUrl("cookies.txt")
+    val url = "$server/json/$command?name=${kurl.escape(name!!)}&client=cli&machine=${kurl.escape(machine)}"
+    withUrl(kurl) { it.fetch(url) {
         content -> withJson(content) {
             println("Got $it, my color is ${it.getInt("color")}")
         }
+      }
     }
 }

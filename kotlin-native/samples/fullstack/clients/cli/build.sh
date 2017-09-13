@@ -11,4 +11,5 @@ konanc Client.kt \
                      -library $DIR/../../kurl/libcurl.klib \
                      -library $DIR/../../getopt/kliopt.klib \
                      -library $DIR/../../common/common.klib \
+                     -library $DIR/../../common/kommon.klib \
                      -o CliClient

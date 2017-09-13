@@ -1,4 +1,7 @@
 package = jansson
 headers = jansson.h
+headerFilter = jansson.h
 compilerOpts.osx = -I/opt/local/include
+compilerOpts.linux = -I/usr/include
 linkerOpts.osx = -L/opt/local/lib -ljansson
+linkerOpts.linux = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -ljansson

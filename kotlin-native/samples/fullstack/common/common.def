@@ -1,2 +1,2 @@
 package = common
-headers = stdlib.h sys/utsname.h
+headers = stdlib.h sys/utsname.h time.h

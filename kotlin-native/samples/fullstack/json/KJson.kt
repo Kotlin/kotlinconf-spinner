@@ -2,6 +2,7 @@ package kjson
 
 import jansson.*
 import kotlinx.cinterop.*
+import kommon.freeMemory
 
 typealias Json = CPointer<json_t>?
 
@@ -16,7 +17,7 @@ open class KJsonBase {
         if (json == null) return ""
         return json_dumps(json, JSON_ENCODE_ANY.toLong())?.let {
             val result = it.toKString()
-            free(it)
+            freeMemory(it)
             result
         } ?: ""
     }
@@ -69,7 +70,7 @@ class KJsonObject : KJsonBase {
             throw JsonError("wrong type")
         return json_string_value(value)?.let {
             val result = it.toKString()
-            free(it)
+            freeMemory(it)
             result
         } ?: ""
     }
@@ -149,7 +150,7 @@ class KJsonArray : KJsonBase {
             throw JsonError("wrong type")
         return json_string_value(value)?.let {
             val result = it.toKString()
-            free(it)
+            freeMemory(it)
             result
         } ?: ""
     }
