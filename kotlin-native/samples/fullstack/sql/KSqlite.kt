@@ -41,7 +41,7 @@ class KSqlite {
             try {
                 if (sqlite3_exec(db, command, if (callback != null)
                     staticCFunction {
-                        ptr, count, data, columns -> Int
+                        ptr, count, data, columns ->
                         val callbackFunction =
                                 StableObjPtr.fromValue(ptr!!).get() as (Array<String>, Array<String>)-> Int
                         val columnsArray = fromCArray(columns!!, count)

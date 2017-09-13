@@ -21,16 +21,11 @@ fun main(args: Array<String>) {
         }
     }
     println("Connecting to $server as $name")
-    withKurl(KUrl("$server/json/$command?name=$name", "cookies.txt")) {
-        kurl -> Unit
+    KUrl("$server/json/$command?name=$name", "cookies.txt").fetch {
+        content ->
 
-        kurl.data += {
-            content -> Unit
-
-            withJson(content) {
-                json -> Unit
-                println("Got $json, my color is ${json.getInt("color")}")
-            }
+        withJson(content) {
+            println("Got $it, my color is ${it.getInt("color")}")
         }
     }
 }

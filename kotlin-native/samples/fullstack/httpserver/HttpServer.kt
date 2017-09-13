@@ -19,7 +19,7 @@ data class Session(val color: Int, val name: String, val cookie: String)
 fun stats(db: KSqlite, color: Int, json: KJsonObject) {
     val colors = KJsonArray()
     db.execute("SELECT counter, color FROM colors") {
-        _, data -> Int
+        _, data ->
         val record = KJsonObject()
         record.setInt("counter", data[0].toInt())
         record.setInt("color", data[1].toInt())
@@ -39,14 +39,12 @@ fun click(db: KSqlite, color: Int, json: KJsonObject) {
 
 fun makeJson(url: String, db: KSqlite, session: Session): String {
     withJson(KJsonObject()) {
-        json -> Unit
-
-        json.setString("url", url)
+        it.setString("url", url)
         when {
-            url.startsWith("/json/click") -> click(db, session.color, json)
-            url.startsWith("/json/stats") -> stats(db, session.color, json)
+            url.startsWith("/json/click") -> click(db, session.color, it)
+            url.startsWith("/json/stats") -> stats(db, session.color, it)
         }
-        return json.toString()
+        return it.toString()
     }
     return ""
 }
@@ -106,7 +104,7 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
 
         val suppliedName = name
         db.execute("SELECT color,name FROM sessions WHERE cookie='$cookie'") {
-            _, data -> Int
+            _, data ->
 
             color = data[0].toInt()
             name = data[1]
@@ -132,7 +130,7 @@ fun main(args: Array<String>) {
     val dbMain = KSqlite("/tmp/clients.dblite")
     dbMain.execute(createDbCommand)
     dbMain.execute("SELECT count(*) FROM colors") {
-        _, data -> Int
+        _, data ->
         var count = data[0].toInt()
         if (count < MAX_COLORS) {
            while (count++ < MAX_COLORS)
@@ -143,7 +141,7 @@ fun main(args: Array<String>) {
 
     val daemon = MHD_start_daemon(MHD_USE_AUTO or MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_ERROR_LOG,
         port, null, null, staticCFunction {
-            cls, connection, urlC, methodC, _, _, _, _ -> Int
+            cls, connection, urlC, methodC, _, _, _, _ ->
             // This handler could (and will) be invoked in another per-connection
             // thread, so reinit runtime.
             konan.initRuntimeIfNeeded()
