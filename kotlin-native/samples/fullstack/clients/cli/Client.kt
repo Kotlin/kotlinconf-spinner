@@ -22,9 +22,7 @@ fun main(args: Array<String>) {
     }
     println("Connecting to $server as $name")
     KUrl("$server/json/$command?name=$name", "cookies.txt").fetch {
-        content ->
-
-        withJson(content) {
+        content -> withJson(content) {
             println("Got $it, my color is ${it.getInt("color")}")
         }
     }
