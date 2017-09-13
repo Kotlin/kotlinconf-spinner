@@ -1,6 +1,18 @@
 import kjson.*
 import kliopt.*
 import kurl.*
+import common.*
+import kotlinx.cinterop.*
+
+fun machineName() =
+    memScoped {
+        val u = alloc<utsname>()
+        if (uname(u.ptr) == 0) {
+            "${u.sysname?.toKString()} ${u.machine?.toKString()}"
+        } else {
+            "unknown"
+        }
+    }
 
 fun main(args: Array<String>) {
     var server: String? = null
@@ -20,8 +32,9 @@ fun main(args: Array<String>) {
             "help" -> println(makeUsage(options))
         }
     }
-    println("Connecting to $server as $name")
-    KUrl("$server/json/$command?name=$name", "cookies.txt").fetch {
+    val machine = machineName()
+    println("Connecting to $server as $name from $machine")
+    KUrl("$server/json/$command?name=$name&client=cli&machine=$machine", "cookies.txt").fetch {
         content -> withJson(content) {
             println("Got $it, my color is ${it.getInt("color")}")
         }

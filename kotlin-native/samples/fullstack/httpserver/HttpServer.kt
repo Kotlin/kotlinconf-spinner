@@ -6,7 +6,7 @@ import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 import microhttpd.*
-import jansson.rand
+import common.*
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -84,8 +84,8 @@ val createDbCommand = """
 
 fun makeSession(name: String, db: KSqlite): Session {
     println("Making session")
-    val freshBakery = "${rand().toString(16)}${rand().toString(16)}${rand().toString(16)}"
-    val color = rand() % MAX_COLORS + 1
+    val freshBakery = "${random().toString(16)}${random().toString(16)}${random().toString(16)}"
+    val color = (random() % MAX_COLORS + 1).toInt()
     db.execute(
             "INSERT INTO sessions (cookie, color, name) VALUES ('$freshBakery', $color, '$name')")
     return Session(color, name, freshBakery)
@@ -126,6 +126,9 @@ fun main(args: Array<String>) {
         println("HttpServer <port>")
         exitProcess(1)
     }
+
+    srandomdev()
+
     val port = args[0].toInt().toShort()
     val dbMain = KSqlite("/tmp/clients.dblite")
     dbMain.execute(createDbCommand)
@@ -152,7 +155,8 @@ fun main(args: Array<String>) {
                 val session = initSession(connection, db)
                 val url = urlC?.toKString() ?: ""
                 val method = methodC?.toKString() ?: ""
-                println("Connection to $url method $method")
+                val machine =  MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "machine") ?. toKString() ?: "??"
+                println("Connection to $url method $method from $machine")
                 if (method != "GET") return@staticCFunction MHD_NO
                 val (contentType, responseText) = makeResponse(db, url, session)
                 return@staticCFunction memScoped {
