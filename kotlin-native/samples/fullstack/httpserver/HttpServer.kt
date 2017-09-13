@@ -11,6 +11,7 @@ import kommon.*
 typealias HttpConnection = CPointer<MHD_Connection>?
 
 val MAX_COLORS = 5
+val serverRoot = "./"
 
 data class Session(val color: Int, val name: String, val cookie: String)
 
@@ -60,11 +61,32 @@ fun makeHtml(url: String, session: Session): String {
 """
 }
 
-fun makeResponse(db: KSqlite, url: String, session: Session): Pair<String, String> {
-    if (url.startsWith("/json"))
-        return "application/json" to makeJson(url, db, session)
+val contentTypes = mapOf<String, String>(
+        "js" to "application/javascript",
+        "html" to "text/html",
+        "wasm" to "application/javascript"
+)
 
-    return "text/html" to makeHtml(url, session)
+fun makeStaticContent(url: String): Pair<String, ByteArray> {
+    val file = url.split('/').last()
+    var fullName = "$serverRoot/static/$file"
+    val extension = file.split('.').last()
+
+    val content = readFileData(fullName) ?: ByteArray(0)
+
+    return (contentTypes.get(extension) ?: "text/html") to content
+}
+
+fun String.asData() : ByteArray = toUtf8Array(this, 0, this.length)
+
+fun makeResponse(db: KSqlite, url: String, session: Session): Pair<String, ByteArray> {
+    if (url.startsWith("/json"))
+        return "application/json" to makeJson(url, db, session).asData()
+
+    if (url.startsWith("/static"))
+        return makeStaticContent(url)
+
+    return "text/html" to makeHtml(url, session).asData()
 }
 
 // `rowid` column is always there in sqlite, so no need to create explicit
@@ -132,7 +154,7 @@ fun main(args: Array<String>) {
     kommon.randomInit()
 
     val port = args[0].toInt().toShort()
-    val dbMain = KSqlite("/tmp/clients.dblite")
+    val dbMain = KSqlite("$serverRoot/clients.dblite")
     dbMain.execute(createDbCommand)
     dbMain.execute("SELECT count(*) FROM colors") {
         _, data ->
@@ -161,9 +183,8 @@ fun main(args: Array<String>) {
                 val machine =  MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "machine") ?. toKString() ?: "??"
                 println("Connection to $url method $method from $machine")
                 if (method != "GET") return@staticCFunction MHD_NO
-                val (contentType, responseText) = makeResponse(db, url, session)
+                val (contentType, responseArray) = makeResponse(db, url, session)
                 return@staticCFunction memScoped {
-                    val responseArray = toUtf8Array(responseText, 0, responseText.length)
                     val response = MHD_create_response_from_buffer(
                             responseArray.size.toLong(),
                             responseArray.toCValues().getPointer(this),
