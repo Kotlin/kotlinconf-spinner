@@ -7,6 +7,8 @@ import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 import microhttpd.*
 import kommon.*
+import common.sockaddr
+import common.socklen_t
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -101,7 +103,10 @@ val createDbCommand = """
         color INTEGER PRIMARY KEY AUTOINCREMENT,
         counter
     );
-
+    CREATE TABLE IF NOT EXISTS connections(
+        ip VARCHAR(64),
+        timestamp DATE
+    );
 """
 
 fun rnd() = kommon.random()
@@ -145,6 +150,12 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
     }
 }
 
+fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?, socklen: socklen_t) {
+    val ip = kommon.sockaddrAsString(sockaddr, socklen)
+    println("connection from $ip")
+    db.execute("INSERT INTO connections (ip, timestamp) VALUES ('$ip', DateTime('now'))")
+}
+
 fun main(args: Array<String>) {
     if (args.size != 1 || args[0].toIntOrNull() == null) {
         println("HttpServer <port>")
@@ -168,7 +179,13 @@ fun main(args: Array<String>) {
 
     // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG
     val options = MHD_USE_POLL_INTERNALLY
-    val daemon = MHD_start_daemon(options, port, null, null, staticCFunction {
+    val daemon = MHD_start_daemon(options, port, staticCFunction {
+            cls, addr, addrlen ->
+            konan.initRuntimeIfNeeded()
+            val db = KSqlite(cls)
+            logConnection(db, addr, addrlen)
+            MHD_YES
+    }, dbMain.cpointer, staticCFunction {
             cls, connection, urlC, methodC, _, _, _, _ ->
             // This handler could (and will) be invoked in another per-connection
             // thread, so reinit runtime.
@@ -202,10 +219,10 @@ fun main(args: Array<String>) {
                 return@staticCFunction MHD_NO
             }
 
-        }, dbMain.cpointer,
-        MHD_OPTION_CONNECTION_TIMEOUT, 120,
+    }, dbMain.cpointer,
+    MHD_OPTION_CONNECTION_TIMEOUT, 120,
         // MHD_OPTION_STRICT_FOR_CLIENT, 1,
-        MHD_OPTION_END)
+    MHD_OPTION_END)
     if (daemon == null) {
         println("Cannot start daemon")
         exitProcess(2)

@@ -10,7 +10,7 @@ fun random() = common.random()
 
 fun readFileData(path: String): ByteArray? {
     return memScoped {
-        val info = alloc<statStruct>()
+        val info = alloc<stat>()
         if (stat(path, info.ptr) != 0) return null
         // We're not planning to serve files > 4G, right?
         val size = info.st_size.toInt()
@@ -33,3 +33,14 @@ fun readFileData(path: String): ByteArray? {
         result
     }
 }
+
+fun sockaddrAsString(sockaddr: CPointer<sockaddr>?, socklen: socklen_t) =
+    memScoped {
+        val iptext = allocArray<ByteVar>(64)
+        val porttext = allocArray<ByteVar>(64)
+        if (getnameinfo(sockaddr, socklen, iptext, 64, porttext, 64,
+                        NI_NUMERICHOST or NI_NUMERICSERV) == 0)
+            "${iptext.toKString()}:${porttext.toKString()}"
+        else
+            "unknown"
+    }

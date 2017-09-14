@@ -1,2 +1,2 @@
 package = common
-headers = stdio.h stdlib.h sys/stat.h sys/utsname.h time.h
+headers = netdb.h stdio.h stdlib.h sys/types.h sys/socket.h sys/stat.h sys/utsname.h time.h

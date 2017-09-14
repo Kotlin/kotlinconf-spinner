@@ -2,5 +2,5 @@
 
 PATH=$KONAN_HOME/bin:$PATH
 
-cinterop -def libcurl.def -o libcurl.klib
-konanc -p library KUrl.kt -library libcurl.klib -o kurl.klib
+cinterop -def libcurl.def -o libcurl.klib -library ../common/common.klib
+konanc -p library KUrl.kt -library libcurl.klib -library ../common/common.klib -o kurl.klib
