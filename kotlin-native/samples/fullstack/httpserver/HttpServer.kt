@@ -180,8 +180,9 @@ fun main(args: Array<String>) {
                 val session = initSession(connection, db)
                 val url = urlC?.toKString() ?: ""
                 val method = methodC?.toKString() ?: ""
-                val machine =  MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "machine") ?. toKString() ?: "??"
-                println("Connection to $url method $method from $machine")
+                val machine =  MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "machine") ?. toKString() ?: "?"
+                val userAgent = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "User-Agent") ?. toKString() ?: "?"
+                println("Connection to $url method $method from $machine agent $userAgent")
                 if (method != "GET") return@staticCFunction MHD_NO
                 val (contentType, responseArray) = makeResponse(db, url, session)
                 return@staticCFunction memScoped {
