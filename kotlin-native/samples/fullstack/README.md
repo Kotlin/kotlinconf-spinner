@@ -16,4 +16,4 @@ To use sqlite (embedded SQL server) install it:
 To use curl (HTTP client) install it:
 
     port install curl
-    apt install libcurl3
+    apt install libcurl3-nss
