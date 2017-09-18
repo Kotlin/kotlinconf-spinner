@@ -7,15 +7,6 @@ typealias DbConnection = CPointer<sqlite3>?
 
 class KSqliteError(message: String): Error(message)
 
-private fun dbOpen(dbPath: String): DbConnection {
-    val db = nativeHeap.alloc<CPointerVar<sqlite3>>()
-    if (sqlite3_open(dbPath, db.ptr) != 0) {
-        nativeHeap.free(db)
-        throw KSqliteError("Cannot open db: ${sqlite3_errmsg(db.value)}")
-    }
-    return db.value
-}
-
 private fun fromCArray(ptr: CPointer<CPointerVar<ByteVar>>, count: Int): Array<String> =
         Array<String>(count, { index -> (ptr+index)!!.pointed.value!!.toKString() })
 
@@ -24,7 +15,13 @@ class KSqlite {
     var db: DbConnection = null
 
     constructor(dbPath: String) {
-        db = dbOpen(dbPath)
+        memScoped {
+          val dbPtr = alloc<CPointerVar<sqlite3>>()
+          if (sqlite3_open(dbPath, dbPtr.ptr) != 0) {
+             throw KSqliteError("Cannot open db: ${sqlite3_errmsg(dbPtr.value)}")
+          }
+          db = dbPtr.value
+        }
     }
 
     constructor(db: COpaquePointer?) {

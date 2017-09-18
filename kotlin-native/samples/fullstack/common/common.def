@@ -1,2 +1,4 @@
 package = common
 headers = netdb.h stdio.h stdlib.h sys/types.h sys/socket.h sys/stat.h sys/utsname.h time.h
+linkerOpts.linux = -lrt
+excludedFunctions.linux = bindresvport6 lchmod
