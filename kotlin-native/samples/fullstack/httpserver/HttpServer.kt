@@ -1,14 +1,15 @@
 import kjson.*
 import ksqlite.*
+import kliopt.*
+import microhttpd.*
+import kommon.*
+import common.sockaddr
+import common.socklen_t
 
 import konan.initRuntimeIfNeeded
 import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
-import microhttpd.*
-import kommon.*
-import common.sockaddr
-import common.socklen_t
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -163,14 +164,23 @@ fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?, socklen: socklen_t
 }
 
 fun main(args: Array<String>) {
-    if (args.size != 1 || args[0].toIntOrNull() == null) {
-        println("HttpServer <port>")
-        exitProcess(1)
+    val cliOptions = listOf(
+            OptionDescriptor(OptionType.INT, "p", "port", "Port to use", "8888"),
+            OptionDescriptor(OptionType.BOOLEAN, "h", "help", "Usage info"),
+            OptionDescriptor(OptionType.BOOLEAN, "d", "daemon", "run as daemon")
+    )
+    var port = 8080
+    var isDaemon = false
+    parseOptions(cliOptions, args).forEach {
+        when (it.descriptor?.longName) {
+            "port" -> port = it.intValue
+            "daemon" -> isDaemon = true
+            "help" -> println(makeUsage(cliOptions))
+        }
     }
 
     kommon.randomInit()
 
-    val port = args[0].toInt().toShort()
     val dbMain = KSqlite("$serverRoot/clients.dblite")
     dbMain.execute(createDbCommand)
     dbMain.execute("SELECT count(*) FROM colors") {
@@ -185,7 +195,7 @@ fun main(args: Array<String>) {
 
     // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG
     val options = MHD_USE_POLL_INTERNALLY
-    val daemon = MHD_start_daemon(options, port, staticCFunction {
+    val daemon = MHD_start_daemon(options, port.toShort(), staticCFunction {
             cls, addr, addrlen ->
             konan.initRuntimeIfNeeded()
             val db = KSqlite(cls)
@@ -233,8 +243,15 @@ fun main(args: Array<String>) {
         println("Cannot start daemon")
         exitProcess(2)
     }
-    println("Server started, connect to http://localhost:$port, press Enter to exit...")
-    readLine()
+    if (isDaemon) {
+        println("Server started at http://localhost:$port going to background...")
+        while (true) {
+            usleep(1000000)
+        }
+    } else {
+        println("Server started, connect to http://localhost:$port, press Enter to exit...")
+        readLine()
+    }
     MHD_stop_daemon(daemon)
     dbMain.close()
 }

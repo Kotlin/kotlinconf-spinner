@@ -10,4 +10,5 @@ konanc -opt HttpServer.kt -library $DIR/microhttpd/microhttpd.klib \
                      -library $DIR/../sql/ksqlite.klib \
                      -library $DIR/../common/common.klib \
                      -library $DIR/../common/kommon.klib \
+                     -library $DIR/../getopt/kliopt.klib \
                      -o HttpServer

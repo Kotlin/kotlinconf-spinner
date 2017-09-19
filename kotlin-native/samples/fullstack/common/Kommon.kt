@@ -45,7 +45,6 @@ fun sockaddrAsString(sockaddr: CPointer<sockaddr>?, socklen: socklen_t) =
             "unknown"
     }
 
-
 fun machineName() =
         memScoped {
             val u = alloc<utsname>()
@@ -55,3 +54,5 @@ fun machineName() =
                 "unknown"
             }
         }
+
+fun usleep(microseconds: Int) = common.usleep(microseconds)

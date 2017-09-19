@@ -15,24 +15,24 @@ data class OptionDescriptor(
 
 class OptionError(text: String) : Error(text)
 
-class ParsedOption(val descriptor: OptionDescriptor, val value: String? = null) {
+class ParsedOption(val descriptor: OptionDescriptor?, val value: String? = null) {
     val intValue: Int
         get() {
-            if (descriptor.type != OptionType.INT)
+            if (descriptor != null && descriptor.type != OptionType.INT)
                 throw OptionError("Incorrect option value, must be an int")
             return value!!.toInt()
         }
 
     val stringValue: String
         get() {
-            if (descriptor.type != OptionType.STRING)
+            if (descriptor != null && descriptor.type != OptionType.STRING)
                 throw OptionError("Incorrect option value, must be a string")
             return value!!
         }
 
     val booleanValue: Boolean
         get() {
-            if (descriptor.type != OptionType.BOOLEAN)
+            if (descriptor != null && descriptor.type != OptionType.BOOLEAN)
                 throw OptionError("Incorrect option value, must be a boolean")
             return value == "true"
         }
@@ -52,9 +52,14 @@ fun parseOptions(description: List<OptionDescriptor>, args: Array<String>): List
         }
     }
 
+    var afterOptions = false
     while (index < args.size) {
         val arg = args[index]
-        if (arg.startsWith('-')) {
+        if (afterOptions) {
+            result += ParsedOption(null, arg)
+        } else if (arg == "--") {
+            afterOptions = true
+        } else if (arg.startsWith('-')) {
             val descriptor = optmap.get(arg.substring(1))
             if (descriptor != null) {
                 inited[descriptor] = true
@@ -72,6 +77,8 @@ fun parseOptions(description: List<OptionDescriptor>, args: Array<String>): List
             } else {
                 throw OptionError("Unknown option $arg")
             }
+        } else {
+            result += ParsedOption(null, arg)
         }
         index++
     }
