@@ -16,7 +16,115 @@
 
 import kotlinx.cinterop.*
 import android.*
+import common.utsname
+import common.uname
 import kurl.*
+import kjson.*
+import konan.worker.*
+
+fun machineName() =
+        memScoped {
+            val u = alloc<utsname>()
+            if (uname(u.ptr) == 0) {
+                "${u.sysname.toKString()} ${u.machine.toKString()}"
+            } else {
+                "unknown"
+            }
+        }
+
+class Stats(val nativeActivity: ANativeActivity) {
+    private val server = "http://kotlin-demo.kotlinconf.com:8080"
+    private val name = "Android user"
+
+    private fun cookiesFileName() = "${nativeActivity.internalDataPath!!.toKString()}/cookies.txt"
+
+    private val worker = startWorker()
+    private var future: Future<Any>? = null
+    val counts = IntArray(5) { 0 }
+    var myColor = 0
+
+    class WorkerArgument(val url: String, val cookiesFileName: String)
+
+    fun initialize() = memScoped {
+        val machine = machineName()
+        logInfo("Connecting to $server as $name from $machine")
+        logInfo("Internal data path = ${nativeActivity.internalDataPath!!.toKString()}")
+        val kurl = KUrl(cookiesFileName())
+        val url = "$server/json/stats?name=${kurl.escape(name)}&client=android&machine=${kurl.escape(machine)}"
+        logInfo(url)
+        try {
+            withUrl(kurl) {
+                it.fetch(url) {
+                    withJson(it) {
+                        myColor = it.getInt("color") - 1
+                        logInfo("Got $it, my color is ${myColor + 1}")
+                        val colors = it.getArray("colors")
+                        counts.indices.forEach {
+                            val obj = colors.getObject(it)
+                            val color = obj.getInt("color")
+                            val counter = obj.getInt("counter")
+                            logInfo("Color: $color, counter = $counter")
+                            counts[color - 1] = counter
+                        }
+                    }
+                }
+            }
+        } catch (error: KUrlError) {
+            logError("network problem: $error")
+        } finally {
+            kurl.close()
+        }
+    }
+
+    fun tryClick(): Boolean {
+        if (future?.state == FutureState.SCHEDULED) return false
+        future = worker.schedule(TransferMode.CHECKED, { WorkerArgument("$server/json/click", cookiesFileName()) }) {
+            val kurl = KUrl(it.cookiesFileName)
+            val url = it.url
+            try {
+                withUrl(kurl) {
+                    var result: Any? = null
+                    it.fetch(url) {
+                        result = KJsonObject(it)
+                    }
+                    result!!
+                }
+            } catch (error: KUrlError) {
+                "network problem: $error"
+            } catch (t: Throwable) {
+                "Esception: $t"
+            } finally {
+                kurl.close()
+            }
+        }
+        return true
+    }
+
+    fun refresh() {
+        val future = this.future
+        if (future != null && future.state == FutureState.COMPUTED) {
+            future.consume {
+                if (it is String)
+                    logError(it)
+                else {
+                    if (it !is KJsonObject)
+                        logError("A KJsonObject expected but was $it")
+                    else {
+                        val colors = it.getArray("colors")
+                        counts.indices.forEach {
+                            val obj = colors.getObject(it)
+                            val color = obj.getInt("color")
+                            val counter = obj.getInt("counter")
+                            logInfo("Color: $color, counter = $counter")
+                            counts[color - 1] = counter
+                        }
+                        it.close()
+                    }
+                }
+            }
+        }
+    }
+}
 
 class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActivity, val savedMatrix: COpaquePointer?) {
 
@@ -25,10 +133,9 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
     private var surface: EGLSurface? = null
     private var context: EGLContext? = null
     private var initialized = false
-    private val server = "http://172.20.208.176:1111"
-    private val name = "Android user"
 
     var screen = Vector2.Zero
+    private val stats = Stats(nativeActivity)
 
     private val matrix = parentArena.allocArray<FloatVar>(16)
 
@@ -44,18 +151,7 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
 
     fun initialize(window: CPointer<ANativeWindow>): Boolean {
         with(arena) {
-            logInfo("Connecting to $server as $name")
-            val http = KUrl("$server/json/stats?name=$name", "cookies.txt")
-            try {
-                http.data += {
-                    content -> logInfo("Got $content")
-                }
-                http.fetch()
-            } catch (error: KUrlError) {
-                logError("network problem: $error")
-            } finally {
-                http.close()
-            }
+            stats.initialize()
             logInfo("Initializing context..")
             display = eglGetDisplay(null)
             if (display == null) {
@@ -72,6 +168,7 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
                     EGL_BLUE_SIZE, 8,
                     EGL_GREEN_SIZE, 8,
                     EGL_RED_SIZE, 8,
+                    EGL_DEPTH_SIZE, 24,
                     EGL_NONE
             )
             val numConfigs = alloc<EGLintVar>()
@@ -92,11 +189,11 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
                 val g = alloc<EGLintVar>()
                 val b = alloc<EGLintVar>()
                 val d = alloc<EGLintVar>()
-                if (eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RED_SIZE, r.ptr) != 0   &&
+                if (eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RED_SIZE, r.ptr) != 0 &&
                         eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_GREEN_SIZE, g.ptr) != 0 &&
-                eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_BLUE_SIZE, b.ptr) != 0  &&
-                eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_DEPTH_SIZE, d.ptr) != 0 &&
-                r.value == 8 && g.value == 8 && b.value == 8 && d.value == 0 ) {
+                        eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_BLUE_SIZE, b.ptr) != 0 &&
+                        eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_DEPTH_SIZE, d.ptr) != 0 &&
+                        r.value == 8 && g.value == 8 && b.value == 8 && d.value >= 24) {
                     break
                 }
                 ++configIndex
@@ -138,8 +235,10 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
             glDisable(GL_DITHER)
             glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST)
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+            glClearDepthf(1.0f)
             glEnable(GL_CULL_FACE)
-            glShadeModel(GL_SMOOTH)
+            glCullFace(GL_BACK)
+            glShadeModel(GL_FLAT)
             glEnable(GL_DEPTH_TEST)
 
             glViewport(0, 0, width.value, height.value)
@@ -147,19 +246,19 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
             val ratio = width.value.toFloat() / height.value
             glMatrixMode(GL_PROJECTION)
             glLoadIdentity()
-            glFrustumf(-ratio, ratio, -1.0f, 1.0f, 1.0f, 10.0f)
+            glOrthof(-ratio, ratio, -1.0f, 1.0f, 0.1f, 100.0f)
 
             glMatrixMode(GL_MODELVIEW)
             glTranslatef(0.0f, 0.0f, -2.0f)
-            glLightfv(GL_LIGHT0, GL_POSITION, cValuesOf(1.25f, 1.25f, -2.0f, 0.0f))
+            glRotatef(180.0f, 1.0f, 0.0f, 0.0f)
+            glLightfv(GL_LIGHT0, GL_POSITION, cValuesOf(0.0f, 0.0f, 2.0f, 0.0f))
             glEnable(GL_LIGHTING)
             glEnable(GL_LIGHT0)
-            glEnable(GL_TEXTURE_2D)
-            glMaterialfv(GL_FRONT, GL_DIFFUSE, cValuesOf(0.0f, 1.0f, 1.0f, 1.0f))
-            glMaterialfv(GL_FRONT, GL_SPECULAR, cValuesOf(0.3f, 0.3f, 0.3f, 1.0f))
-            glMaterialf(GL_FRONT, GL_SHININESS, 30.0f)
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, cValuesOf(0.8f, 0.8f, 0.8f, 1.0f))
+            glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, cValuesOf(0.1f, 0.1f, 0.1f, 1.0f))
+            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f)
 
-            loadTexture("kotlin_logo.bmp")
+            loadTexture("rsz_3kotlin_logo_3d.bmp")
 
             initialized = true
             return true
@@ -168,14 +267,21 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
 
     fun getState() = matrix to 16 * 4
 
+    private var curAngle = 0.0f
+    private val threshold = 720.0f
+
     fun rotateBy(vec: Vector2) {
         if (!initialized) return
 
         val len = vec.length
         if (len < 1e-9f) return
         val angle = 180 * len / screen.length
-        val x = - vec.y / len
-        val y = - vec.x / len
+        curAngle += angle
+        if (curAngle >= threshold && stats.tryClick())
+            curAngle -= threshold
+
+        val x = vec.y / len
+        val y = -vec.x / len
 
         glPushMatrix()
         glMatrixMode(GL_MODELVIEW)
@@ -212,7 +318,7 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
             logError("Error reading asset")
             AAsset_close(asset)
         }
-        with (BMPHeader(buf.rawValue)) {
+        with(BMPHeader(buf.rawValue)) {
             if (magic != 0x4d42 || zero != 0 || size != length.toInt() || bits != 24) {
                 logError("Error parsing texture file")
                 AAsset_close(asset)
@@ -227,61 +333,140 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
             glBindTexture(GL_TEXTURE_2D, 1)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND.toFloat())
-            glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, cValuesOf(1.0f, 1.0f, 1.0f, 1.0f))
+            glEnable(GL_TEXTURE_2D)
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data)
             AAsset_close(asset)
         }
     }
 
-    private val texturePoints = arrayOf(
-            Vector2(0.0f, 0.2f), Vector2(0.0f, 0.8f), Vector2(0.6f, 1.0f), Vector2(1.0f, 0.5f), Vector2(0.8f, 0.0f)
-    )
+    private class KotlinLogo(val s: Float, val d: Float) {
 
-    private val scale = 1.25f
+        class Face(val indices: IntArray, val texCoords: Array<Vector2>)
+
+        val vertices = arrayOf(
+                Vector3(-s, s, -d), Vector3(s, s, -d), Vector3(0.0f, 0.0f, -d), Vector3(s, -s, -d), Vector3(-s, -s, -d),
+                Vector3(-s, s, +d), Vector3(s, s, +d), Vector3(0.0f, 0.0f, +d), Vector3(s, -s, +d), Vector3(-s, -s, +d)
+        )
+
+        val p = 1.0f / 6.0f
+
+        val faces = arrayOf(
+                Face(intArrayOf(0, 1, 2, 3, 4), arrayOf(Vector2(p, 1.0f - p), Vector2(1.0f - p, 1.0f - p), Vector2(0.5f, 0.5f), Vector2(1.0f - p, p), Vector2(p, p))),
+                Face(intArrayOf(5, 9, 8, 7, 6), arrayOf(Vector2(p, 1.0f - p), Vector2(p, p), Vector2(1.0f - p, p), Vector2(0.5f, 0.5f), Vector2(1.0f - p, 1.0f - p))),
+                Face(intArrayOf(0, 5, 6, 1), arrayOf(Vector2(p, 1.0f - p), Vector2(p, 1.0f), Vector2(1.0f - p, 1.0f), Vector2(1.0f - p, 1.0f - p))),
+                Face(intArrayOf(1, 6, 7, 2), arrayOf(Vector2(1.0f - p, 1.0f - p), Vector2(1.0f - 2 * p, 1.0f), Vector2(0.5f - p, 0.5f + p), Vector2(0.5f, 0.5f))),
+                Face(intArrayOf(7, 8, 3, 2), arrayOf(Vector2(0.5f - p, 0.5f - p), Vector2(1.0f - 2 * p, 0.0f), Vector2(1.0f - p, p), Vector2(0.5f, 0.5f))),
+                Face(intArrayOf(3, 8, 9, 4), arrayOf(Vector2(1.0f - p, p), Vector2(1.0f - p, 0.0f), Vector2(p, 0.0f), Vector2(p, p))),
+                Face(intArrayOf(0, 4, 9, 5), arrayOf(Vector2(p, 1.0f - p), Vector2(p, p), Vector2(0.0f, p), Vector2(0.0f, 1.0f - p)))
+        )
+    }
+
+    private fun drawRect(x: Float, y: Float, w: Float, h: Float, z: Float, s: Float, color: Vector3) = memScoped {
+        val vertices = mutableListOf<Float>()
+        val triangles = mutableListOf<Byte>()
+        val normals = mutableListOf<Float>()
+
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glEnableClientState(GL_NORMAL_ARRAY)
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+
+        vertices += listOf(x, y, z, s)
+        vertices += listOf(x, y + h, z, s)
+        vertices += listOf(x + w, y + h, z, s)
+        if (h >= 0.0f)
+            triangles += listOf(0.toByte(), 1.toByte(), 2.toByte())
+        else
+            triangles += listOf(0.toByte(), 2.toByte(), 1.toByte())
+
+        vertices += listOf(x, y, z, s)
+        vertices += listOf(x + w, y + h, z, s)
+        vertices += listOf(x + w, y, z, s)
+        if (h >= 0.0f)
+            triangles += listOf(3.toByte(), 4.toByte(), 5.toByte())
+        else
+            triangles += listOf(3.toByte(), 5.toByte(), 4.toByte())
+
+        for (i in 0..5) {
+            normals += listOf(0.0f, 0.0f, 1.0f)
+        }
+
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, cValuesOf(color.x, color.y, color.z, 1.0f))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, cValuesOf(0.1f, 0.1f, 0.1f, 1.0f))
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f)
+        glVertexPointer(4, GL_FLOAT, 0, vertices.toFloatArray().toCValues().getPointer(this))
+        glNormalPointer(GL_FLOAT, 0, normals.toFloatArray().toCValues().getPointer(this))
+        glDrawElements(GL_TRIANGLES, triangles.size, GL_UNSIGNED_BYTE, triangles.toByteArray().toCValues().getPointer(this))
+    }
+
+    private val scale = 2.0f
 
     fun draw() = memScoped {
         if (!initialized) return
 
-        glPushMatrix()
-        glMatrixMode(GL_MODELVIEW)
+        stats.refresh()
 
-        glMultMatrixf(matrix)
+        glPushMatrix()
 
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
+        glFrontFace(GL_CCW)
+
+        val colors = arrayOf(Vector3(0.0f, 0.8f, 0.8f), Vector3(0.8f, 0.0f, 0.8f), Vector3(0.8f, 0.0f, 0.0f), Vector3(0.0f, 0.8f, 0.0f), Vector3(0.0f, 0.0f, 0.8f))
+        var x = -1.0f
+        val margin = (2.0f - 5 * 0.25f) / 4.0f
+        var maxCount = stats.counts.max() ?: 0
+        if (maxCount == 0) maxCount = 1
+        for (i in colors.indices) {
+            drawRect(x, 1.0f, 0.25f, -(0.01f + (stats.counts[i].toFloat() / maxCount * 0.5f)), 2.0f, 2.0f, colors[i])
+            x = x + 0.25f + margin
+        }
+
+        glMatrixMode(GL_MODELVIEW)
+
+        glTranslatef(0.0f, -0.5f, 0.0f)
+
+        drawRect(-1.0f, -1.0f, 2.0f, 2.0f, 2.0f, 2.0f, colors[stats.myColor])
 
         glEnableClientState(GL_VERTEX_ARRAY)
         glEnableClientState(GL_NORMAL_ARRAY)
         glEnableClientState(GL_TEXTURE_COORD_ARRAY)
 
-        val poly = RegularPolyhedra.Dodecahedron
         val vertices = mutableListOf<Float>()
-        val texCoords = mutableListOf<Float>()
         val triangles = mutableListOf<Byte>()
         val normals = mutableListOf<Float>()
-        for (face in poly.faces) {
-            val u = poly.vertices[face[2].toInt()] - poly.vertices[face[1].toInt()]
-            val v = poly.vertices[face[0].toInt()] - poly.vertices[face[1].toInt()]
-            val normal = u.crossProduct(v).normalized()
+        val texCoords = mutableListOf<Float>()
 
-            val copiedFace = ByteArray(face.size)
-            for (j in face.indices) {
+        val poly = KotlinLogo(0.5f, 0.167f)
+        for (f in poly.faces.indices) {
+            val face = poly.faces[f]
+            val u = poly.vertices[face.indices[2]] - poly.vertices[face.indices[1]]
+            val v = poly.vertices[face.indices[0]] - poly.vertices[face.indices[1]]
+            var normal = u.crossProduct(v).normalized() * -1.0f
+
+
+            val copiedFace = ByteArray(face.indices.size)
+            for (j in face.indices.indices) {
                 copiedFace[j] = (vertices.size / 4).toByte()
-                poly.vertices[face[j].toInt()].copyCoordinatesTo(vertices)
+                poly.vertices[face.indices[j]].copyCoordinatesTo(vertices)
                 vertices.add(scale)
                 normal.copyCoordinatesTo(normals)
-                texturePoints[j].copyCoordinatesTo(texCoords)
+                face.texCoords[j].copyCoordinatesTo(texCoords)
             }
 
-            for (j in 1..face.size-2) {
+            for (j in 1..face.indices.size - 2) {
                 triangles.add(copiedFace[0])
                 triangles.add(copiedFace[j])
                 triangles.add(copiedFace[j + 1])
             }
         }
 
-        glFrontFace(GL_CW)
+        glMultMatrixf(matrix)
+
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, cValuesOf(0.8f, 0.8f, 0.8f, 1.0f))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, cValuesOf(0.1f, 0.1f, 0.1f, 1.0f))
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0f)
+
         glVertexPointer(4, GL_FLOAT, 0, vertices.toFloatArray().toCValues().getPointer(this))
         glTexCoordPointer(2, GL_FLOAT, 0, texCoords.toFloatArray().toCValues().getPointer(this))
         glNormalPointer(GL_FLOAT, 0, normals.toFloatArray().toCValues().getPointer(this))
