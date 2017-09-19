@@ -19,7 +19,7 @@ data class Session(val color: Int, val name: String, val cookie: String)
 
 // REST API goes here.
 
-fun stats(db: KSqlite, color: Int, json: KJsonObject) {
+fun stats(db: KSqlite, session: Session, json: KJsonObject) {
     val colors = KJsonArray()
     db.execute("SELECT counter, color FROM colors") {
         _, data ->
@@ -30,12 +30,17 @@ fun stats(db: KSqlite, color: Int, json: KJsonObject) {
         0
     }
     json.setArray("colors", colors)
-    json.setInt("color", color)
+    json.setInt("color", session.color)
+    db.execute("SELECT counter FROM sessions WHERE cookie='${session.cookie}'") { _, data ->
+        json.setInt("contribution", data[0].toInt())
+        0
+    }
 }
 
-fun click(db: KSqlite, color: Int, json: KJsonObject) {
-    db.execute("UPDATE colors SET counter = counter + 1 WHERE color=$color")
-    stats(db, color, json)
+fun click(db: KSqlite, session: Session, json: KJsonObject) {
+    db.execute("UPDATE colors SET counter = counter + 1 WHERE color=${session.color}")
+    db.execute("UPDATE sessions SET counter = counter + 1 WHERE cookie='${session.cookie}'")
+    stats(db, session, json)
 }
 
 // End of the REST API.
@@ -44,8 +49,8 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
     withJson(KJsonObject()) {
         it.setString("url", url)
         when {
-            url.startsWith("/json/click") -> click(db, session.color, it)
-            url.startsWith("/json/stats") -> stats(db, session.color, it)
+            url.startsWith("/json/click") -> click(db, session, it)
+            url.startsWith("/json/stats") -> stats(db, session, it)
         }
         return it.toString()
     }
@@ -97,11 +102,12 @@ val createDbCommand = """
     CREATE TABLE IF NOT EXISTS sessions(
         name VARCHAR(255),
         color INT NOT NULL,
-        cookie VARCHAR(64) NOT NULL
+        cookie VARCHAR(64) NOT NULL PRIMARY KEY,
+        counter INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS colors(
         color INTEGER PRIMARY KEY AUTOINCREMENT,
-        counter
+        counter INTEGER
     );
     CREATE TABLE IF NOT EXISTS connections(
         ip VARCHAR(64),
@@ -116,7 +122,7 @@ fun makeSession(name: String, db: KSqlite): Session {
     val freshBakery = "${rnd().toString(16)}${rnd().toString(16)}${rnd().toString(16)}"
     val color = (rnd() % MAX_COLORS + 1).toInt()
     db.execute(
-            "INSERT INTO sessions (cookie, color, name) VALUES ('$freshBakery', $color, '$name')")
+            "INSERT INTO sessions (cookie, color, name, counter) VALUES ('$freshBakery', $color, '$name', 0)")
     return Session(color, name, freshBakery)
 }
 
