@@ -165,7 +165,7 @@ fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?, socklen: socklen_t
 
 fun main(args: Array<String>) {
     val cliOptions = listOf(
-            OptionDescriptor(OptionType.INT, "p", "port", "Port to use", "8888"),
+            OptionDescriptor(OptionType.INT, "p", "port", "Port to use", "8080"),
             OptionDescriptor(OptionType.BOOLEAN, "h", "help", "Usage info"),
             OptionDescriptor(OptionType.BOOLEAN, "d", "daemon", "run as daemon")
     )
