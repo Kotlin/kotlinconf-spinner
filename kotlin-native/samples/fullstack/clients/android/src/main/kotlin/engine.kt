@@ -188,9 +188,10 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     val endTime = getEventTime(event.value)
                     animating = true
                     velocity = (endPoint - startPoint) / (endTime - startTime + 1e-9f)
-                    if (velocity.length > renderer.screen.length)
-                        velocity = velocity * (renderer.screen.length / velocity.length)
-                    acceleration = velocity.normalized() * (-renderer.screen.length * 0.5f)
+                    val maxVelocityMagnitude = renderer.screen.length * 3.0f
+                    if (velocity.length > maxVelocityMagnitude)
+                        velocity = velocity * (maxVelocityMagnitude / velocity.length)
+                    acceleration = velocity.normalized() * (-renderer.screen.length * 1.0f)
                     animationEndTime = velocity.length / acceleration.length
                     startPoint = endPoint
                     startTime = endTime
