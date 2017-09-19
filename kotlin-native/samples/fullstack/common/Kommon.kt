@@ -44,3 +44,14 @@ fun sockaddrAsString(sockaddr: CPointer<sockaddr>?, socklen: socklen_t) =
         else
             "unknown"
     }
+
+
+fun machineName() =
+        memScoped {
+            val u = alloc<utsname>()
+            if (uname(u.ptr) == 0) {
+                "${u.sysname.toKString()} ${u.machine.toKString()}"
+            } else {
+                "unknown"
+            }
+        }

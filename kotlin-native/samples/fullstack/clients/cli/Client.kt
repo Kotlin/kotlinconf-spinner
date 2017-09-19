@@ -1,18 +1,7 @@
 import kjson.*
 import kliopt.*
 import kurl.*
-import common.*
-import kotlinx.cinterop.*
-
-fun machineName() =
-    memScoped {
-        val u = alloc<utsname>()
-        if (uname(u.ptr) == 0) {
-            "${u.sysname.toKString()} ${u.machine.toKString()}"
-        } else {
-            "unknown"
-        }
-    }
+import kommon.machineName
 
 fun main(args: Array<String>) {
     var server: String? = null
