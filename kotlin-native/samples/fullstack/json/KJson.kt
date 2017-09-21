@@ -15,7 +15,7 @@ open class KJsonBase {
 
     override fun toString(): String {
         if (json == null) return ""
-        return json_dumps(json, JSON_ENCODE_ANY.toLong())?.let {
+        return json_dumps(json, JSON_ENCODE_ANY.signExtend())?.let {
             val result = it.toKString()
             freeMemory(it)
             result
@@ -134,7 +134,7 @@ class KJsonArray : KJsonBase {
     }
 
     fun getLong(index: Int): Long {
-        val value = json_array_get(json, index.toLong())
+        val value = json_array_get(json, index.signExtend())
         if (value == null) throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_INTEGER)
             throw JsonError("wrong type")
@@ -144,7 +144,7 @@ class KJsonArray : KJsonBase {
     fun getInt(index: Int): Int = getLong(index).toInt()
 
     fun getString(index: Int): String {
-        val value = json_array_get(json, index.toLong())
+        val value = json_array_get(json, index.signExtend())
         if (value == null) throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_STRING)
             throw JsonError("wrong type")
@@ -156,7 +156,7 @@ class KJsonArray : KJsonBase {
     }
 
     fun getArray(index: Int): KJsonArray {
-        val value = json_array_get(json, index.toLong())
+        val value = json_array_get(json, index.signExtend())
         if (value == null) throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_ARRAY)
             throw JsonError("wrong type")
@@ -164,7 +164,7 @@ class KJsonArray : KJsonBase {
     }
 
     fun getObject(index: Int): KJsonObject {
-        val value = json_array_get(json, index.toLong())
+        val value = json_array_get(json, index.signExtend())
         if (value == null) throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_OBJECT)
             throw JsonError("wrong type")
@@ -172,19 +172,19 @@ class KJsonArray : KJsonBase {
     }
 
     fun setLong(index: Int, value: Long) =
-            json_array_set(json, index.toLong(), json_integer(value))
+            json_array_set(json, index.signExtend(), json_integer(value))
 
     fun setInt(index: Int, value: Int) =
             setLong(index, value.toLong())
 
     fun setString(index: Int, value: String) =
-            json_array_set(json, index.toLong(), json_string(value))
+            json_array_set(json, index.signExtend(), json_string(value))
 
     fun setArray(index: Int, value: KJsonArray) =
-            json_array_set(json, index.toLong(), value.json)
+            json_array_set(json, index.signExtend(), value.json)
 
     fun setObject(index: Int, value: KJsonObject) =
-            json_array_set(json, index.toLong(), value.json)
+            json_array_set(json, index.signExtend(), value.json)
 
     fun appendLong(value: Long) = json_array_append_new(json, json_integer(value))
 

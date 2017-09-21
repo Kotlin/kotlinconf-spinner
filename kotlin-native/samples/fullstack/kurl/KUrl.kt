@@ -41,7 +41,7 @@ class KUrl(val cookies: String? = null) {
                     if (handler != null) {
                         handler(buffer.toKString((size * nitems).toInt()).trim())
                     }
-                    return@staticCFunction size * nitems
+                    return@staticCFunction (size * nitems).toLong()
                 })
                 val onHeaderStable = StableObjPtr.create(onHeader)
                 stables += onHeaderStable
@@ -56,7 +56,7 @@ class KUrl(val cookies: String? = null) {
                 if (handler != null) {
                     handler(header)
                 }
-                return@staticCFunction size * nitems
+                return@staticCFunction (size * nitems).toLong()
             })
             val onDataStable = StableObjPtr.create(onData)
             stables += onDataStable
@@ -70,7 +70,7 @@ class KUrl(val cookies: String? = null) {
         }
 
         if (result != CURLE_OK)
-            throw KUrlError("curl_easy_perform() failed: ${curl_easy_strerror(result)?.toKString() ?: ""}")
+            throw KUrlError("curl_easy_perform() failed with code $result: ${curl_easy_strerror(result)?.toKString() ?: ""}")
     }
 
     fun close() {
