@@ -19,9 +19,8 @@ allprojects {
     }
 }
 
-// TODO: Get rid of an absolute path
-project.ext.libcurlPath = '/Users/jetbrains/work/curl-android-ios'
-project.ext.janssonPath = '/Users/jetbrains/work/dist/jansson/android'
+project.ext.libcurlPath = file('external/curl')
+project.ext.janssonPath = file('external/jansson')
 
 apply plugin: "konan"
 
@@ -59,7 +58,7 @@ konanInterop {
         "libcurl_${platform.name}" {
             defFile "../../kurl/libcurl.def"
             pkg "libcurl"
-            includeDirs  "${project.ext.libcurlPath}/prebuilt-with-ssl/android/include"
+            includeDirs  "${project.ext.libcurlPath}/include"
             target platform.konanTarget
         }
     }
@@ -104,7 +103,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["KJson_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
-            linkerOpts "-L${project.ext.libcurlPath}/curl-compile-scripts/obj/local/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a"
+            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a"
             target platform.konanTarget
             outputDir platform.artifact
             outputName 'libpoly'
