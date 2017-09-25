@@ -97,9 +97,9 @@ konanArtifacts {
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
             library konanArtifacts["KJson_${platform.name}"].compilationTask.artifact
             library konanArtifacts["Kurl_${platform.name}"].compilationTask.artifact
-            library konanInterop["common_${platform.name}"].interopProcessingTask.kLib
-            library konanInterop["jansson_${platform.name}"].interopProcessingTask.kLib
-            library konanInterop["libcurl_${platform.name}"].interopProcessingTask.kLib
+            library konanInterop["common_${platform.name}"].interopProcessingTask.klib
+            library konanInterop["jansson_${platform.name}"].interopProcessingTask.lLib
+            library konanInterop["libcurl_${platform.name}"].interopProcessingTask.klib
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["KJson_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
