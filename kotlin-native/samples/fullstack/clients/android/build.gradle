@@ -26,8 +26,8 @@ apply plugin: "konan"
 
 
 def platforms = [
-    [name: "arm32", konanTarget: "android_arm32", targetPlatform: "armeabi-v7a", artifact: "PolyhedronArm32"],
-    [name: "arm64", konanTarget: "android_arm64", targetPlatform: "arm64-v8a", artifact: "PolyhedronArm64"]
+    [name: "arm32", konanTarget: "android_arm32", targetPlatform: "armeabi-v7a", artifact: "Kotlin3dArm32"],
+    [name: "arm64", konanTarget: "android_arm64", targetPlatform: "arm64-v8a", artifact: "Kotlin3dArm64"]
 ]
 
 
@@ -106,7 +106,7 @@ konanArtifacts {
             linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a"
             target platform.konanTarget
             outputDir platform.artifact
-            outputName 'libpoly'
+            outputName 'libkotlin3d'
             enableOptimization()
         }
     }
@@ -128,7 +128,7 @@ model {
         }
 
         ndk {
-            moduleName = "polyhedron"
+            moduleName = "kotlin3d"
         }
 
         productFlavors {
@@ -142,30 +142,21 @@ model {
 
     repositories {
         libs(PrebuiltLibraries) {
-            libpoly {
+            libkotlin3d {
                     binaries.withType(SharedLibraryBinary) {
                         def name = targetPlatform.getName()
                         def index = platforms.collect { it.targetPlatform }.indexOf(name)
                         if (index >= 0)
-                            sharedLibraryFile = file("${platforms[index].artifact}/libpoly.so")
+                            sharedLibraryFile = file("${platforms[index].artifact}/libkotlin3d.so")
                     }
             }
-            /*libcurl {
-                    binaries.withType(SharedLibraryBinary) {
-                        def name = targetPlatform.getName()
-                        def index = platforms.indexOf(name)
-                        if (index >= 0)
-                            sharedLibraryFile = file("/Users/jetbrains/work/curl-android-ios/curl-compile-scripts/obj/local/${name}/libcurl.so")
-                    }
-            }*/
-        }
+       }
     }
     android.sources {
         main {
             jniLibs {
                 dependencies {
-                    library "libpoly"
-                    //library "libcurl"
+                    library "libkotlin3d"
                 }
             }
         }
@@ -173,12 +164,12 @@ model {
 }
 
 tasks.matching { it.name == 'preBuild' }.all {
-    it.dependsOn 'compileKonanPolyhedronArm32'
-    it.dependsOn 'compileKonanPolyhedronArm64'
+    it.dependsOn 'compileKonanKotlin3dArm32'
+    it.dependsOn 'compileKonanKotlin3dArm64'
 }
 
 task buildApk(type: DefaultTask) {
-    dependsOn "compileKonanPolyhedronArm32"
-    dependsOn "compileKonanPolyhedronArm64"
+    dependsOn "compileKonanKotlin3dArm32"
+    dependsOn "compileKonanKotlin3dArm64"
     dependsOn "assembleDebug"
 }

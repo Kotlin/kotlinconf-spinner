@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- BEGIN_INCLUDE(manifest) -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="polyhedron"
+          package="kotlin3d"
           android:versionCode="1"
           android:versionName="1.0">
 
@@ -21,7 +21,7 @@
 	      android:screenOrientation="portrait">
       <!-- Tell NativeActivity the name of our .so -->
       <meta-data android:name="android.app.lib_name"
-                 android:value="poly" />
+                 android:value="kotlin3d" />
       <meta-data android:name="android.app.func_name"
                  android:value="Konan_main" />
       <intent-filter>
