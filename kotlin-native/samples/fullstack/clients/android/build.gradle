@@ -141,7 +141,7 @@ model {
 
         buildTypes {
             release {
-                signingConfig = $("android.signingConfigs.myConfig")
+                signingConfig = $("android.signingConfigs.release")
             }
         }
     }
