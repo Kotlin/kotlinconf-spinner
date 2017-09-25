@@ -19,8 +19,8 @@ allprojects {
     }
 }
 
-project.ext.libcurlPath = file('external/curl')
-project.ext.janssonPath = file('external/jansson')
+project.ext.libcurlPath = file('../../../../external/curl/android')
+project.ext.janssonPath = file('../../../../external/jansson/android')
 
 apply plugin: "konan"
 
