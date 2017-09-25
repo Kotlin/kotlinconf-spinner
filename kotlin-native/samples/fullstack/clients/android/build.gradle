@@ -122,7 +122,7 @@ model {
         buildToolsVersion = '25.0.2'
 
         defaultConfig {
-            applicationId = 'com.android.konan_activity'
+            applicationId = 'com.jetbrains.konan_activity'
             minSdkVersion.apiLevel   9
             targetSdkVersion.apiLevel  25
         }
@@ -137,6 +137,21 @@ model {
                     abiFilters.addAll(platforms.collect { it.targetPlatform })
                 }
             }
+        }
+
+        buildTypes {
+            release {
+                signingConfig = $("android.signingConfigs.myConfig")
+            }
+        }
+    }
+
+    android.signingConfigs {
+        create("release") {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
         }
     }
 
@@ -161,6 +176,7 @@ model {
             }
         }
     }
+
 }
 
 tasks.matching { it.name == 'preBuild' }.all {
