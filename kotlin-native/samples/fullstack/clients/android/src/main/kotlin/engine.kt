@@ -93,10 +93,12 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         }
     }
 
+    val pointerSize = CPointerVar.size
+
     private fun processSysEvent(fd: IntVar): Boolean = memScoped {
         val eventPointer = alloc<COpaquePointerVar>()
-        val readBytes = read(fd.value, eventPointer.ptr, pointerSize.signExtend<size_t>()).toLong()
-        if (readBytes != pointerSize.toLong()) {
+        val readBytes = read(fd.value, eventPointer.ptr, pointerSize.narrow()).toLong()
+        if (readBytes != pointerSize) {
             logError("Failure reading event, $readBytes read: ${getUnixError()}")
             return true
         }

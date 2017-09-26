@@ -128,7 +128,7 @@ class Stats(val nativeActivity: ANativeActivity) {
 
 class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActivity, val savedMatrix: COpaquePointer?) {
 
-    private val arena = MemScope()
+    private val arena = Arena()
     private var display: EGLDisplay? = null
     private var surface: EGLSurface? = null
     private var context: EGLContext? = null

@@ -9,8 +9,7 @@ class KUrlError(message: String) : Error(message)
 typealias HttpHandler = (String) -> Unit
 
 private fun CPointer<ByteVar>.toKString(length: Int): String {
-    val bytes = ByteArray(length)
-    nativeMemUtils.getByteArray(pointed, bytes, length)
+    val bytes = this.readBytes(length)
     return kotlin.text.fromUtf8Array(bytes, 0, bytes.size)
 }
 

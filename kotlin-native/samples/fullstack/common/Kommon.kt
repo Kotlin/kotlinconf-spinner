@@ -17,16 +17,11 @@ fun readFileData(path: String): ByteArray? {
         val result = ByteArray(size)
         val file = fopen(path, "r")
         if (file == null) return null
-        val BUFFER_SIZE = 4096
-        val buffer = allocArray<ByteVar>(BUFFER_SIZE)
-        val bufferArray = ByteArray(BUFFER_SIZE)
         var position = 0
-        // TODO: double copy, rethink!
         while (position < size) {
-            val read = fread(buffer, 1, BUFFER_SIZE.signExtend(), file).toInt()
+            val toRead = minOf(size - position, 4096)
+            val read = fread(result.refTo(position), 1, toRead.signExtend(), file).toInt()
             if (read <= 0) break
-            nativeMemUtils.getByteArray(buffer.pointed, bufferArray, read)
-            bufferArray.copyRangeTo(result, 0, read, position)
             position += read
         }
         fclose(file)
