@@ -23,43 +23,43 @@ class KUrl(val cookies: String? = null) {
         result
       } ?: ""
 
-    fun fetch(url: String, onData: HttpHandler, onHeader: HttpHandler?) {
-        curl_easy_setopt(curl, CURLOPT_URL, url)
-
+    fun fetch(url: String, options: Map<String, String>?, onData: HttpHandler, onHeader: HttpHandler?) {
+        var args =
+                if (options != null)
+                    "?" + options.map { (key, value) -> "$key=${escape(value)}"}.joinToString("&")
+                else
+                    ""
+        curl_easy_setopt(curl, CURLOPT_URL, url + args)
         if (cookies != null) {
             curl_easy_setopt(curl, CURLOPT_COOKIEFILE, cookies)
             curl_easy_setopt(curl, CURLOPT_COOKIELIST, "RELOAD")
         }
-        val stables = mutableListOf<StableObjPtr>()
+        val stables = mutableListOf<StableRef<Any>>()
         val result = try {
             if (onHeader != null) {
                 curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, staticCFunction { buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
 
                     if (buffer == null) return@staticCFunction 0.toLong()
-                    val handler = StableObjPtr.fromValue(userdata!!).get() as? HttpHandler
-                    if (handler != null) {
-                        handler(buffer.toKString((size * nitems).toInt()).trim())
-                    }
+                    val handler = userdata!!.asStableRef<HttpHandler>().get()
+                    handler(buffer.toKString((size * nitems).toInt()).trim())
                     return@staticCFunction (size * nitems).toLong()
                 })
-                val onHeaderStable = StableObjPtr.create(onHeader)
+                val onHeaderStable = StableRef.create(onHeader)
                 stables += onHeaderStable
-                curl_easy_setopt(curl, CURLOPT_HEADERDATA, onHeaderStable.value)
+                curl_easy_setopt(curl, CURLOPT_HEADERDATA, onHeaderStable.asCPointer())
             }
 
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, staticCFunction { buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
 
                 if (buffer == null) return@staticCFunction 0.toLong()
                 val header = buffer.toKString((size * nitems).toInt())
-                val handler = StableObjPtr.fromValue(userdata!!).get() as? HttpHandler
-                if (handler != null) {
-                    handler(header)
-                }
+                val handler = userdata!!.asStableRef<HttpHandler>().get()
+                handler(header)
                 return@staticCFunction (size * nitems).toLong()
             })
-            val onDataStable = StableObjPtr.create(onData)
+            val onDataStable = StableRef.create(onData)
             stables += onDataStable
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, onDataStable.value)
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, onDataStable.asCPointer())
 
             curl_easy_perform(curl)
         } finally {
@@ -81,7 +81,8 @@ class KUrl(val cookies: String? = null) {
     }
 
     // So that we can use DSL syntax.
-    fun fetch(url: String, onData: HttpHandler) = fetch(url, onData, null)
+    fun fetch(url: String, options: Map<String, String>? = null, onData: HttpHandler) =
+            fetch(url, options, onData,null)
 }
 
 public inline fun <T> withUrl(url: KUrl, function: (KUrl) -> T): T =

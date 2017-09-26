@@ -114,6 +114,9 @@ val createDbCommand = """
         ip VARCHAR(64),
         timestamp DATE
     );
+    CREATE TABLE IF NOT EXISTS auth(
+        secret VARCHAR(64)
+    );
 """
 
 fun rnd() = kommon.random()
@@ -167,15 +170,18 @@ fun main(args: Array<String>) {
     val cliOptions = listOf(
             OptionDescriptor(OptionType.INT, "p", "port", "Port to use", "8080"),
             OptionDescriptor(OptionType.BOOLEAN, "h", "help", "Usage info"),
-            OptionDescriptor(OptionType.BOOLEAN, "d", "daemon", "run as daemon")
+            OptionDescriptor(OptionType.BOOLEAN, "d", "daemon", "Run as daemon"),
+            OptionDescriptor(OptionType.STRING, "s", "secret", "Secret for admin access")
     )
     var port = 8080
     var isDaemon = false
+    var secret: String? = null
     parseOptions(cliOptions, args).forEach {
         when (it.descriptor?.longName) {
             "port" -> port = it.intValue
             "daemon" -> isDaemon = true
             "help" -> println(makeUsage(cliOptions))
+            "secret" -> secret = it.stringValue
         }
     }
 
@@ -191,6 +197,10 @@ fun main(args: Array<String>) {
                 dbMain.execute("INSERT INTO colors (counter) VALUES (0)")
         }
         0
+    }
+
+    if (secret != null) {
+        dbMain.execute("REPLACE INTO auth (secret) VALUES ('$secret')")
     }
 
     // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG
@@ -220,8 +230,8 @@ fun main(args: Array<String>) {
                 val (contentType, responseArray) = makeResponse(db, url, session)
                 return@staticCFunction memScoped {
                     val response = MHD_create_response_from_buffer(
-                            responseArray.size.toLong(),
-                            responseArray.toCValues().getPointer(this),
+                            responseArray.size.signExtend(),
+                            responseArray.refTo(0),
                             MHD_ResponseMemoryMode.MHD_RESPMEM_MUST_COPY)
                     val expires = "Tue, 8 Sep 2018 21:43:04 GMT"
                     MHD_add_response_header(response, "Content-Type", contentType)

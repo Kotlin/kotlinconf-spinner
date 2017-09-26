@@ -34,17 +34,17 @@ class KSqlite {
     fun execute(command: String, callback: ((Array<String>, Array<String>)-> Int)? = null) {
         memScoped {
             val error = this.alloc<CPointerVar<ByteVar>>()
-            val callbackStable = if (callback != null) StableObjPtr.create(callback) else null
+            val callbackStable = if (callback != null) StableRef.create(callback) else null
             try {
                 if (sqlite3_exec(db, command, if (callback != null)
                     staticCFunction {
                         ptr, count, data, columns ->
                         val callbackFunction =
-                                StableObjPtr.fromValue(ptr!!).get() as (Array<String>, Array<String>)-> Int
+                                ptr!!.asStableRef<(Array<String>, Array<String>) -> Int>().get()
                         val columnsArray = fromCArray(columns!!, count)
                         val dataArray = fromCArray(data!!, count)
                         callbackFunction(columnsArray, dataArray)
-                    } else null, callbackStable?.value, error.ptr) != 0)
+                    } else null, callbackStable?.asCPointer(), error.ptr) != 0)
                     throw KSqliteError("DB error: ${error.value!!.toKString()}")
             } finally {
                 callbackStable?.dispose()
