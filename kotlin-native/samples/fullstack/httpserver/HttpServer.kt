@@ -10,13 +10,14 @@ import konan.initRuntimeIfNeeded
 import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
+import kotlin.system.exitProcess
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
 val MAX_COLORS = 5
 val serverRoot = "./"
 
-data class Session(val color: Int, val name: String, val cookie: String)
+data class Session(val color: Int, val name: String, val cookie: String, val password: String)
 
 // REST API goes here.
 
@@ -32,7 +33,7 @@ fun stats(db: KSqlite, session: Session, json: KJsonObject) {
     }
     json.setArray("colors", colors)
     json.setInt("color", session.color)
-    db.execute("SELECT counter FROM sessions WHERE cookie='${session.cookie}'") { _, data ->
+    db.execute("SELECT counter FROM sessions WHERE cookie='${db.escape(session.cookie)}'") { _, data ->
         json.setInt("contribution", data[0].toInt())
         0
     }
@@ -40,11 +41,35 @@ fun stats(db: KSqlite, session: Session, json: KJsonObject) {
 
 fun click(db: KSqlite, session: Session, json: KJsonObject) {
     db.execute("UPDATE colors SET counter = counter + 1 WHERE color=${session.color}")
-    db.execute("UPDATE sessions SET counter = counter + 1 WHERE cookie='${session.cookie}'")
+    db.execute("UPDATE sessions SET counter = counter + 1 WHERE cookie='${db.escape(session.cookie)}'")
+    stats(db, session, json)
+}
+
+fun clear(db: KSqlite, session: Session, json: KJsonObject) {
+    if (!session.isAdmin(db)) {
+        error(json, session,"Unauthorized")
+        return
+    }
+    db.execute("UPDATE colors SET counter = 0")
     stats(db, session, json)
 }
 
 // End of the REST API.
+
+fun Session.isAdmin(db: KSqlite): Boolean {
+    var admin = false
+    db.execute("SELECT secret FROM auth WHERE user='root'") {
+        _, data ->
+        admin = data[0] == this.password
+        0
+    }
+    return admin
+}
+
+fun error(json: KJsonObject, session: Session, message: String) {
+    json.setString("error", message)
+    json.setInt("color", session.color)
+}
 
 fun makeJson(url: String, db: KSqlite, session: Session): String {
     withJson(KJsonObject()) {
@@ -52,6 +77,7 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
         when {
             url.startsWith("/json/click") -> click(db, session, it)
             url.startsWith("/json/stats") -> stats(db, session, it)
+            url.startsWith("/json/clear") -> clear(db, session, it)
         }
         return it.toString()
     }
@@ -115,34 +141,36 @@ val createDbCommand = """
         timestamp DATE
     );
     CREATE TABLE IF NOT EXISTS auth(
+        user VARCHAR(64) NOT NULL PRIMARY KEY,
         secret VARCHAR(64)
     );
 """
 
 fun rnd() = kommon.random()
 
-fun makeSession(name: String, db: KSqlite): Session {
+fun makeSession(name: String, password: String, db: KSqlite): Session {
     println("Making session")
     val freshBakery = "${rnd().toString(16)}${rnd().toString(16)}${rnd().toString(16)}"
     val color = (rnd() % MAX_COLORS + 1).toInt()
     db.execute(
-            "INSERT INTO sessions (cookie, color, name, counter) VALUES ('$freshBakery', $color, '$name', 0)")
-    return Session(color, name, freshBakery)
+            "INSERT INTO sessions (cookie, color, name, counter) VALUES ('$freshBakery', $color, '${db.escape(name)}', 0)")
+    return Session(color, name, freshBakery, password)
 }
 
 fun initSession(http: HttpConnection, db: KSqlite): Session {
     var name = MHD_lookup_connection_value(http, MHD_GET_ARGUMENT_KIND, "name") ?. toKString() ?: "Unknown"
+    var password = MHD_lookup_connection_value(http, MHD_GET_ARGUMENT_KIND, "password") ?. toKString() ?: ""
     val cookieC = MHD_lookup_connection_value(http, MHD_COOKIE_KIND, "cookie")
     return if (cookieC == null) {
         // No cookie set yet, authenticate?
         println("no cookie found, creating one for $name!")
-        makeSession(name, db)
+        makeSession(name, password, db)
     } else {
         val cookie = cookieC.toKString()
         var color = -1
 
         val suppliedName = name
-        db.execute("SELECT color,name FROM sessions WHERE cookie='$cookie'") {
+        db.execute("SELECT color,name FROM sessions WHERE cookie='${db.escape(cookie)}'") {
             _, data ->
 
             color = data[0].toInt()
@@ -154,9 +182,9 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
         if (color == -1) {
             // There's cookie, but we do not remember it.
             println("We cannot remember the cookie, how come? Cookie is $cookie.")
-            makeSession(name, db)
+            makeSession(name, password, db)
         } else
-            Session(color, name, cookie)
+            Session(color, name, cookie, password)
     }
 }
 
@@ -164,6 +192,11 @@ fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?, socklen: socklen_t
     val ip = kommon.sockaddrAsString(sockaddr, socklen)
     println("connection from $ip")
     db.execute("INSERT INTO connections (ip, timestamp) VALUES ('$ip', DateTime('now'))")
+}
+
+fun showUsage(message: String) {
+    println(message)
+    exitProcess(1)
 }
 
 fun main(args: Array<String>) {
@@ -180,7 +213,7 @@ fun main(args: Array<String>) {
         when (it.descriptor?.longName) {
             "port" -> port = it.intValue
             "daemon" -> isDaemon = true
-            "help" -> println(makeUsage(cliOptions))
+            "help" -> showUsage(makeUsage(cliOptions))
             "secret" -> secret = it.stringValue
         }
     }
@@ -200,7 +233,7 @@ fun main(args: Array<String>) {
     }
 
     if (secret != null) {
-        dbMain.execute("REPLACE INTO auth (secret) VALUES ('$secret')")
+        dbMain.execute("REPLACE INTO auth (user, secret) VALUES ('root', '$secret')")
     }
 
     // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG

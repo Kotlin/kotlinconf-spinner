@@ -2,6 +2,12 @@ import kjson.*
 import kliopt.*
 import kurl.*
 import kommon.machineName
+import kotlin.system.exitProcess
+
+fun showUsage(message: String) {
+    println(message)
+    exitProcess(1)
+}
 
 fun main(args: Array<String>) {
     var server: String? = null
@@ -21,7 +27,7 @@ fun main(args: Array<String>) {
             "name" -> name = it.stringValue
             "command" -> command = it.stringValue
             "password" -> password = it.stringValue
-            "help" -> println(makeUsage(options))
+            "help" -> showUsage(makeUsage(options))
         }
     }
     val machine = machineName()

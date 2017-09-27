@@ -25,7 +25,7 @@ class KSqlite {
     }
 
     constructor(db: COpaquePointer?) {
-        this.db = db as DbConnection
+        this.db = db?.reinterpret()
     }
 
     val cpointer
@@ -52,6 +52,9 @@ class KSqlite {
             }
         }
     }
+
+    // TODO: use sql3_prepare instead!
+    fun escape(input: String): String = input.replace("'", "\'")
 
     override fun toString(): String = "SQLite database in $dbPath"
 
