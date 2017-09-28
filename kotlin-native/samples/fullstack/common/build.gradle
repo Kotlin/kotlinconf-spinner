@@ -1,0 +1,26 @@
+import org.jetbrains.kotlin.konan.target.TargetManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
+
+apply plugin: 'konan'
+
+konanInterop {
+    common { defFile 'common.def' }
+}
+
+konanArtifacts {
+    kommon {
+        useInterop 'common'
+        produce 'library'
+
+        switch (TargetManager.host) {
+            case KonanTarget.MACBOOK:
+                inputFiles 'Kommon.kt', 'KommonOsx.kt'
+                break
+            case KonanTarget.LINUX:
+                inputFiles 'Kommon.kt', 'KommonLinux.kt'
+                break
+            default:
+                throw IllegalStateException("Unknown host")
+        }
+    }
+}
