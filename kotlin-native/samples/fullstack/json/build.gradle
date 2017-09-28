@@ -1,0 +1,23 @@
+apply plugin: 'konan'
+
+def common = rootProject.project(":samples:fullstack:common")
+
+konanInterop {
+    jansson {
+        defFile 'jansson.def'
+        klibDependsOn common
+    }
+}
+
+konanArtifacts {
+    kjson {
+        inputDir '.'
+        useInterop 'jansson'
+        useInteropsFromProject common // TODO: Remove when library dependencies are supported.
+        libraries {
+            fromProject common
+        }
+        produce 'library'
+    }
+}
+

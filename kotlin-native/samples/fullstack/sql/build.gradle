@@ -1,0 +1,22 @@
+apply plugin: 'konan'
+
+def common = rootProject.project(":samples:fullstack:common")
+
+konanInterop {
+    sqlite3 {
+        defFile 'sqlite3.def'
+        klibDependsOn common
+    }
+}
+
+konanArtifacts {
+    ksqlite {
+        inputDir '.'
+        useInterop 'sqlite3'
+        useInteropsFromProject common // TODO: Remove when dependencies are supported.
+        libraries {
+            fromProject common
+        }
+        produce 'library'
+    }
+}

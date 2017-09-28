@@ -1,0 +1,22 @@
+apply plugin: 'konan'
+
+def common = rootProject.project(":samples:fullstack:common")
+
+konanInterop {
+    libcurl {
+        defFile 'libcurl.def'
+        klibDependsOn common
+    }
+}
+
+konanArtifacts {
+    kurl {
+        inputDir '.'
+        useInterop 'libcurl'
+        useInteropsFromProject common // TODO: Remove when dependencies are supported.
+        libraries {
+            fromProject common
+        }
+        produce 'library'
+    }
+}
