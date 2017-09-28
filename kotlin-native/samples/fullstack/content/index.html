@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kotlin/Native full stack demo</title>
+</head>
+<body>
+
+<i>This small game is intended to demonstrate capabilities of Kotlin/Native software stack.</i>
+
+<h2>Rules of the game</h2>
+<ul>
+    <li>Download and install mobile application for <a href="https://goo.gl/BsA73T"><img style="vertical-align:middle" src="android-icon.png" width="36"/></a> or
+         <a href="https://goo.gl/BsA73T"><img style="vertical-align:middle" src="ios-icon.png" width="30"/></a>.</li>
+    <li>System will assign you random team, marked with the color.</li>
+    <li>Spin <img style="vertical-align:middle" src="kotlin-icon.png" width="30"/> logo ot shake your phone.</li>
+    <li>Each shake or full rotation will increment your team's score.</li>
+    <li>Team with biggest score at the end of conference wins.</li>
+    <li>Most active contributors of winning team will get special prizes from us.</li>
+</ul>
+
+<h2>Technical details</h2>
+<ul>
+    <li>Whole stack is implemented in <a href="https://github.com/JetBrains/kotlin-native">Kotlin/Native</a>.</li>
+    <li><a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/httpserver/HttpServer.kt">Server side</a>
+        is implemented on top of <a href="https://www.gnu.org/software/libmicrohttpd/">microHTTPD</a> HTTP server library,
+        <a href="https://www.sqlite.org/">SQLite</a> as database storing score, and runs on Linux server.</li>
+    <li> <a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt">Client side</a> for<img style="vertical-align:middle" src="android-icon.png" width="36"/>
+        is implemented in pure Kotlin/Native as an Native Activity, using GLES interop for rendering.</li>
+    <li><a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/ios">Client side</a> for <img style="vertical-align:middle" src="ios-icon.png" width="36"/>
+        is implemented in pure Kotlin/Native using full AppKit integration.</li>
+    <li>Client/Server interaction works via JSON requests over HTTP, using <a href=http://www.digip.org/jansson/">Jansson JSON library</a> and <a href="https://curl.haxx.se/libcurl/">libcurl</a>.</li>
+    <li>Server interaction is asynchronous from the UI thread, using <a href="https://github.com/JetBrains/kotlin-native/tree/master/samples/workers">workers</a>.</li>
+    <li>HTTP server works in multithreaded mode, state shared between threads is implemented via SQLite DB access.</li>
+</ul>
+
+
+</body>
+</html>
