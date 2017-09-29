@@ -44,21 +44,21 @@ konanInterop {
         }
 
         "common_${platform.name}" {
-            defFile "../../common/common.def"
+            defFile "../../common/src/common.def"
             pkg "common"
             //includeDirs  ""
             target platform.konanTarget
         }
 
         "jansson_${platform.name}" {
-            defFile "../../json/jansson.def"
+            defFile "../../json/src/jansson.def"
             pkg "jansson"
             includeDirs  "${project.ext.janssonPath}/${platform.name}/include"
             target platform.konanTarget
         }
 
         "libcurl_${platform.name}" {
-            defFile "../../kurl/libcurl.def"
+            defFile "../../kurl/src/libcurl.def"
             pkg "libcurl"
             includeDirs  "${project.ext.libcurlPath}/include"
             target platform.konanTarget
@@ -70,7 +70,7 @@ konanArtifacts {
     platforms.each { platform ->
         "Kommon_${platform.name}" {
             useInterop "common_${platform.name}"
-            inputFiles "../../common/Kommon.kt", "../../common/KommonLinux.kt"
+            inputFiles "../../common/src/Kommon.kt", "../../common/src/KommonLinux.kt"
             produce "library"
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             target platform.konanTarget
@@ -78,7 +78,7 @@ konanArtifacts {
 
         "KJson_${platform.name}" {
             useInterop "jansson_${platform.name}"
-            inputFiles "../../json/KJson.kt"
+            inputFiles "../../json/src/KJson.kt"
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             produce "library"
@@ -89,7 +89,7 @@ konanArtifacts {
         "Kurl_${platform.name}" {
             useInterop "common_${platform.name}"
             useInterop "libcurl_${platform.name}"
-            inputFiles "../../kurl/KUrl.kt"
+            inputFiles "../../kurl/src/KUrl.kt"
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             produce "library"
@@ -160,7 +160,7 @@ model {
                ndk {
                  debuggable = true
                }
-            } 
+            }
             release {
                 // Add RELEASE_STORE_FILE RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS
                 // and RELEASE_KEY_PASSWORD to ~/.gradle/gradle.properties

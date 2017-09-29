@@ -1,7 +1,0 @@
-package = sqlite3
-headers = sqlite3.h
-headerFilter = sqlite3*.h
-compilerOpts.linux = -I/usr/include
-linkerOpts.linux = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lsqlite3
-compilerOpts.osx = -I/opt/local/include
-linkerOpts.osx = -L/opt/local/lib -lsqlite3

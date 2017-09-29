@@ -1,0 +1,16 @@
+package = sqlite3
+headers = sqlite3.h
+headerFilter = sqlite3*.h
+compilerOpts.linux = -I/usr/include
+linkerOpts.linux = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lsqlite3
+compilerOpts.osx = -I/opt/local/include
+linkerOpts.osx = -L/opt/local/lib -lsqlite3
+excludedFunctions.osx = sqlite3_mutex_held \
+  sqlite3_mutex_notheld \
+  sqlite3_snapshot_cmp \
+  sqlite3_snapshot_free \
+  sqlite3_snapshot_get \
+  sqlite3_snapshot_open \
+  sqlite3_snapshot_recover \
+  sqlite3_stmt_scanstatus \
+  sqlite3_stmt_scanstatus_reset

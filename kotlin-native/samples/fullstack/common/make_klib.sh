@@ -8,7 +8,7 @@ case "$OSTYPE" in
   *)        echo "unknown: $OSTYPE" && exit 1;;
 esac
 
-cinterop -def common.def -o common.klib
-konanc -p library Kommon.kt Kommon$TARGET.kt -o kommon.klib \
+cinterop -def src/common.def -o common.klib
+konanc -p library src/Kommon.kt src/Kommon$TARGET.kt -o kommon.klib \
      -library common.klib
 
