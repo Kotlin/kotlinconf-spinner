@@ -3,7 +3,7 @@
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )
 PATH=$KONAN_HOME/bin:$PATH
 
-konanc -opt HttpServer.kt \
+konanc -opt src/HttpServer.kt \
                      -r $DIR/../common \
                      -r $DIR/../sql \
                      -r $DIR/../json \

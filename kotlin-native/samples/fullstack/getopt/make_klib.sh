@@ -2,4 +2,4 @@
 
 PATH=$KONAN_HOME/bin:$PATH
 
-konanc -produce library KliOpt.kt -o kliopt.klib
+konanc -produce library src/KliOpt.kt -o kliopt.klib
