@@ -1,11 +1,5 @@
 apply plugin: 'konan'
 
-def common = rootProject.project(':samples:fullstack:common')
-def json = rootProject.project(':samples:fullstack:json')
-def kurl = rootProject.project(':samples:fullstack:kurl')
-def sql  = rootProject.project(':samples:fullstack:sql')
-def getopt = rootProject.project(':samples:fullstack:getopt')
-
 konanInterop {
     microhttpd {
         defFile 'microhttpd/microhttpd.def'

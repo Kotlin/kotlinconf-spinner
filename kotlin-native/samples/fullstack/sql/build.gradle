@@ -1,7 +1,5 @@
 apply plugin: 'konan'
 
-def common = rootProject.project(":samples:fullstack:common")
-
 konanInterop {
     sqlite3 {
         defFile 'sqlite3.def'
