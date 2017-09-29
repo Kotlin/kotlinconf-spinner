@@ -16,6 +16,7 @@
 
 import kotlinx.cinterop.*
 import android.*
+import kotlin.system.*
 
 fun logError(message: String) {
     __android_log_write(ANDROID_LOG_ERROR, "KonanActivity", message)
@@ -32,6 +33,8 @@ fun getUnixError() = strerror(errno)!!.toKString()
 
 const val LOOPER_ID_INPUT = 2
 
+const val LOOPER_ID_SENSOR = 3
+
 fun main(args: Array<String>) {
     logInfo("Hello world!")
     memScoped {
@@ -47,6 +50,7 @@ fun <T : CPointed> CPointer<*>?.dereferenceAs(): T = this!!.reinterpret<T>().poi
 class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private val renderer = Renderer(arena, state.activity!!.pointed, state.savedState)
     private var queue: CPointer<AInputQueue>? = null
+    private var sensorQueue: CPointer<ASensorEventQueue>? = null
     private var rendererState: COpaquePointer? = null
 
     private var currentPoint = Vector2.Zero
@@ -60,6 +64,15 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private var animating = false
 
     fun mainLoop() {
+        val sensorManager = ASensorManager_getInstance()
+        sensorQueue = ASensorManager_createEventQueue(
+                sensorManager, state.looper, LOOPER_ID_SENSOR, null /* no callback */, null /* no data */)
+        val sensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER)
+        if (sensor != null) {
+            ASensorEventQueue_enableSensor(sensorQueue, sensor)
+            ASensorEventQueue_setEventRate(sensorQueue, sensor, 100000)
+        }
+
         while (true) {
             // Process events.
             memScoped {
@@ -74,6 +87,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                         }
 
                         LOOPER_ID_INPUT -> processUserInput()
+                        LOOPER_ID_SENSOR -> processSensorInput()
                     }
                 }
             }
@@ -208,6 +222,29 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             }
         }
         AInputQueue_finishEvent(queue, event.value, 1)
+    }
+
+    var shakeTimestamp: Long = 0
+
+    private fun processSensorInput(): Unit = memScoped {
+        if (sensorQueue == null) return
+        val event = alloc<ASensorEvent>()
+        val now = kotlin.system.getTimeMillis()
+        while (ASensorEventQueue_getEvents(sensorQueue, event.ptr, 1) > 0) {
+            val a = event.acceleration
+            val force = sqrtf(a.x * a.x + a.y * a.y + a.z * a.z) / ASENSOR_STANDARD_GRAVITY
+            if (force < 2.7f || shakeTimestamp + 1000 > now) {
+                continue
+            }
+            shakeTimestamp = now
+            animating = true
+            velocity = Vector2(0.7071f, 0.7071f) * renderer.screen.length * 3.0f
+            acceleration = velocity.normalized() * (-renderer.screen.length * 1.0f)
+            animationEndTime = velocity.length / acceleration.length
+            startTime = getTime()
+            startPoint = currentPoint
+
+        }
     }
 
     private fun move(newPoint: Vector2) {

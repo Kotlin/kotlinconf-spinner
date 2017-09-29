@@ -17,7 +17,7 @@
 import kotlinx.cinterop.*
 import android.*
 
-class Vector2(val x: Float, val y: Float) {
+data class Vector2(val x: Float, val y: Float) {
     val length by lazy { sqrtf(x * x + y * y) }
 
     fun normalized(): Vector2 {
@@ -40,7 +40,7 @@ class Vector2(val x: Float, val y: Float) {
     }
 }
 
-class Vector3(val x: Float, val y: Float, val z: Float) {
+data class Vector3(val x: Float, val y: Float, val z: Float) {
     val length by lazy { sqrtf(x * x + y * y + z * z) }
 
     fun crossProduct(other: Vector3): Vector3 =
