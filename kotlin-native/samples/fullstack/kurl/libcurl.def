@@ -1,7 +1,7 @@
 package = libcurl
 headers = curl/curl.h
 headerFilter = curl/**
-compilerOpts.linux = -I/usr/include -I/usr/include/x86_64-linux-gnu
-compilerOpts.osx = -I/opt/local/include
+#compilerOpts.linux = -I/usr/include -I/usr/include/x86_64-linux-gnu 
+#compilerOpts.osx = -I/opt/local/include
 linkerOpts.osx = -L/opt/local/lib -lcurl
 linkerOpts.linux = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lcurl
