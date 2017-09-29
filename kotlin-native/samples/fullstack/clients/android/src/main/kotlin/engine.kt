@@ -129,7 +129,12 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         try {
             val event = eventPointer.value.dereferenceAs<NativeActivityEvent>()
             when (event.eventKind) {
-                NativeActivityEventKind.START -> logInfo("START event received")
+                NativeActivityEventKind.START -> {
+                    logInfo("START event received")
+                    renderer.start()
+                }
+
+                NativeActivityEventKind.STOP -> renderer.stop()
 
                 NativeActivityEventKind.DESTROY -> {
                     rendererState?.let { free(it) }

@@ -21,6 +21,7 @@ allprojects {
 
 project.ext.libcurlPath = file('../../../../external/curl/android')
 project.ext.janssonPath = file('../../../../external/jansson/android')
+project.ext.openalPath = file('../../../../external/openal/android')
 
 apply plugin: "konan"
 
@@ -37,6 +38,7 @@ konanInterop {
             defFile "android.def"
             pkg "android"
             // TODO: launcher header will be part of the platform library.
+            includeDirs "${project.ext.openalPath}/include"
             includeDirs "."
             target platform.konanTarget
         }
@@ -103,7 +105,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["KJson_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
-            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a"
+            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -lopenal -L${project.ext.openalPath}/lib/${platform.targetPlatform}"
             target platform.konanTarget
             outputDir platform.artifact
             outputName 'libkotlin3d'
@@ -165,6 +167,14 @@ model {
                             sharedLibraryFile = file("${platforms[index].artifact}/libkotlin3d.so")
                     }
             }
+            libopenal {
+                    binaries.withType(SharedLibraryBinary) {
+                        def name = targetPlatform.getName()
+                        def index = platforms.collect { it.targetPlatform }.indexOf(name)
+                        if (index >= 0)
+                            sharedLibraryFile = file("${project.ext.openalPath}/lib/${name}/libopenal.so")
+                    }
+            }
        }
     }
     android.sources {
@@ -172,6 +182,7 @@ model {
             jniLibs {
                 dependencies {
                     library "libkotlin3d"
+                    library "libopenal"
                 }
             }
         }

@@ -1,6 +1,6 @@
 To use microhttpd  (HTTP server) install it, i.e.:
 
-    port install microhttpd
+    port install libmicrohttpd
     apt install libmicrohttpd-dev
 
 To use jansson (JSON library) install it, i.e.:

@@ -3,3 +3,4 @@ kotlin-native/samples/fullstack/clients/android/Kotlin3dArm64
 .DS_Store
 kotlin-native/samples/fullstack/clients/android/.gradle
 kotlin-native/samples/fullstack/clients/android/build
+.idea

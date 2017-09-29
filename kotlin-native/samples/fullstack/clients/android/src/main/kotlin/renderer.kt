@@ -126,7 +126,8 @@ class Stats(val nativeActivity: ANativeActivity) {
     }
 }
 
-class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActivity, val savedMatrix: COpaquePointer?) {
+class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActivity,
+               val savedMatrix: COpaquePointer?, val playSound: Boolean = false) {
 
     private val arena = Arena()
     private var display: EGLDisplay? = null
@@ -136,6 +137,7 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
 
     var screen = Vector2.Zero
     private val stats = Stats(nativeActivity)
+    private lateinit var audio: OpenAL
 
     private val matrix = parentArena.allocArray<FloatVar>(16)
 
@@ -261,6 +263,7 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
             loadTexture("rsz_3kotlin_logo_3d.bmp")
 
             initialized = true
+
             return true
         }
     }
@@ -277,8 +280,13 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
         if (len < 1e-9f) return
         val angle = 180 * len / screen.length
         curAngle += angle
-        if (curAngle >= threshold && stats.tryClick())
+        if (curAngle >= threshold && stats.tryClick()) {
             curAngle -= threshold
+            if (playSound) {
+                audio.stop()
+                audio.play()
+            }
+        }
 
         val x = vec.y / len
         val y = -vec.x / len
@@ -477,6 +485,19 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
         if (eglSwapBuffers(display, surface) == 0) {
             logError("eglSwapBuffers() returned error ${eglGetError()}")
             destroy()
+        }
+    }
+
+    fun stop() {
+        if (playSound)
+            audio.deinit()
+    }
+
+    fun start() {
+        if (playSound) {
+            audio = OpenAL(nativeActivity)
+            audio.initialize()
+            audio.readWave("bells.wav")
         }
     }
 
