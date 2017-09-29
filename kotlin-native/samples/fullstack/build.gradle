@@ -11,8 +11,18 @@ subprojects {
     }
 }
 
+ext.common = project('common')
+ext.json   = project('json')
+ext.kurl   = project('kurl')
+ext.sql    = project('sql')
+ext.getopt = project('getopt')
+
 task build {
     subprojects {
         dependsOn "$it.path:build"
     }
+}
+
+task buildServer {
+    dependsOn 'httpserver:build'
 }
