@@ -45,23 +45,31 @@ class View(canvas: Canvas) {
         ctx.stroke()
     }
 
-    fun scale(x: Int, y: Int): Pair<Int, Int> {
-        return Pair(x * rectWidth / Model.backLogSize, y * rectHeight / top)
+    fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) {
+        ctx.beginPath()
+        ctx.lineWidth = 2; // In pixels.
+        ctx.setter("strokeStyle", style)
+        ctx.setter("fillStyle", style)
+
+        ctx.moveTo(x1, rectHeight - y11)
+        ctx.lineTo(x1, rectHeight - y12)
+        ctx.lineTo(x2, rectHeight - y22)
+        ctx.lineTo(x2, rectHeight - y21)
+        ctx.lineTo(x1, rectHeight - y11)
+
+        ctx.fill()
+
+        ctx.closePath()
+        ctx.stroke()
     }
 
-    val top: Int
-        get() {
-            // We still don't have logs and exps, oh well.
-            // And we don't have libm for wasm either.
-            var result = 100;
-            while (result < Model.maximal) {
-                // TODO: Do we expect click counter to overflow INT_MAX?
-                // What shall we do then???
-                result *= 10
-            }
+    fun scaleX(x: Int): Int {
+        return x * rectWidth / (Model.backLogSize - 2) 
+    }
 
-            return result
-        }
+    fun scaleY(y: Float): Int {
+        return (y * rectHeight).toInt()
+    }
 
     fun clean() {
         ctx.fillStyle = "#222222"
@@ -70,12 +78,37 @@ class View(canvas: Canvas) {
 
     fun render() {
         clean()
-        for (i in 0 until Model.tupletSize) {
-            for (t in 0 until Model.backLogSize-2) {
-                val index = ( Model.current + t).rem(Model.backLogSize-1)
-                val (x1, y1) = scale(t, Model.colors[index][i])
-                val (x2, y2) = scale(t+1, Model.colors[index+1][i])
-                line( x1, y1, x2, y2, Model.styles[i])
+        // we take one less, so that there is no jumf from the last to zeroth.
+        for (t in 0 until Model.backLogSize-2) {
+            val index = ( Model.current + t).rem(Model.backLogSize-1)
+
+            val oldTotal = Model.colors[index].sum()
+            val newTotal = Model.colors[index+1].sum()
+
+            if (oldTotal == 0 || newTotal == 0) continue // so that we don't divide by zero
+
+            var oldHeight = 0;
+            var newHeight = 0;
+
+            for (i in 0 until Model.tupletSize) {
+                val style = Model.styles[i]
+
+                val oldValue = Model.colors[index][i]
+                val newValue = Model.colors[index+1][i]
+
+                val x1 = scaleX(t)
+                val x2 = scaleX(t+1)
+
+                val y11 = scaleY(oldHeight.toFloat() / oldTotal.toFloat())
+                val y21 = scaleY(newHeight.toFloat() / newTotal.toFloat())
+
+                val y12 = scaleY((oldHeight + oldValue).toFloat() / oldTotal.toFloat())
+                val y22 = scaleY((newHeight + newValue).toFloat() / newTotal.toFloat())
+
+                poly(x1, y11, y12, x2, y21, y22, style);
+                
+                oldHeight += oldValue
+                newHeight += newValue
             }
         }
     }
@@ -109,7 +142,7 @@ fun loop() {
 }
 
 fun main(args: Array<String>) {
-    html5.setInterval(1000) {
+    html5.setInterval(100) {
         loop()
     }
 }
