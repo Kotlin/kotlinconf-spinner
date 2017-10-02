@@ -3,7 +3,7 @@ import kotlinx.wasm.jsinterop.*
 import konan.internal.ExportForCppRuntime
 
 object Model {
-    val tupletSize = 5
+    val tupleSize = 5
     // Matching OpenGL demo colors:
     //val colors = arrayOf(Vector3(0.0f, 0.8f, 0.8f), Vector3(0.8f, 0.0f, 0.8f), Vector3(0.8f, 0.0f, 0.0f), Vector3(0.0f, 0.8f, 0.0f), Vector3(0.0f, 0.0f, 0.8f))
     val styles = arrayOf("#00cdcd", "#cd00cd", "#cd0000", "#00cd00", "#0000cd")
@@ -15,7 +15,7 @@ object Model {
     var maximal = 0
 
     fun push(new: Array<Int>) {
-        assert(new.size == tupletSize)
+        assert(new.size == tupleSize)
         colors[current] = new
         current = (current+1).rem(backLogSize)
 
@@ -27,7 +27,7 @@ object Model {
 
 
 class View(canvas: Canvas) {
-    val ctx = canvas.getContext("2d");
+    val context = canvas.getContext("2d");
     val rect = canvas.getBoundingClientRect();
     val rectLeft = rect.getInt("left")
     val rectTop = rect.getInt("top")
@@ -36,31 +36,22 @@ class View(canvas: Canvas) {
     val rectWidth = rectRight - rectLeft
     val rectHeight = rectBottom - rectTop
 
-    fun line(x: Int, y: Int, x2: Int, y2: Int, style: String) {
-        ctx.beginPath()
-        ctx.lineWidth = 4; // In pixels.
-        ctx.setter("strokeStyle", style)
-        ctx.moveTo(x, rectHeight - y)
-        ctx.lineTo(x2, rectHeight - y2)
-        ctx.stroke()
-    }
-
     fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) {
-        ctx.beginPath()
-        ctx.lineWidth = 2; // In pixels.
-        ctx.setter("strokeStyle", style)
-        ctx.setter("fillStyle", style)
+        context.beginPath()
+        context.lineWidth = 2; // In pixels.
+        context.setter("strokeStyle", style)
+        context.setter("fillStyle", style)
 
-        ctx.moveTo(x1, rectHeight - y11)
-        ctx.lineTo(x1, rectHeight - y12)
-        ctx.lineTo(x2, rectHeight - y22)
-        ctx.lineTo(x2, rectHeight - y21)
-        ctx.lineTo(x1, rectHeight - y11)
+        context.moveTo(x1, rectHeight - y11)
+        context.lineTo(x1, rectHeight - y12)
+        context.lineTo(x2, rectHeight - y22)
+        context.lineTo(x2, rectHeight - y21)
+        context.lineTo(x1, rectHeight - y11)
 
-        ctx.fill()
+        context.fill()
 
-        ctx.closePath()
-        ctx.stroke()
+        context.closePath()
+        context.stroke()
     }
 
     fun scaleX(x: Int): Int {
@@ -72,13 +63,13 @@ class View(canvas: Canvas) {
     }
 
     fun clean() {
-        ctx.fillStyle = "#222222"
-        ctx.fillRect(0, 0, rectWidth, rectHeight)
+        context.fillStyle = "#222222"
+        context.fillRect(0, 0, rectWidth, rectHeight)
     }
 
     fun render() {
         clean()
-        // we take one less, so that there is no jumf from the last to zeroth.
+        // we take one less, so that there is no jump from the last to zeroth.
         for (t in 0 until Model.backLogSize-2) {
             val index = ( Model.current + t).rem(Model.backLogSize-1)
 
@@ -90,7 +81,7 @@ class View(canvas: Canvas) {
             var oldHeight = 0;
             var newHeight = 0;
 
-            for (i in 0 until Model.tupletSize) {
+            for (i in 0 until Model.tupleSize) {
                 val style = Model.styles[i]
 
                 val oldValue = Model.colors[index][i]
@@ -126,7 +117,7 @@ fun loop() {
         val json = args[0]
         val myColor = json.getInt("color")
         val colors = JsArray(json.getProperty("colors"))
-        assert(colors.size == Model.tupletSize)
+        assert(colors.size == Model.tupleSize)
 
         val tuplet = arrayOf<Int>(0, 0, 0, 0, 0)
         for (i in 0 until colors.size) {
