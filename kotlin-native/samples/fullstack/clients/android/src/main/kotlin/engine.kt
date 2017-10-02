@@ -63,15 +63,24 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private var needRedraw = true
     private var animating = false
 
-    fun mainLoop() {
+    fun initSensors() {
         val sensorManager = ASensorManager_getInstance()
-        sensorQueue = ASensorManager_createEventQueue(
-                sensorManager, state.looper, LOOPER_ID_SENSOR, null /* no callback */, null /* no data */)
+        if (sensorQueue == null) {
+            sensorQueue = ASensorManager_createEventQueue(
+                    sensorManager, state.looper, LOOPER_ID_SENSOR, null /* no callback */, null /* no data */)
+        }
         val sensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER)
         if (sensor != null) {
+            println("Accelerometer inited")
             ASensorEventQueue_enableSensor(sensorQueue, sensor)
             ASensorEventQueue_setEventRate(sensorQueue, sensor, 100000)
+        } else {
+            println("No accelerometer found")
         }
+    }
+
+    fun mainLoop() {
+        initSensors()
 
         while (true) {
             // Process events.
@@ -87,6 +96,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                         }
 
                         LOOPER_ID_INPUT -> processUserInput()
+
                         LOOPER_ID_SENSOR -> processSensorInput()
                     }
                 }
