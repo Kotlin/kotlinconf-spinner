@@ -9,15 +9,23 @@ object Model {
     val styles = arrayOf("#00cdcd", "#cd00cd", "#cd0000", "#00cd00", "#0000cd")
 
     val backLogSize = 100
-    val colors = Array<Array<Int>>(backLogSize, {arrayOf(0, 0, 0, 0, 0)})
+    private val backLog = IntArray(backLogSize * tupleSize, {0})
+    private fun offset(time: Int, color: Int) = time * tupleSize + color
 
     var current = 0
     var maximal = 0
 
+    fun colors(time: Int, color: Int): Int = backLog[offset(time, color)]
+
+    fun tuple(time: Int) = backLog.slice(time * tupleSize .. (time + 1) * tupleSize - 1)
+
     fun push(new: Array<Int>) {
         assert(new.size == tupleSize)
-        colors[current] = new
-        current = (current+1).rem(backLogSize)
+        
+        new.forEachIndexed { index, it -> 
+            backLog[offset(current, index)] = it 
+        }
+        current = (current+1) % backLogSize
 
         new.forEach {
             if (it > maximal) maximal = it
@@ -71,10 +79,10 @@ class View(canvas: Canvas) {
         clean()
         // we take one less, so that there is no jump from the last to zeroth.
         for (t in 0 until Model.backLogSize-2) {
-            val index = ( Model.current + t).rem(Model.backLogSize-1)
+            val index = (Model.current + t) % (Model.backLogSize - 1)
 
-            val oldTotal = Model.colors[index].sum()
-            val newTotal = Model.colors[index+1].sum()
+            val oldTotal = Model.tuple(index).sum()
+            val newTotal = Model.tuple(index + 1).sum()
 
             if (oldTotal == 0 || newTotal == 0) continue // so that we don't divide by zero
 
@@ -84,8 +92,8 @@ class View(canvas: Canvas) {
             for (i in 0 until Model.tupleSize) {
                 val style = Model.styles[i]
 
-                val oldValue = Model.colors[index][i]
-                val newValue = Model.colors[index+1][i]
+                val oldValue = Model.colors(index, i)
+                val newValue = Model.colors(index+1, i)
 
                 val x1 = scaleX(t)
                 val x2 = scaleX(t+1)
@@ -115,18 +123,17 @@ fun loop() {
         response.json()
     } .then { args: ArrayList<JsValue> ->
         val json = args[0]
-        val myColor = json.getInt("color")
         val colors = JsArray(json.getProperty("colors"))
         assert(colors.size == Model.tupleSize)
 
-        val tuplet = arrayOf<Int>(0, 0, 0, 0, 0)
+        val tuple = arrayOf<Int>(0, 0, 0, 0, 0)
         for (i in 0 until colors.size) {
             val color = colors[i].getInt("color")
             val counter = colors[i].getInt("counter")
             // Colors are numbered 1..5
-            tuplet[color-1] = counter
+            tuple[color-1] = counter
         }
-        Model.push(tuplet)
+        Model.push(tuple)
     } .then {
         View(canvas).render()
     }
