@@ -5,11 +5,12 @@ PATH=$KONAN_HOME/bin:$PATH
 
 # libcurl dep is temporary, until transitive deps are here.
 konanc Client.kt \
-                     -library $DIR/../../json/kjson.klib \
-                     -library $DIR/../../json/jansson.klib \
-                     -library $DIR/../../kurl/kurl.klib \
-                     -library $DIR/../../kurl/libcurl.klib \
-                     -library $DIR/../../getopt/kliopt.klib \
-                     -library $DIR/../../common/common.klib \
-                     -library $DIR/../../common/kommon.klib \
+                     -r $DIR/../../json \
+                     -r $DIR/../../kurl \
+                     -r $DIR/../../common \
+                     -r $DIR/../../getopt \
+                     -l kjson \
+                     -l kurl \
+                     -l kliopt \
+                     -l kommon \
                      -o CliClient
