@@ -9,6 +9,6 @@ for l in common getopt json sql kurl httpserver/microhttpd ; do
   (cd $l && ./make_klib.sh)
 done
 
-for e in httpserver clients/cli ; do
+for e in httpserver clients/cli clients/webassembly ; do
   (cd $e && ./build.sh)
 done 
