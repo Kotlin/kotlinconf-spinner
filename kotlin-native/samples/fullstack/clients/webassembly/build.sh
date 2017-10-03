@@ -8,3 +8,4 @@ konanc StatView.kt \
     -l canvas -l jsinterop \
     -target wasm32 -o $DIR/../../static/view
 
+cp ./index.html $DIR/../../static/
