@@ -42,42 +42,42 @@ else ()
     message(FATAL_ERROR "Unsupported host")
 endif ()
 
-kotlinc_library(
+konanc_library(
         NAME kommon
         SOURCES ${KOMMON_SRC}
         LIBRARIES common
 )
 
-kotlinc_library(
+konanc_library(
         NAME kliopt
         SOURCES getopt/src
 )
 
-kotlinc_library(
+konanc_library(
         NAME kjson
         SOURCES json/src
         LIBRARIES jansson; kommon
 )
 
-kotlinc_library(
+konanc_library(
         NAME kurl
         SOURCES kurl/src
         LIBRARIES libcurl; kommon
 )
 
-kotlinc_library(
+konanc_library(
         NAME sql
         SOURCES sql/src
         LIBRARIES sqlite3; kommon
 )
 
-kotlinc(
+konanc(
         NAME HttpServer
         SOURCES httpserver/src
         LIBRARIES microhttpd; kjson; sql; kommon; kliopt
 )
 
-kotlinc(
+konanc(
         NAME CliClient
         SOURCES clients/cli/src
         LIBRARIES kommon; kliopt; kurl; kjson

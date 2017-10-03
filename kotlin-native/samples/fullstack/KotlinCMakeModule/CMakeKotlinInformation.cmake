@@ -102,25 +102,25 @@ endfunction()
 
 include(CMakeParseArguments)
 
-macro(prepare_kotlinc_args)
+macro(prepare_konanc_args)
     cmake_parse_arguments(
-            KOTLINC
+            KONANC
             ""
             "NAME;TARGET"
             "SOURCES;LIBRARIES;LINKER_OPTS"
             ${ARGN}
     )
 
-    if (NOT KOTLINC_NAME)
+    if (NOT KONANC_NAME)
         message(FATAL_ERROR "You must provide a name")
     endif ()
 
-    if (NOT KOTLINC_SOURCES)
+    if (NOT KONANC_SOURCES)
         message(FATAL_ERROR "You must provide list of sources")
     endif ()
 
-    if (KOTLINC_TARGET)
-        set(TARGET_FLAG -target KOTLINC_TARGET)
+    if (KONANC_TARGET)
+        set(TARGET_FLAG -target KONANC_TARGET)
     elseif (APPLE)
         set(TARGET_FLAG -target macbook)
     elseif (UNIX)
@@ -130,83 +130,83 @@ macro(prepare_kotlinc_args)
     endif ()
 
     set(LINKER_OPTS_FLAG)
-    if (KOTLINC_LINKER_OPTS)
-        foreach (LINKER_OPT ${KOTLINC_LINKER_OPTS})
+    if (KONANC_LINKER_OPTS)
+        foreach (LINKER_OPT ${KONANC_LINKER_OPTS})
             set(LINKER_OPTS_FLAG ${LINKER_OPTS_FLAG} -linkerOpts ${LINKER_OPT})
         endforeach ()
     endif ()
 
     set(LIBRARY_PATH)
-    foreach (KOTLINC_LIBRARY ${KOTLINC_LIBRARIES})
-        set(LIBRARY_PATH ${LIBRARY_PATH} -library ${KOTLINC_LIBRARY})
+    foreach (KONANC_LIBRARY ${KONANC_LIBRARIES})
+        set(LIBRARY_PATH ${LIBRARY_PATH} -library ${KONANC_LIBRARY})
     endforeach ()
 
-    set(ADDITIONAL_KOTLINC_FLAGS ${CMAKE_Kotlin_FLAGS})
+    set(ADDITIONAL_KONANC_FLAGS ${CMAKE_Kotlin_FLAGS})
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        string(APPEND ADDITIONAL_KOTLINC_FLAGS " ${CMAKE_Kotlin_FLAGS_DEBUG}")
+        string(APPEND ADDITIONAL_KONANC_FLAGS " ${CMAKE_Kotlin_FLAGS_DEBUG}")
     elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-        string(APPEND ADDITIONAL_KOTLINC_FLAGS " ${CMAKE_Kotlin_FLAGS_MINSIZEREL}")
+        string(APPEND ADDITIONAL_KONANC_FLAGS " ${CMAKE_Kotlin_FLAGS_MINSIZEREL}")
     elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-        string(APPEND ADDITIONAL_KOTLINC_FLAGS " ${CMAKE_Kotlin_FLAGS_RELEASE}")
+        string(APPEND ADDITIONAL_KONANC_FLAGS " ${CMAKE_Kotlin_FLAGS_RELEASE}")
     elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-        string(APPEND ADDITIONAL_KOTLINC_FLAGS " ${CMAKE_Kotlin_FLAGS_RELWITHDEBINFO}")
+        string(APPEND ADDITIONAL_KONANC_FLAGS " ${CMAKE_Kotlin_FLAGS_RELWITHDEBINFO}")
     endif()
-    separate_arguments(ADDITIONAL_KOTLINC_FLAGS)
+    separate_arguments(ADDITIONAL_KONANC_FLAGS)
 endmacro()
 
-function(kotlinc)
-    prepare_kotlinc_args(${ARGV})
+function(konanc)
+    prepare_konanc_args(${ARGV})
 
-    set(KOTLINC_${KOTLINC_NAME}_EXECUTABLE_PATH ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${KOTLINC_NAME})
+    set(KONANC_${KONANC_NAME}_EXECUTABLE_PATH ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${KONANC_NAME})
 
     add_custom_command(
-            OUTPUT ${KOTLINC_${KOTLINC_NAME}_EXECUTABLE_PATH}_TEMP.kexe
-            DEPENDS ${KOTLINC_SOURCES}
-            COMMAND ${CMAKE_Kotlin_COMPILER} ${ADDITIONAL_KOTLINC_FLAGS} ${KOTLINC_SOURCES}
+            OUTPUT ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP.kexe
+            DEPENDS ${KONANC_SOURCES}
+            COMMAND ${CMAKE_Kotlin_COMPILER} ${ADDITIONAL_KONANC_FLAGS} ${KONANC_SOURCES}
                     ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG} -r ${CMAKE_Kotlin_LIBRARY_DIR}
-                    -o ${KOTLINC_${KOTLINC_NAME}_EXECUTABLE_PATH}_TEMP
-            COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/${KOTLINC_NAME}.kexe
+                    -o ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP
+            COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/${KONANC_NAME}.kexe
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-    add_custom_target(${KOTLINC_NAME}.compile
-            DEPENDS ${KOTLINC_${KOTLINC_NAME}_EXECUTABLE_PATH}_TEMP.kexe
-            SOURCES ${KOTLINC_SOURCES})
+    add_custom_target(${KONANC_NAME}.compile
+            DEPENDS ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP.kexe
+            SOURCES ${KONANC_SOURCES})
 
-    foreach (KOTLINC_LIBRARY ${KOTLINC_LIBRARIES})
-        add_dependencies(${KOTLINC_NAME}.compile ${KOTLINC_LIBRARY})
+    foreach (KONANC_LIBRARY ${KONANC_LIBRARIES})
+        add_dependencies(${KONANC_NAME}.compile ${KONANC_LIBRARY})
     endforeach ()
 
-    add_executable(${KOTLINC_NAME}.kexe ${KOTLINC_SOURCES})
-    add_dependencies(${KOTLINC_NAME}.kexe ${KOTLINC_NAME}.compile)
-    set_target_properties(${KOTLINC_NAME}.kexe PROPERTIES LINKER_LANGUAGE Kotlin)
-    add_custom_command(TARGET ${KOTLINC_NAME}.kexe
+    add_executable(${KONANC_NAME}.kexe ${KONANC_SOURCES})
+    add_dependencies(${KONANC_NAME}.kexe ${KONANC_NAME}.compile)
+    set_target_properties(${KONANC_NAME}.kexe PROPERTIES LINKER_LANGUAGE Kotlin)
+    add_custom_command(TARGET ${KONANC_NAME}.kexe
             PRE_LINK
-            COMMAND ${CMAKE_COMMAND} -E copy ${KOTLINC_${KOTLINC_NAME}_EXECUTABLE_PATH}_TEMP.kexe ${CMAKE_CURRENT_BINARY_DIR}/${KOTLINC_NAME}.kexe)
+            COMMAND ${CMAKE_COMMAND} -E copy ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP.kexe ${CMAKE_CURRENT_BINARY_DIR}/${KONANC_NAME}.kexe)
 
 endfunction()
 
-function(kotlinc_library)
-    prepare_kotlinc_args(${ARGV})
+function(konanc_library)
+    prepare_konanc_args(${ARGV})
 
-    set(LIBRARY_OUTPUT ${CMAKE_Kotlin_LIBRARY_DIR}/${KOTLINC_NAME}.klib)
+    set(LIBRARY_OUTPUT ${CMAKE_Kotlin_LIBRARY_DIR}/${KONANC_NAME}.klib)
     add_custom_command(
             OUTPUT ${LIBRARY_OUTPUT}
-            DEPENDS ${KOTLINC_SOURCES}
+            DEPENDS ${KONANC_SOURCES}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_Kotlin_LIBRARY_DIR}
-            COMMAND ${CMAKE_Kotlin_COMPILER} -produce library ${ADDITIONAL_KOTLINC_FLAGS}
-                    ${KOTLINC_SOURCES} ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG}
+            COMMAND ${CMAKE_Kotlin_COMPILER} -produce library ${ADDITIONAL_KONANC_FLAGS}
+                    ${KONANC_SOURCES} ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG}
                     -r ${CMAKE_Kotlin_LIBRARY_DIR} -o ${LIBRARY_OUTPUT}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-    add_custom_target(${KOTLINC_NAME}
+    add_custom_target(${KONANC_NAME}
             DEPENDS ${LIBRARY_OUTPUT}
-            SOURCES ${KOTLINC_SOURCES})
+            SOURCES ${KONANC_SOURCES})
 
-    foreach (KOTLINC_LIBRARY ${KOTLINC_LIBRARIES})
-        add_dependencies(${KOTLINC_NAME} ${KOTLINC_LIBRARY})
+    foreach (KONANC_LIBRARY ${KONANC_LIBRARIES})
+        add_dependencies(${KONANC_NAME} ${KONANC_LIBRARY})
     endforeach ()
 
-    set_target_properties(${KOTLINC_NAME} PROPERTIES LINKER_LANGUAGE Kotlin)
+    set_target_properties(${KONANC_NAME} PROPERTIES LINKER_LANGUAGE Kotlin)
 endfunction()
