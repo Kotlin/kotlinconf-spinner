@@ -71,13 +71,13 @@ konanc_library(
         LIBRARIES sqlite3; kommon
 )
 
-konanc(
+konanc_executable(
         NAME HttpServer
         SOURCES httpserver/src
         LIBRARIES microhttpd; kjson; sql; kommon; kliopt
 )
 
-konanc(
+konanc_executable(
         NAME CliClient
         SOURCES clients/cli/src
         LIBRARIES kommon; kliopt; kurl; kjson
