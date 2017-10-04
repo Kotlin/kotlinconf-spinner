@@ -79,12 +79,13 @@ function(cinterop)
     endforeach()
 
     set(LIBRARY_OUTPUT ${CMAKE_Kotlin_LIBRARY_DIR}/${CINTEROP_NAME}.klib)
+    set(LIBRARY_${CINTEROP_NAME}_OUTPUT ${LIBRARY_OUTPUT} CACHE PATH "Library ${CINTEROP_NAME}")
     add_custom_command(
             OUTPUT ${LIBRARY_OUTPUT}
             DEPENDS ${CINTEROP_DEF_FILE} ${CINTEROP_LIBRARIES}
             COMMAND ${CMAKE_Kotlin_CINTEROP} ${COMPILER_OPTS_FLAG} ${LIBRARY_FLAG}
-                    -def ${CMAKE_CURRENT_SOURCE_DIR}/${CINTEROP_DEF_FILE} ${TARGET_FLAG}
-                    -r ${CMAKE_Kotlin_LIBRARY_DIR} -o ${LIBRARY_OUTPUT}
+            -def ${CMAKE_CURRENT_SOURCE_DIR}/${CINTEROP_DEF_FILE} ${TARGET_FLAG}
+            -r ${CMAKE_Kotlin_LIBRARY_DIR} -o ${LIBRARY_OUTPUT}
     )
     set(INTEROP_GENERATED_SOURCE ${CMAKE_Kotlin_LIBRARY_DIR}/${CINTEROP_NAME}-build/kotlin/${CINTEROP_NAME}/${CINTEROP_NAME}.kt)
     if(NOT EXISTS ${INTEROP_GENERATED_SOURCE})
@@ -93,11 +94,11 @@ function(cinterop)
     add_custom_target(${CINTEROP_NAME}
             DEPENDS ${LIBRARY_OUTPUT}
             SOURCES ${CINTEROP_DEF_FILE} ${INTEROP_GENERATED_SOURCE})
-        
+
     foreach (LIBRARY ${CINTEROP_LIBRARIES})
         add_dependencies(${CINTEROP_NAME} ${LIBRARY})
     endforeach()
-    
+
 endfunction()
 
 include(CMakeParseArguments)
@@ -154,7 +155,7 @@ macro(prepare_konanc_args)
     separate_arguments(ADDITIONAL_KONANC_FLAGS)
 endmacro()
 
-function(konanc)
+function(konanc_executable)
     prepare_konanc_args(${ARGV})
 
     set(KONANC_${KONANC_NAME}_EXECUTABLE_PATH ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${KONANC_NAME})
@@ -163,8 +164,8 @@ function(konanc)
             OUTPUT ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP.kexe
             DEPENDS ${KONANC_SOURCES}
             COMMAND ${CMAKE_Kotlin_COMPILER} ${ADDITIONAL_KONANC_FLAGS} ${KONANC_SOURCES}
-                    ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG} -r ${CMAKE_Kotlin_LIBRARY_DIR}
-                    -o ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP
+            ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG} -r ${CMAKE_Kotlin_LIBRARY_DIR}
+            -o ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP
             COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/${KONANC_NAME}.kexe
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
@@ -190,13 +191,14 @@ function(konanc_library)
     prepare_konanc_args(${ARGV})
 
     set(LIBRARY_OUTPUT ${CMAKE_Kotlin_LIBRARY_DIR}/${KONANC_NAME}.klib)
+    set(LIBRARY_${KONANC_NAME}_OUTPUT ${LIBRARY_OUTPUT} CACHE PATH "Library ${CINTEROP_NAME}")
     add_custom_command(
             OUTPUT ${LIBRARY_OUTPUT}
             DEPENDS ${KONANC_SOURCES}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_Kotlin_LIBRARY_DIR}
             COMMAND ${CMAKE_Kotlin_COMPILER} -produce library ${ADDITIONAL_KONANC_FLAGS}
-                    ${KONANC_SOURCES} ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG}
-                    -r ${CMAKE_Kotlin_LIBRARY_DIR} -o ${LIBRARY_OUTPUT}
+            ${KONANC_SOURCES} ${LIBRARY_PATH} ${TARGET_FLAG} ${LINKER_OPTS_FLAG}
+            -r ${CMAKE_Kotlin_LIBRARY_DIR} -o ${LIBRARY_OUTPUT}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
