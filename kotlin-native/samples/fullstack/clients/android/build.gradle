@@ -72,6 +72,7 @@ konanArtifacts {
             useInterop "common_${platform.name}"
             inputFiles "../../common/Kommon.kt", "../../common/KommonLinux.kt"
             produce "library"
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             target platform.konanTarget
         }
 
@@ -81,6 +82,7 @@ konanArtifacts {
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             produce "library"
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             target platform.konanTarget
         }
 
@@ -91,6 +93,7 @@ konanArtifacts {
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             produce "library"
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             target platform.konanTarget
         }
 
@@ -107,6 +110,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
             linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -lopenal -L${project.ext.openalPath}/lib/${platform.targetPlatform}"
             target platform.konanTarget
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             outputDir platform.artifact
             outputName 'libkotlin3d'
             enableOptimization()
