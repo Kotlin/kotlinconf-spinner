@@ -108,7 +108,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["KJson_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
-            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -lopenal -L${project.ext.openalPath}/lib/${platform.targetPlatform}"
+            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -L${project.ext.openalPath}/lib/${platform.targetPlatform} -lopenal"
             target platform.konanTarget
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             outputDir platform.artifact
@@ -147,18 +147,26 @@ model {
 
         buildTypes {
             release {
-                signingConfig = $("android.signingConfigs.release")
+                // Add RELEASE_STORE_FILE RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS
+                // and RELEASE_KEY_PASSWORD to ~/.gradle/gradle.properties
+                // to sign release build. Keystore could be created from
+                // Android Studio.
+                if (project.hasProperty("RELEASE_STORE_FILE")) {
+                   signingConfig = $("android.signingConfigs.release")
+                }
             }
-        }
-    }
+}
+}
 
     android.signingConfigs {
-        create("release") {
+      create("release") {
+        if (project.hasProperty("RELEASE_STORE_FILE")) {
             storeFile file(RELEASE_STORE_FILE)
             storePassword RELEASE_STORE_PASSWORD
             keyAlias RELEASE_KEY_ALIAS
             keyPassword RELEASE_KEY_PASSWORD
         }
+      }
     }
 
     repositories {
