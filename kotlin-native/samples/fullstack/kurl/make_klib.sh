@@ -13,7 +13,7 @@ fi
 COMPILER_OPTS_linux="-I/usr/include -I/usr/include/x86_64-linux-gnu"
 COMPILER_OPTS_osx="-I/opt/local/include"
 
-var=compilerOpts_${TARGET}
+var=COMPILER_OPTS_${TARGET}
 COMPILER_OPTS="${!var}"
 
 cinterop -def libcurl.def -o libcurl.klib -library ../common/common.klib -compilerOpts "$COMPILER_OPTS"
