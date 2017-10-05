@@ -97,6 +97,15 @@ konanArtifacts {
             target platform.konanTarget
         }
 
+        "Loader_${platform.name}" {
+            useInterop "platform_${platform.name}"
+            target platform.konanTarget
+            inputDir "src/loader"
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
+            outputDir platform.artifact
+            outputName 'libloader'
+        }
+
         "$platform.artifact" {
             useInterop "platform_${platform.name}"
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
@@ -110,7 +119,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
             linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -L${project.ext.openalPath}/lib/${platform.targetPlatform} -lopenal"
             target platform.konanTarget
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop", "-g"
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             outputDir platform.artifact
             outputName 'libkotlin3d'
             enableOptimization()
@@ -185,6 +194,14 @@ model {
                             sharedLibraryFile = file("${platforms[index].artifact}/libkotlin3d.so")
                     }
             }
+            libloader {
+                binaries.withType(SharedLibraryBinary) {
+                    def name = targetPlatform.getName()
+                    def index = platforms.collect { it.targetPlatform }.indexOf(name)
+                    if (index >= 0)
+                        sharedLibraryFile = file("${platforms[index].artifact}/libloader.so")
+                }
+            }
             libopenal {
                     binaries.withType(SharedLibraryBinary) {
                         def name = targetPlatform.getName()
@@ -200,6 +217,7 @@ model {
             jniLibs {
                 dependencies {
                     library "libkotlin3d"
+                    library "libloader"
                     library "libopenal"
                 }
             }
@@ -209,12 +227,12 @@ model {
 }
 
 tasks.matching { it.name == 'preBuild' }.all {
+    it.dependsOn 'compileKonanLoader_arm32'
+    it.dependsOn 'compileKonanLoader_arm64'
     it.dependsOn 'compileKonanKotlin3dArm32'
     it.dependsOn 'compileKonanKotlin3dArm64'
 }
 
 task buildApk(type: DefaultTask) {
-    dependsOn "compileKonanKotlin3dArm32"
-    dependsOn "compileKonanKotlin3dArm64"
     dependsOn "assembleDebug"
 }

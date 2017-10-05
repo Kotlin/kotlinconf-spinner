@@ -21,7 +21,7 @@
 	      android:screenOrientation="portrait">
       <!-- Tell NativeActivity the name of our .so -->
       <meta-data android:name="android.app.lib_name"
-                 android:value="kotlin3d" />
+                 android:value="loader" />
       <meta-data android:name="android.app.func_name"
                  android:value="Konan_main" />
       <intent-filter>

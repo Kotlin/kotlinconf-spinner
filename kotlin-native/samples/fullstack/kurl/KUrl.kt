@@ -37,7 +37,8 @@ class KUrl(val cookies: String? = null) {
         val stables = mutableListOf<StableRef<Any>>()
         val result = try {
             if (onHeader != null) {
-                curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, staticCFunction { buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
+                curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, staticCFunction {
+                    buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
 
                     if (buffer == null) return@staticCFunction 0.toLong()
                     val handler = userdata!!.asStableRef<HttpHandler>().get()
@@ -49,7 +50,8 @@ class KUrl(val cookies: String? = null) {
                 curl_easy_setopt(curl, CURLOPT_HEADERDATA, onHeaderStable.asCPointer())
             }
 
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, staticCFunction { buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, staticCFunction {
+                buffer: CPointer<ByteVar>?, size: size_t, nitems: size_t, userdata: COpaquePointer? ->
 
                 if (buffer == null) return@staticCFunction 0.toLong()
                 val header = buffer.toKString((size * nitems).toInt())

@@ -22,9 +22,7 @@ fun logError(message: String) {
     __android_log_write(ANDROID_LOG_ERROR, "KonanActivity", message)
 }
 
-fun logInfo(message: String) {
-    __android_log_write(ANDROID_LOG_INFO, "KonanActivity", message)
-}
+fun logInfo(message: String) = println(message)
 
 val errno: Int
     get() = interop_errno()
@@ -35,8 +33,8 @@ const val LOOPER_ID_INPUT = 2
 
 const val LOOPER_ID_SENSOR = 3
 
+@konan.internal.ExportForCppRuntime
 fun main(args: Array<String>) {
-    logInfo("Hello world!")
     memScoped {
         val state = alloc<NativeActivityState>()
         getNativeActivityState(state.ptr)
@@ -82,12 +80,14 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     fun mainLoop() {
         initSensors()
 
-        while (true) {
-            // Process events.
-            memScoped {
-                val fd = alloc<IntVar>()
-                eventLoop@while (true) {
+        memScoped {
+            val fd = alloc<IntVar>()
+            while (true) {
+                // Process events.
+                eventLoop@ while (true) {
                     val id = ALooper_pollAll(if (needRedraw || animating) 0 else -1, fd.ptr, null, null)
+                    if (id != ALOOPER_POLL_TIMEOUT)
+                        println("looper gave us $id")
                     if (id < 0) break@eventLoop
                     when (id) {
                         LOOPER_ID_SYS -> {
@@ -100,19 +100,20 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                         LOOPER_ID_SENSOR -> processSensorInput()
                     }
                 }
-            }
-            when {
-                animating -> {
-                    val elapsed = getTime() - startTime
-                    if (elapsed >= animationEndTime) {
-                        animating = false
-                    } else {
-                        move(startPoint + velocity * elapsed + acceleration * (elapsed * elapsed * 0.5f))
-                        renderer.draw()
+                when {
+                    animating -> {
+                        val elapsed = getTime() - startTime
+                        if (elapsed >= animationEndTime) {
+                            println("not drawing")
+                            animating = false
+                        } else {
+                            move(startPoint + velocity * elapsed + acceleration * (elapsed * elapsed * 0.5f))
+                            renderer.draw()
+                        }
                     }
-                }
 
-                needRedraw -> renderer.draw()
+                    needRedraw -> renderer.draw()
+                }
             }
         }
     }
@@ -122,6 +123,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private fun processSysEvent(fd: IntVar): Boolean = memScoped {
         val eventPointer = alloc<COpaquePointerVar>()
         val readBytes = read(fd.value, eventPointer.ptr, pointerSize.narrow()).toLong()
+        println("read $readBytes bytes")
         if (readBytes != pointerSize) {
             logError("Failure reading event, $readBytes read: ${getUnixError()}")
             return true
@@ -130,7 +132,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             val event = eventPointer.value.dereferenceAs<NativeActivityEvent>()
             when (event.eventKind) {
                 NativeActivityEventKind.START -> {
-                    logInfo("START event received")
+                    println("START event received")
                     renderer.start()
                 }
 
@@ -145,7 +147,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     val windowEvent = eventPointer.value.dereferenceAs<NativeActivityWindowEvent>()
                     if (!renderer.initialize(windowEvent.window!!))
                         return false
-                    logInfo("Renderer initialized")
+                    println("Renderer initialized")
                     renderer.draw()
                 }
 
@@ -197,10 +199,9 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             AMotionEvent_getEventTime(event) / 1_000_000_000.0f
 
     private fun processUserInput(): Unit = memScoped {
-        logInfo("Processing user input")
         val event = alloc<CPointerVar<AInputEvent>>()
         if (AInputQueue_getEvent(queue, event.ptr) < 0) {
-            logError("Failure reading input event")
+            println("Failure reading input event")
             return
         }
         val eventType = AInputEvent_getType(event.value)

@@ -1,6 +1,6 @@
 // TODO: androidLauncher.h will become part of the platform library.
 headers = stdio.h stdlib.h string.h math.h time.h android/log.h android/sensor.h \
-    androidLauncher.h EGL/egl.h GLES/gl.h AL/al.h AL/alc.h
+    androidLauncher.h EGL/egl.h GLES/gl.h AL/al.h AL/alc.h dlfcn.h
 linkerOpts = -landroid -lEGL -lGLESv1_CM -lz
 ---
 

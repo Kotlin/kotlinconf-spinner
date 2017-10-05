@@ -481,7 +481,6 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
         glDrawElements(GL_TRIANGLES, triangles.size, GL_UNSIGNED_BYTE, triangles.toByteArray().toCValues().getPointer(this))
 
         glPopMatrix()
-
         if (eglSwapBuffers(display, surface) == 0) {
             logError("eglSwapBuffers() returned error ${eglGetError()}")
             destroy()
@@ -516,6 +515,6 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
         context = null
         initialized = false
 
-        arena.clear()
+        // arena.clear()
     }
 }
