@@ -497,7 +497,7 @@ class Renderer(val parentArena: NativePlacement, val nativeActivity: ANativeActi
         if (playSound) {
             audio = OpenAL(nativeActivity)
             audio.initialize()
-            audio.readWave("bells.wav")
+            audio.readWave("tintin.wav")
         }
     }
 

@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:+"
-        classpath 'com.android.tools.build:gradle-experimental:0.9.2'
+        classpath 'com.android.tools.build:gradle-experimental:0.9.3'
     }
 }
 
@@ -110,7 +110,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
             linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -L${project.ext.openalPath}/lib/${platform.targetPlatform} -lopenal"
             target platform.konanTarget
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
+            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop", "-g"
             outputDir platform.artifact
             outputName 'libkotlin3d'
             enableOptimization()
@@ -146,6 +146,12 @@ model {
         }
 
         buildTypes {
+            debug {
+               debuggable = true
+               ndk {
+                 debuggable = true
+               }
+            } 
             release {
                 // Add RELEASE_STORE_FILE RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS
                 // and RELEASE_KEY_PASSWORD to ~/.gradle/gradle.properties

@@ -48,7 +48,7 @@ fun main(args: Array<String>) {
 fun <T : CPointed> CPointer<*>?.dereferenceAs(): T = this!!.reinterpret<T>().pointed
 
 class Engine(val arena: NativePlacement, val state: NativeActivityState) {
-    private val renderer = Renderer(arena, state.activity!!.pointed, state.savedState)
+    private val renderer = Renderer(arena, state.activity!!.pointed, state.savedState, true)
     private var queue: CPointer<AInputQueue>? = null
     private var sensorQueue: CPointer<ASensorEventQueue>? = null
     private var rendererState: COpaquePointer? = null
