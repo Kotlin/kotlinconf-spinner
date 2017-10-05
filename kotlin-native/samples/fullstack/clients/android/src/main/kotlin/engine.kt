@@ -49,6 +49,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private val renderer = Renderer(arena, state.activity!!.pointed, state.savedState, true)
     private var queue: CPointer<AInputQueue>? = null
     private var sensorQueue: CPointer<ASensorEventQueue>? = null
+    private var sensor: CPointer<ASensor>? = null
     private var rendererState: COpaquePointer? = null
 
     private var currentPoint = Vector2.Zero
@@ -67,10 +68,9 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             sensorQueue = ASensorManager_createEventQueue(
                     sensorManager, state.looper, LOOPER_ID_SENSOR, null /* no callback */, null /* no data */)
         }
-        val sensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER)
+        sensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER)
         if (sensor != null) {
-            println("Accelerometer inited")
-            ASensorEventQueue_enableSensor(sensorQueue, sensor)
+            println("Accelerometer found")
             ASensorEventQueue_setEventRate(sensorQueue, sensor, 100000)
         } else {
             println("No accelerometer found")
@@ -79,15 +79,12 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
 
     fun mainLoop() {
         initSensors()
-
         memScoped {
             val fd = alloc<IntVar>()
             while (true) {
                 // Process events.
                 eventLoop@ while (true) {
                     val id = ALooper_pollAll(if (needRedraw || animating) 0 else -1, fd.ptr, null, null)
-                    if (id != ALOOPER_POLL_TIMEOUT)
-                        println("looper gave us $id")
                     if (id < 0) break@eventLoop
                     when (id) {
                         LOOPER_ID_SYS -> {
@@ -104,7 +101,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     animating -> {
                         val elapsed = getTime() - startTime
                         if (elapsed >= animationEndTime) {
-                            println("not drawing")
                             animating = false
                         } else {
                             move(startPoint + velocity * elapsed + acceleration * (elapsed * elapsed * 0.5f))
@@ -123,7 +119,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private fun processSysEvent(fd: IntVar): Boolean = memScoped {
         val eventPointer = alloc<COpaquePointerVar>()
         val readBytes = read(fd.value, eventPointer.ptr, pointerSize.narrow()).toLong()
-        println("read $readBytes bytes")
         if (readBytes != pointerSize) {
             logError("Failure reading event, $readBytes read: ${getUnixError()}")
             return true
@@ -132,14 +127,34 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             val event = eventPointer.value.dereferenceAs<NativeActivityEvent>()
             when (event.eventKind) {
                 NativeActivityEventKind.START -> {
-                    println("START event received")
+                    println("NativeActivityEventKind.START")
+                    needRedraw = true
+                    ASensorEventQueue_enableSensor(sensorQueue, sensor)
                     renderer.start()
                 }
 
-                NativeActivityEventKind.STOP -> renderer.stop()
+                NativeActivityEventKind.STOP -> {
+                    println("NativeActivityEventKind.STOP")
+                    ASensorEventQueue_disableSensor(sensorQueue, sensor)
+                    renderer.stop()
+                }
+
+                NativeActivityEventKind.PAUSE -> {
+                    println("NativeActivityEventKind.PAUSE")
+                    ASensorEventQueue_disableSensor(sensorQueue, sensor)
+                    needRedraw = false
+                }
+
+                NativeActivityEventKind.RESUME -> {
+                    println("NativeActivityEventKind.RESUME")
+                    ASensorEventQueue_enableSensor(sensorQueue, sensor)
+                    needRedraw = true
+                }
 
                 NativeActivityEventKind.DESTROY -> {
+                    println("NativeActivityEventKind.DESTROY")
                     rendererState?.let { free(it) }
+                    rendererState = null
                     return false
                 }
 
@@ -147,7 +162,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     val windowEvent = eventPointer.value.dereferenceAs<NativeActivityWindowEvent>()
                     if (!renderer.initialize(windowEvent.window!!))
                         return false
-                    println("Renderer initialized")
                     renderer.draw()
                 }
 
@@ -165,6 +179,9 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                 }
 
                 NativeActivityEventKind.NATIVE_WINDOW_DESTROYED -> {
+                    if (sensor != null) {
+                        ASensorEventQueue_disableSensor(sensorQueue, sensor)
+                    }
                     renderer.destroy()
                 }
 
@@ -172,7 +189,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     val saveStateEvent = eventPointer.value.dereferenceAs<NativeActivitySaveStateEvent>()
                     val state = renderer.getState()
                     val dataSize = state.second.signExtend<size_t>()
-                    rendererState = realloc(rendererState, dataSize)
+                    rendererState = malloc(dataSize)
                     memcpy(rendererState, state.first, dataSize)
                     saveStateEvent.savedState = rendererState
                     saveStateEvent.savedStateSize = dataSize
@@ -249,7 +266,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         while (ASensorEventQueue_getEvents(sensorQueue, event.ptr, 1) > 0) {
             val a = event.acceleration
             val force = sqrtf(a.x * a.x + a.y * a.y + a.z * a.z) / ASENSOR_STANDARD_GRAVITY
-            if (force < 2.7f || shakeTimestamp + 1000 > now) {
+            if (force < 2.1f || shakeTimestamp + 1000 > now) {
                 continue
             }
             shakeTimestamp = now
