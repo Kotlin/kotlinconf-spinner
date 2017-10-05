@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies"
+        }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:+"
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'konan'
+
+konanInterop {
+    objc {
+        target "iphone"
+    }
+}
+
+
+konanArtifacts {
+    app {
+        useInterop 'objc'
+        target "iphone"
+        inputFiles fileTree('../shared/src/main/kotlin')
+        inputFiles fileTree('src/main/kotlin')
+    }
+}

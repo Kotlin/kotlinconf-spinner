@@ -22,7 +22,6 @@ enum class Team(val colorVector: Vector3) {
     RED(0.8f, 0.0f, 0.0f),
     GREEN(0.0f, 0.8f, 0.0f),
     BLUE(0.0f, 0.0f, 0.8f)
-
     ;
 
     constructor(r: Float, g: Float, b: Float) : this(Vector3(r, g, b))

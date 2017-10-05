@@ -21,7 +21,7 @@ import objc.*
 // it doesn't pretend to be universal or high-performance.
 
 open class GlShaderProgram(vertexShaderSource: String, fragmentShaderSource: String) {
-    val vao = memScoped {
+    val vertexArrayObject = memScoped {
         val resultVar = alloc<GLuintVar>()
         glGenVertexArrays(1, resultVar.ptr)
         resultVar.value
@@ -85,12 +85,14 @@ open class GlShaderProgram(vertexShaderSource: String, fragmentShaderSource: Str
 
     fun activate() {
         glUseProgram(this.program)
-        glBindVertexArray(vao)
+        glBindVertexArray(vertexArrayObject)
     }
 }
 
 private fun compileGlShader(type: GLenum, source: String) = memScoped {
     val shader = glCreateShader(type)
+    checkGlError()
+
     if (shader == 0) throw Error("Failed to create a shader")
 
     glShaderSource(shader, 1, cValuesOf(source.cstr.getPointer(memScope)), null)
@@ -119,6 +121,15 @@ private fun createGlBuffer() = memScoped {
 fun checkGlError() {
     val error = glGetError()
     if (error != 0) {
-        throw Error("GL error: 0x${error.toString(16)}")
+        val errorString = when (error) {
+            GL_INVALID_ENUM -> "GL_INVALID_ENUM"
+            GL_INVALID_VALUE -> "GL_INVALID_VALUE"
+            GL_INVALID_OPERATION -> "GL_INVALID_OPERATION"
+            GL_INVALID_FRAMEBUFFER_OPERATION -> "GL_INVALID_FRAMEBUFFER_OPERATION"
+            GL_OUT_OF_MEMORY -> "GL_OUT_OF_MEMORY"
+            else -> "unknown"
+        }
+
+        throw Error("GL error: 0x${error.toString(16)} ($errorString)")
     }
 }

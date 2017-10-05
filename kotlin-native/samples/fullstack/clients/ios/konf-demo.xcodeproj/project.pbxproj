@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C7B37DF1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */; };
 		2CED25DF1F75246200A6326D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25DE1F75246200A6326D /* AppDelegate.m */; };
 		2CED25E21F75246200A6326D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25E11F75246200A6326D /* ViewController.m */; };
 		2CED25E51F75246200A6326D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25E31F75246200A6326D /* Main.storyboard */; };
@@ -15,10 +16,10 @@
 		2CED25ED1F75246200A6326D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25EC1F75246200A6326D /* main.m */; };
 		2CED25F81F75449700A6326D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CED25F71F75449700A6326D /* OpenGLES.framework */; };
 		2CED25FA1F7544A200A6326D /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CED25F91F7544A100A6326D /* GLKit.framework */; };
-		2CED25FC1F78EAD700A6326D /* rsz_3kotlin_logo_3d.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25FB1F78EAD700A6326D /* rsz_3kotlin_logo_3d.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = rsz_3kotlin_logo_3d.bmp; path = ../../android/src/main/assets/rsz_3kotlin_logo_3d.bmp; sourceTree = "<group>"; };
 		2CED25DA1F75246200A6326D /* konf-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "konf-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CED25DD1F75246200A6326D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2CED25DE1F75246200A6326D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -31,7 +32,6 @@
 		2CED25EC1F75246200A6326D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2CED25F71F75449700A6326D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		2CED25F91F7544A100A6326D /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
-		2CED25FB1F78EAD700A6326D /* rsz_3kotlin_logo_3d.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = rsz_3kotlin_logo_3d.bmp; path = ../../../../Downloads/rsz_3kotlin_logo_3d.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,13 +67,13 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
+				2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */,
 				2CED25DD1F75246200A6326D /* AppDelegate.h */,
 				2CED25DE1F75246200A6326D /* AppDelegate.m */,
 				2CED25E01F75246200A6326D /* ViewController.h */,
 				2CED25E11F75246200A6326D /* ViewController.m */,
 				2CED25E31F75246200A6326D /* Main.storyboard */,
 				2CED25E61F75246200A6326D /* Assets.xcassets */,
-				2CED25FB1F78EAD700A6326D /* rsz_3kotlin_logo_3d.bmp */,
 				2CED25E81F75246200A6326D /* LaunchScreen.storyboard */,
 				2CED25EB1F75246200A6326D /* Info.plist */,
 				2CED25EC1F75246200A6326D /* main.m */,
@@ -151,7 +151,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2CED25FC1F78EAD700A6326D /* rsz_3kotlin_logo_3d.bmp in Resources */,
+				2C7B37DF1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp in Resources */,
 				2CED25EA1F75246200A6326D /* LaunchScreen.storyboard in Resources */,
 				2CED25E71F75246200A6326D /* Assets.xcassets in Resources */,
 				2CED25E51F75246200A6326D /* Main.storyboard in Resources */,
