@@ -20,7 +20,7 @@ import kotlinx.cinterop.*
 fun main(args: Array<String>) {
     memScoped {
         val argc = args.size + 1
-        val argv = (arrayOf("konan") + args).map { it.cstr.getPointer(memScope) }.toCValues()
+        val argv = (arrayOf("konan") + args).toCStringArray(memScope)
 
         autoreleasepool {
             UIApplicationMain(argc, argv, null, NSStringFromClass(AppDelegate))

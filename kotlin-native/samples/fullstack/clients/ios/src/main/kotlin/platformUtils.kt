@@ -17,15 +17,6 @@
 import objc.*
 import kotlinx.cinterop.*
 
-fun readResource(resourceName: String): ByteArray {
-    val filePath = NSBundle.mainBundle.pathForResource(resourceName, ofType = null)
-
-    val fileData = NSData.dataWithContentsOfFile(filePath!!)
-            ?: throw Error("failed reading resource $resourceName")
-
-    return fileData.bytes!!.readBytes(fileData.length.toInt())
-}
-
 class StatsFetcherImpl : StatsFetcher {
     private var mostRecentFetched: Stats? = null
     private var requestInProgress = false

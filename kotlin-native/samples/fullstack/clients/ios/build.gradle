@@ -32,5 +32,8 @@ konanArtifacts {
         target "iphone"
         inputFiles fileTree('../shared/src/main/kotlin')
         inputFiles fileTree('src/main/kotlin')
+
+        // TODO: use the kommon.klib instead:
+        inputFiles file('../../common/KommonIOs.kt')
     }
 }
