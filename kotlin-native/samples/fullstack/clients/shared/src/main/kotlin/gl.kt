@@ -15,7 +15,8 @@
  */
 
 import kotlinx.cinterop.*
-import objc.*
+import platform.glescommon.*
+import platform.gles3.*
 
 // This file contains a very primitive and coarse abstraction for OpenGL operations;
 // it doesn't pretend to be universal or high-performance.
