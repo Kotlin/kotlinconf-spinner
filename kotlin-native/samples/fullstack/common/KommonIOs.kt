@@ -1,7 +1,7 @@
 package kommon
 
 import kotlinx.cinterop.*
-import objc.*
+import platform.Foundation.*
 
 fun readResource(resourceName: String): ByteArray {
     val filePath = NSBundle.mainBundle.pathForResource(resourceName, ofType = null)

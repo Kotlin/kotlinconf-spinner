@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import objc.*
+import platform.posix.M_PI
 
 // Note: all coordinates are normed by the screen size
 // and grow when going from bottom-left corner to top-right one;

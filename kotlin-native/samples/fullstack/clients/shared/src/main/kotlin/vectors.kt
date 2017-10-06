@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import objc.*
+import platform.posix.*
 
 data class Vector2(val x: Float, val y: Float) {
     val length get() = sqrtf(x * x + y * y)

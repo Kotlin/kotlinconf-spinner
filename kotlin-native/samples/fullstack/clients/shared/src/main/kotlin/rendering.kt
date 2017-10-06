@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import objc.*
 import kotlinx.cinterop.*
+import platform.glescommon.*
+import platform.gles3.*
 
 private class RectRenderer {
     private val program = object : GlShaderProgram(

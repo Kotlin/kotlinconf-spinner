@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import objc.*
 import kotlinx.cinterop.*
+import platform.darwin.NSObject
+import platform.Foundation.*
 
 class StatsFetcherImpl : StatsFetcher {
     private var mostRecentFetched: Stats? = null

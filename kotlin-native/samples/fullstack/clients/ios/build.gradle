@@ -19,16 +19,8 @@ allprojects {
 
 apply plugin: 'konan'
 
-konanInterop {
-    objc {
-        target "iphone"
-    }
-}
-
-
 konanArtifacts {
     app {
-        useInterop 'objc'
         target "iphone"
         inputFiles fileTree('../shared/src/main/kotlin')
         inputFiles fileTree('src/main/kotlin')

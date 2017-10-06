@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import objc.*
 import kotlinx.cinterop.*
+import platform.CoreGraphics.CGRect
+import platform.EAGL.*
+import platform.Foundation.*
+import platform.GLKit.*
+import platform.UIKit.*
 
 fun main(args: Array<String>) {
     memScoped {
