@@ -21,7 +21,7 @@ import platform.gles3.*
 private class RectRenderer {
     private val program = object : GlShaderProgram(
             vertexShaderSource = """
-                #version 300 core
+                #version 300 es
 
                 precision mediump float;
 
@@ -35,7 +35,7 @@ private class RectRenderer {
             """.trimIndent(),
 
             fragmentShaderSource = """
-                #version 300 core
+                #version 300 es
 
                 precision mediump float;
 
@@ -117,7 +117,7 @@ private class KotlinLogo(val s: Float, val d: Float) {
 private class KotlinLogoRenderer {
     private val program = object : GlShaderProgram(
             vertexShaderSource = """
-                #version 300 core
+                #version 300 es
 
                 precision mediump float;
 
@@ -144,7 +144,7 @@ private class KotlinLogoRenderer {
             """.trimIndent(),
 
             fragmentShaderSource = """
-                #version 300 core
+                #version 300 es
 
                 precision mediump float;
 

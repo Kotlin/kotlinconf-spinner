@@ -17,6 +17,12 @@
 import kotlinx.cinterop.*
 import android.*
 import kotlin.system.*
+import common.utsname
+import common.uname
+import kurl.*
+import kjson.*
+import konan.worker.*
+
 
 fun logError(message: String) {
     __android_log_write(ANDROID_LOG_ERROR, "KonanActivity", message)
@@ -43,24 +49,117 @@ fun main(args: Array<String>) {
     }
 }
 
+fun machineName() = memScoped {
+    val u = alloc<utsname>()
+    if (uname(u.ptr) == 0) {
+        "${u.sysname.toKString()} ${u.machine.toKString()}"
+    } else {
+        "unknown"
+    }
+}
+
+class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
+    private val server = "http://kotlin-demo.kotlinconf.com:8080"
+    private val name = "Android user"
+
+    private fun cookiesFileName() = "${nativeActivity.internalDataPath!!.toKString()}/cookies.txt"
+
+    private val worker = startWorker()
+    private var future: Future<Any>? = null
+    private var mostRecentlyFetched: Stats? = null
+
+    override fun asyncFetch() {
+        val machine = machineName()
+        val kurl = KUrl(cookiesFileName())
+        val url = "$server/json/stats?name=${kurl.escape(name)}&client=android&machine=${kurl.escape(machine)}"
+        kurl.close()
+        asyncRequest(url)
+    }
+
+    override fun asyncTryClickAndFetch(): Boolean {
+        return asyncRequest("$server/json/click")
+    }
+
+    override fun getMostRecentFetched(): Stats? {
+        val future = this.future
+        if (future != null && future.state == FutureState.COMPUTED) {
+            future.consume {
+                if (it is String)
+                    logError(it)
+                else {
+                    if (it !is KJsonObject)
+                        logError("A KJsonObject expected but was $it")
+                    else {
+                        val myColor = it.getInt("color") - 1
+                        val colors = it.getArray("colors")
+                        val counts = IntArray(colors.size)
+                        counts.indices.forEach {
+                            val obj = colors.getObject(it)
+                            val color = obj.getInt("color")
+                            val counter = obj.getInt("counter")
+                            logInfo("Color: $color, counter = $counter")
+                            counts[color - 1] = counter
+                        }
+                        it.close()
+                        mostRecentlyFetched = Stats(counts, enumValues<Team>()[myColor])
+                    }
+                }
+            }
+        }
+        return mostRecentlyFetched
+    }
+
+    private class WorkerArgument(val url: String, val cookiesFileName: String)
+
+    private fun asyncRequest(url: String): Boolean {
+        if (future?.state == FutureState.SCHEDULED) return false
+        future = worker.schedule(TransferMode.CHECKED, { WorkerArgument("$url", cookiesFileName()) }) {
+            val kurl = KUrl(it.cookiesFileName)
+            val url = it.url
+            try {
+                withUrl(kurl) {
+                    var result: Any? = null
+                    it.fetch(url) {
+                        result = KJsonObject(it)
+                    }
+                    result!!
+                }
+            } catch (error: KUrlError) {
+                "network problem: $error"
+            } catch (t: Throwable) {
+                "Esception: $t"
+            } finally {
+                kurl.close()
+            }
+        }
+        return true
+    }
+}
+
 fun <T : CPointed> CPointer<*>?.dereferenceAs(): T = this!!.reinterpret<T>().pointed
 
 class Engine(val arena: NativePlacement, val state: NativeActivityState) {
-    private val renderer = Renderer(arena, state.activity!!.pointed, state.savedState, true)
+
+    private val statsFetcher = StatsFetcherImpl(state.activity!!.pointed).also {
+        it.asyncFetch()
+    }
+
+    private val soundPlayer = SoundPlayerImpl("tintin.wav")
+
+    private val gameState = GameState(SceneState(), statsFetcher, soundPlayer)
+    private val touchControl = TouchControl(gameState)
+
+    private val renderer = Renderer(state.activity!!.pointed, true)
     private var queue: CPointer<AInputQueue>? = null
     private var sensorQueue: CPointer<ASensorEventQueue>? = null
     private var sensor: CPointer<ASensor>? = null
     private var rendererState: COpaquePointer? = null
-
-    private var currentPoint = Vector2.Zero
-    private var startPoint = Vector2.Zero
-    private var startTime = 0.0f
-    private var animationEndTime = 0.0f
-    private var velocity = Vector2.Zero
-    private var acceleration = Vector2.Zero
-
+    private var lastUpdateTime = 0.0f
     private var needRedraw = true
-    private var animating = false
+    private var startTime = 0.0f
+    private var startPoint = Vector2.Zero
+    private var diagonal = 0.0f
+    private var playSound = true
 
     fun initSensors() {
         val sensorManager = ASensorManager_getInstance()
@@ -84,7 +183,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             while (true) {
                 // Process events.
                 eventLoop@ while (true) {
-                    val id = ALooper_pollAll(if (needRedraw || animating) 0 else -1, fd.ptr, null, null)
+                    val id = ALooper_pollAll(if ((gameState.isAnimating() || needRedraw) && renderer.initialized) 0 else -1, fd.ptr, null, null)
                     if (id < 0) break@eventLoop
                     when (id) {
                         LOOPER_ID_SYS -> {
@@ -97,19 +196,10 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                         LOOPER_ID_SENSOR -> processSensorInput()
                     }
                 }
-                when {
-                    animating -> {
-                        val elapsed = getTime() - startTime
-                        if (elapsed >= animationEndTime) {
-                            animating = false
-                        } else {
-                            move(startPoint + velocity * elapsed + acceleration * (elapsed * elapsed * 0.5f))
-                            renderer.draw()
-                        }
-                    }
-
-                    needRedraw -> renderer.draw()
-                }
+                val currentTime = getTime()
+                gameState.update(currentTime - lastUpdateTime)
+                lastUpdateTime = currentTime
+                renderer.draw(gameState.sceneState)
             }
         }
     }
@@ -130,13 +220,15 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     println("NativeActivityEventKind.START")
                     needRedraw = true
                     ASensorEventQueue_enableSensor(sensorQueue, sensor)
-                    renderer.start()
+                    if (playSound)
+                        soundPlayer.initialize()
                 }
 
                 NativeActivityEventKind.STOP -> {
                     println("NativeActivityEventKind.STOP")
                     ASensorEventQueue_disableSensor(sensorQueue, sensor)
-                    renderer.stop()
+                    if (playSound)
+                        soundPlayer.deinit()
                 }
 
                 NativeActivityEventKind.PAUSE -> {
@@ -160,9 +252,13 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
 
                 NativeActivityEventKind.NATIVE_WINDOW_CREATED -> {
                     val windowEvent = eventPointer.value.dereferenceAs<NativeActivityWindowEvent>()
-                    if (!renderer.initialize(windowEvent.window!!))
+                    val window = windowEvent.window!!
+                    val width = ANativeWindow_getWidth(window) * 1.0f
+                    val height = ANativeWindow_getHeight(window) * 1.0f
+                    diagonal = sqrtf(width * width + height * height)
+                    if (!renderer.initialize(window))
                         return false
-                    renderer.draw()
+                    needRedraw = true
                 }
 
                 NativeActivityEventKind.INPUT_QUEUE_CREATED -> {
@@ -184,16 +280,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     }
                     renderer.destroy()
                 }
-
-                NativeActivityEventKind.SAVE_INSTANCE_STATE -> {
-                    val saveStateEvent = eventPointer.value.dereferenceAs<NativeActivitySaveStateEvent>()
-                    val state = renderer.getState()
-                    val dataSize = state.second.signExtend<size_t>()
-                    rendererState = malloc(dataSize)
-                    memcpy(rendererState, state.first, dataSize)
-                    saveStateEvent.savedState = rendererState
-                    saveStateEvent.savedStateSize = dataSize
-                }
             }
         } finally {
             notifySysEventProcessed()
@@ -210,7 +296,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     }
 
     private fun getEventPoint(event: CPointer<AInputEvent>?, i: Int) =
-            Vector2(AMotionEvent_getRawX(event, i.signExtend<size_t>()), AMotionEvent_getRawY(event, i.signExtend<size_t>()))
+            Vector2(AMotionEvent_getRawX(event, i.signExtend<size_t>()) / diagonal, -AMotionEvent_getRawY(event, i.signExtend<size_t>()) / diagonal)
 
     private fun getEventTime(event: CPointer<AInputEvent>?) =
             AMotionEvent_getEventTime(event) / 1_000_000_000.0f
@@ -226,31 +312,21 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             val action = AKeyEvent_getAction(event.value) and AMOTION_EVENT_ACTION_MASK
             when (action) {
                 AMOTION_EVENT_ACTION_DOWN -> {
-                    animating = false
-                    currentPoint = getEventPoint(event.value, 0)
                     startTime = getEventTime(event.value)
-                    startPoint = currentPoint
+                    touchControl.down()
+                    startPoint = getEventPoint(event.value, 0)
                 }
 
                 AMOTION_EVENT_ACTION_UP -> {
                     val endPoint = getEventPoint(event.value, 0)
                     val endTime = getEventTime(event.value)
-                    animating = true
-                    velocity = (endPoint - startPoint) / (endTime - startTime + 1e-9f)
-                    val maxVelocityMagnitude = renderer.screen.length * 3.0f
-                    if (velocity.length > maxVelocityMagnitude)
-                        velocity = velocity * (maxVelocityMagnitude / velocity.length)
-                    acceleration = velocity.normalized() * (-renderer.screen.length * 1.0f)
-                    animationEndTime = velocity.length / acceleration.length
-                    startPoint = endPoint
-                    startTime = endTime
-                    move(endPoint)
+                    touchControl.up(endPoint - startPoint, endTime - startTime + 1e-9f)
                 }
 
                 AMOTION_EVENT_ACTION_MOVE -> {
                     val numberOfPointers = AMotionEvent_getPointerCount(event.value).toInt()
                     for (i in 0 until numberOfPointers)
-                        move(getEventPoint(event.value, i))
+                        touchControl.move(getEventPoint(event.value, i) - startPoint)
                 }
             }
         }
@@ -287,18 +363,14 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             }
             val screenDirection = directionProjection(Vector3(a.x, a.y, a.z))
             shakeTimestamp = now
-            animating = true
-            velocity = screenDirection * renderer.screen.length * 3.0f
-            acceleration = velocity.normalized() * (-renderer.screen.length * 1.0f)
-            animationEndTime = velocity.length / acceleration.length
-            startTime = getTime()
-            startPoint = currentPoint
+            // TODO: uncomment.
+//            animating = true
+//            velocity = screenDirection * renderer.screen.length * 3.0f
+//            acceleration = velocity.normalized() * (-renderer.screen.length * 1.0f)
+//            animationEndTime = velocity.length / acceleration.length
+//            startTime = getTime()
+//            startPoint = currentPoint
 
         }
-    }
-
-    private fun move(newPoint: Vector2) {
-        renderer.rotateBy(newPoint - currentPoint)
-        currentPoint = newPoint
     }
 }

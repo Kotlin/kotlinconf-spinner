@@ -70,7 +70,8 @@ konanArtifacts {
     platforms.each { platform ->
         "Kommon_${platform.name}" {
             useInterop "common_${platform.name}"
-            inputFiles "../../common/src/Kommon.kt", "../../common/src/KommonLinux.kt"
+            useInterop "platform_${platform.name}"
+            inputFiles "../../common/src/Kommon.kt", "../../common/src/KommonLinux.kt", "../../common/src/KommonAndroid.kt"
             produce "library"
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             target platform.konanTarget
@@ -122,6 +123,8 @@ konanArtifacts {
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             outputDir platform.artifact
             outputName 'libkotlin3d'
+            inputFiles fileTree('../shared/src/main/kotlin')
+            inputFiles fileTree('src/main/kotlin')
             enableOptimization()
         }
     }
@@ -138,7 +141,7 @@ model {
 
         defaultConfig {
             applicationId = 'com.jetbrains.konan_activity'
-            minSdkVersion.apiLevel   9
+            minSdkVersion.apiLevel   18
             targetSdkVersion.apiLevel  25
         }
 

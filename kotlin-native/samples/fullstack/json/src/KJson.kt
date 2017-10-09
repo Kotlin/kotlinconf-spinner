@@ -198,6 +198,7 @@ class KJsonArray : KJsonBase {
     fun appendArray(value: KJsonArray) =
         json_array_append_new(json, value.json)
 
+    val size: Int get() = json_array_size(json).toInt()
 }
 
 public inline fun withJson(text: String, function: (KJsonObject) -> Unit) {

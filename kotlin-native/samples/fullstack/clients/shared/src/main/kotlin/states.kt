@@ -67,12 +67,21 @@ interface StatsFetcher {
     fun getMostRecentFetched(): Stats?
 }
 
+interface SoundPlayer {
+    fun play()
+}
+
+object EmptyPlayer: SoundPlayer {
+    override fun play() {
+    }
+}
+
 /**
  * The entire game state including the velocity and acceleration.
  *
  * Note: all vectors are in world coordnates.
  */
-class GameState(val sceneState: SceneState, val statsFetcher: StatsFetcher) {
+class GameState(val sceneState: SceneState, val statsFetcher: StatsFetcher, val soundPlayer: SoundPlayer = EmptyPlayer) {
     private var rotationAngularSpeed: Float = 0.0f
     private var rotationAngularAcceleration: Float = 0.0f
     private var rotationAxis = Vector2.Zero
@@ -121,6 +130,8 @@ class GameState(val sceneState: SceneState, val statsFetcher: StatsFetcher) {
 
             accumulatedAngle -= accumulatedAngleUnit
             timeSinceLastStatsRefresh = 0.0f
+
+            soundPlayer.play()
         }
 
         sceneState.rotate(axis, angle)

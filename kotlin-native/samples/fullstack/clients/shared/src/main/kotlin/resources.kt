@@ -29,3 +29,29 @@ internal class BMPHeader(val rawPtr: NativePtr) {
     val bits get() = memberAt<ShortVar>(28).value.toInt()
     val data get() = interpretCPointer<ByteVar>(rawPtr + 54) as CArrayPointer<ByteVar>
 }
+
+internal class WAVEHeader(val rawPtr: NativePtr) {
+    inline fun <reified T : CPointed> memberAt(offset: Long): T {
+        return interpretPointed<T>(this.rawPtr + offset)
+    }
+
+    inline fun <reified T : CVariable> arrayMemberAt(offset: Long): CArrayPointer<T> {
+        return interpretCPointer<T>(this.rawPtr + offset)!!
+    }
+
+    val riff get() = arrayMemberAt<ByteVar>(0)
+    val riffSize get() = memberAt<IntVar>(4).value
+    val wave get() = arrayMemberAt<ByteVar>(8)
+    val fmt get() = arrayMemberAt<ByteVar>(12)
+    val fmtSize get() = memberAt<IntVar>(16).value
+    val format get() = memberAt<ShortVar>(20).value.toInt()
+    val channels get() = memberAt<ShortVar>(22).value.toInt()
+    val samplesPerSec get() = memberAt<IntVar>(24).value
+    val bytesPerSec get() = memberAt<IntVar>(28).value
+    val blockAlign get() = memberAt<ShortVar>(32).value.toInt()
+    val bitsPerSample get() = memberAt<ShortVar>(34).value.toInt()
+    val data get() = arrayMemberAt<ByteVar>(36)
+    val dataSize get() = memberAt<IntVar>(40).value
+
+    val rawData get() = arrayMemberAt<ByteVar>(44)
+}
