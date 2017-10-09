@@ -15,7 +15,7 @@ fun readFileData(path: String): ByteArray? {
         // We're not planning to serve files > 4G, right?
         val size = info.st_size.toInt()
         val result = ByteArray(size)
-        val file = fopen(path, "r")
+        val file = fopen(path, "rb")
         if (file == null) return null
         var position = 0
         while (position < size) {
@@ -28,6 +28,22 @@ fun readFileData(path: String): ByteArray? {
         result
     }
 }
+
+fun writeToFileData(path: String, data: ByteArray, append: Boolean = false) {
+    return memScoped {
+        val file = fopen(path, if (append) "ab" else "wb")
+        if (file == null) throw Error("Cannot write to $file")
+        var position = 0
+        while (position < data.size) {
+            val toWrite = minOf(data.size - position, 4096)
+            val written = fwrite(data.refTo(position), 1, toWrite.signExtend(), file).toInt()
+            if (written <= 0) break
+            position += written
+        }
+        fclose(file)
+    }
+}
+
 
 fun sockaddrAsString(sockaddr: CPointer<sockaddr>?, socklen: socklen_t) =
     memScoped {
@@ -51,3 +67,71 @@ fun machineName() =
         }
 
 fun usleep(microseconds: Int) = common.usleep(microseconds)
+
+class BMPHeader(val rawPtr: NativePtr) {
+    inline fun <reified T : CPointed> memberAt(offset: Long): T {
+        return interpretPointed<T>(this.rawPtr + offset)
+    }
+
+    var magic: Short
+        get() = memberAt<ShortVar>(0).value
+        set(value) { memberAt<ShortVar>(0).value = value }
+
+    var fileSize: Int
+        get() = memberAt<IntVar>(2).value
+        set(value) { memberAt<IntVar>(2).value = value }
+
+    var dataOffset: Int
+        get() = memberAt<IntVar>(10).value
+        set(value) { memberAt<IntVar>(10).value = value }
+
+    var headerSize: Int
+        get() = memberAt<IntVar>(14).value
+        set(value) { memberAt<IntVar>(14).value = value }
+
+    var width: Int
+        get() = memberAt<IntVar>(18).value
+        set(value) { memberAt<IntVar>(18).value = value }
+
+    var height: Int
+        get() = memberAt<IntVar>(22).value
+        set(value) { memberAt<IntVar>(22).value = value }
+
+    var colorPlanes: Short
+        get() = memberAt<ShortVar>(26).value
+        set(value) { memberAt<ShortVar>(26).value = value }
+
+    var bits: Short
+        get() = memberAt<ShortVar>(28).value
+        set(value) { memberAt<ShortVar>(28).value = value }
+
+    var compressionMethod: Int
+        get() = memberAt<IntVar>(30).value
+        set(value) { memberAt<IntVar>(30).value = value }
+
+    var imageSize: Int
+        get() = memberAt<IntVar>(34).value.toInt()
+        set(value) { memberAt<IntVar>(34).value = value }
+
+    var redChannelMask: Int
+        get() = memberAt<IntVar>(54).value.toInt()
+        set(value) { memberAt<IntVar>(54).value = value }
+
+    var greenChannelMask: Int
+        get() = memberAt<IntVar>(58).value.toInt()
+        set(value) { memberAt<IntVar>(58).value = value }
+
+    var blueChannelMask: Int
+        get() = memberAt<IntVar>(62).value.toInt()
+        set(value) { memberAt<IntVar>(62).value = value }
+
+    var alphaChannelMask: Int
+        get() = memberAt<IntVar>(66).value.toInt()
+        set(value) { memberAt<IntVar>(66).value = value }
+
+    val dataV3
+        get() = interpretCPointer<ByteVar>(rawPtr + 54) as CArrayPointer<ByteVar>
+
+    val dataV5
+        get() = interpretCPointer<ByteVar>(rawPtr + 138) as CArrayPointer<ByteVar>
+}
