@@ -9,6 +9,8 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
     val bpp = 32
     val bitmap = glyph.pointed.bitmap
 
+    println("Producing bitmap ${bitmap.width} x ${bitmap.rows}")
+
     val headerSize = 14 /* sizeof(BITMAPFILEHEADER) */ + 124 /* sizeof(BITMAPV5HEADER) */
     val bmpHeaderData = ByteArray(headerSize)
     val bmpWidth = alignUp4(bitmap.width * bpp / 8)
@@ -53,15 +55,18 @@ fun main(args: Array<String>) {
     var fontName: String = ""
     var fontSize = 70
     var charsToRender = ""
+    var directory = ""
     parseOptions(listOf(
             OptionDescriptor(OptionType.STRING, "f", "font", "Font to use", "/Library/Fonts/Andale Mono.ttf"),
             OptionDescriptor(OptionType.INT, "s", "size", "Size of the font", "72"),
-            OptionDescriptor(OptionType.STRING, "c", "chars", "Characters to render", "0123456789")
+            OptionDescriptor(OptionType.STRING, "c", "chars", "Characters to render", "0123456789"),
+            OptionDescriptor(OptionType.STRING, "d", "directory", "Direct to use", "./glyphs")
     ), args).forEach {
         when (it.descriptor?.longName) {
             "font" -> fontName = it.stringValue
-            "name" -> fontSize = it.intValue
+            "size" -> fontSize = it.intValue
             "chars" -> charsToRender = it.stringValue
+            "directory" -> directory = it.stringValue
         }
     }
 
@@ -74,14 +79,14 @@ fun main(args: Array<String>) {
         if (FT_New_Face(ftLibrary.value, fontName, 0, ftFace.ptr) != 0) {
             throw Error("Could not open font $fontName");
         }
-        FT_Set_Pixel_Sizes(ftFace.value, 0, fontSize)
+        FT_Set_Pixel_Sizes(ftFace.value, fontSize, fontSize)
         for (ch in charsToRender) {
             if (FT_Load_Char(ftFace.value, ch.toLong(), FT_LOAD_RENDER.narrow()) != 0) {
                 throw Error("Could not load character $ch")
             }
             val glyph = ftFace.value!!.pointed.glyph
-            mkdir("./glyphs", 493 /* 0755 */ )
-            saveGlyphTo(glyph!!, "./glyphs/symbol_$ch.bmp")
+            mkdir(directory, 493 /* 0755 */ )
+            saveGlyphTo(glyph!!, "$directory/$ch.bmp")
         }
     }
 }
