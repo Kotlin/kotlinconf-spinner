@@ -1,20 +1,15 @@
 apply plugin: 'konan'
 
-konanInterop {
-    sqlite3 {
-        defFile 'sqlite3.def'
-        klibDependsOn common
-    }
-}
-
 konanArtifacts {
-    ksqlite {
-        inputDir '.'
-        useInterop 'sqlite3'
-        useInteropsFromProject common // TODO: Remove when dependencies are supported.
+    interop('sqlite3') {
+        defFile 'src/sqlite3.def'
+    }
+
+    library('ksqlite') {
+        srcDir 'src'
+
         libraries {
-            fromProject common
+            artifact 'sqlite3'
         }
-        produce 'library'
     }
 }

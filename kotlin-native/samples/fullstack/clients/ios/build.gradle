@@ -19,14 +19,15 @@ allprojects {
 
 apply plugin: 'konan'
 
-konanArtifacts {
-    app {
-        target "iphone"
-        inputFiles fileTree('../shared/src/main/kotlin')
-        inputFiles fileTree('src/main/kotlin')
+konan.targets = ["iphone"]
 
-        // TODO: use the kommon.klib instead:
-        inputFiles file('../../common/src/KommonIOs.kt')
-        inputFiles file('../../common/src/Kommon.kt')
+konanArtifacts {
+    program ('app') {
+        srcFiles fileTree('../shared/src/main/kotlin')
+        srcFiles fileTree('src/main/kotlin')
+
+        libraries {
+            allLibrariesFrom common
+        }
     }
 }

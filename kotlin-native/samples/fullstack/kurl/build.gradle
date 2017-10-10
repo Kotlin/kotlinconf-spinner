@@ -1,20 +1,26 @@
 apply plugin: 'konan'
 
-konanInterop {
-    libcurl {
-        defFile 'libcurl.def'
-        klibDependsOn common
-    }
-}
+konan.targets += ['android_arm32', 'android_arm64']
 
 konanArtifacts {
-    kurl {
-        inputDir '.'
-        useInterop 'libcurl'
-        useInteropsFromProject common // TODO: Remove when dependencies are supported.
-        libraries {
-            fromProject common
+    interop('libcurl') {
+        defFile 'src/libcurl.def'
+
+        target('android_arm32') {
+            includeDirs  "$libcurlPath/include"
         }
-        produce 'library'
+
+        target('android_arm64') {
+            includeDirs  "$libcurlPath/include"
+        }
+    }
+
+    library('kurl') {
+        srcDir 'src'
+
+        libraries {
+            allLibrariesFrom common
+            artifact 'libcurl'
+        }
     }
 }

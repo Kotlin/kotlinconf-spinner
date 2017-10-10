@@ -1,8 +1,7 @@
 apply plugin: 'konan'
 
 konanArtifacts {
-    kliopt {
-        inputDir '.'
-        produce 'library'
+    library('kliopt') {
+        srcDir 'src'
     }
 }

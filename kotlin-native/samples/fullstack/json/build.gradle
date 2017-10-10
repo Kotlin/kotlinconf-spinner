@@ -1,21 +1,28 @@
 apply plugin: 'konan'
 
-konanInterop {
-    jansson {
-        defFile 'jansson.def'
-        klibDependsOn common
-    }
-}
+konan.targets += ['android_arm32', 'android_arm64']
 
 konanArtifacts {
-    kjson {
-        inputDir '.'
-        useInterop 'jansson'
-        useInteropsFromProject common // TODO: Remove when library dependencies are supported.
-        libraries {
-            fromProject common
+    interop('jansson') {
+        defFile 'src/jansson.def'
+
+        // TODO: Add `targets` block?
+        target('android_arm32') {
+            includeDirs  "$janssonPath/arm32/include"
         }
-        produce 'library'
+
+        target('android_arm64') {
+            includeDirs  "$janssonPath/arm64/include"
+        }
+    }
+
+    library('kjson') {
+        srcDir 'src'
+
+        libraries {
+            allLibrariesFrom common
+            artifact 'jansson'
+        }
     }
 }
 
