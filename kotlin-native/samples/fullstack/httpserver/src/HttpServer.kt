@@ -3,8 +3,7 @@ import ksqlite.*
 import kliopt.*
 import microhttpd.*
 import kommon.*
-import common.sockaddr
-import common.socklen_t
+import platform.posix.*
 
 import konan.initRuntimeIfNeeded
 import kotlin.system.exitProcess
@@ -354,7 +353,7 @@ fun main(args: Array<String>) {
     if (isDaemon) {
         println("Server started at http://localhost:$port going to background...")
         while (true) {
-            usleep(1000000)
+            kommon.usleep(1000000)
         }
     } else {
         println("Server started, connect to http://localhost:$port, press Enter to exit...")
