@@ -1,5 +1,5 @@
-kotlin-native/samples/fullstack/clients/android/Kotlin3dArm32
-kotlin-native/samples/fullstack/clients/android/Kotlin3dArm64
+kotlin-native/samples/fullstack/clients/android/out
+kotlin-native/samples/fullstack/static
 .DS_Store
 build
 .gradle
@@ -12,3 +12,4 @@ build
 *.dSYM
 *.klib-build
 cmake-build-*
+*.log

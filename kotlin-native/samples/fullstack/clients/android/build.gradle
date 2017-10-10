@@ -19,106 +19,76 @@ allprojects {
     }
 }
 
-project.ext.libcurlPath = file('../../../../external/curl/android')
-project.ext.janssonPath = file('../../../../external/jansson/android')
-project.ext.openalPath = file('../../../../external/openal/android')
-
-apply plugin: "konan"
-
-
 def platforms = [
-    [name: "arm32", konanTarget: "android_arm32", targetPlatform: "armeabi-v7a", artifact: "Kotlin3dArm32"],
-    [name: "arm64", konanTarget: "android_arm64", targetPlatform: "arm64-v8a", artifact: "Kotlin3dArm64"]
+        "armeabi-v7a": [konanTarget: "android_arm32", directory: "out/arm32"],
+        "arm64-v8a"  : [konanTarget: "android_arm64", directory: "out/arm64"]
 ]
 
+apply plugin: "konan"
+apply plugin: "com.android.model.application"
 
-konanInterop {
-    platforms.each { platform ->
-        "openal_${platform.name}" {
-            defFile "openal.def"
-            includeDirs "${project.ext.openalPath}/include"
-            includeDirs "."
-            target platform.konanTarget
-        }
-
-        "jansson_${platform.name}" {
-            defFile "../../json/src/jansson.def"
-            pkg "jansson"
-            includeDirs  "${project.ext.janssonPath}/${platform.name}/include"
-            target platform.konanTarget
-        }
-
-        "libcurl_${platform.name}" {
-            defFile "../../kurl/src/libcurl.def"
-            pkg "libcurl"
-            includeDirs  "${project.ext.libcurlPath}/include"
-            target platform.konanTarget
-        }
-    }
-}
+konan.targets = ['android_arm32', 'android_arm64']
 
 konanArtifacts {
-    platforms.each { platform ->
-        "Kommon_${platform.name}" {
-            inputFiles "../../common/src/Kommon.kt", "../../common/src/KommonLinux.kt", "../../common/src/KommonAndroid.kt"
-            produce "library"
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
-            target platform.konanTarget
+
+    interop ('openal') {
+        defFile "openal.def"
+        includeDirs "$openalPath/include"
+        includeDirs "."
+    }
+
+    program ('Loader') {
+        srcDir 'src/loader'
+        artifactName 'libloader'
+    }
+
+    program ('Kotlin3d') {
+        artifactName 'libkotlin3d'
+        srcFiles fileTree('../shared/src/main/kotlin')
+        srcFiles fileTree('src/main/kotlin')
+        enableOptimizations true
+        libraries {
+            artifact 'openal'
+            allLibrariesFrom common, json, kurl
         }
 
-        "KJson_${platform.name}" {
-            useInterop "jansson_${platform.name}"
-            inputFiles "../../json/src/KJson.kt"
-            library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
-            dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
-            produce "library"
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
-            target platform.konanTarget
+        target('android_arm32') {
+            linkerOpts "-L$libcurlPath/lib/armeabi-v7a -lcurl " +
+                    "$janssonPath/arm32/lib/libjansson.a " +
+                    "-L$openalPath/lib/armeabi-v7a -lopenal -lz"
         }
 
-        "Kurl_${platform.name}" {
-            useInterop "libcurl_${platform.name}"
-            inputFiles "../../kurl/src/KUrl.kt"
-            library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
-            dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
-            produce "library"
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
-            target platform.konanTarget
+        target('android_arm64') {
+            linkerOpts "-L$libcurlPath/lib/arm64-v8a -lcurl " +
+                    "$janssonPath/arm64/lib/libjansson.a " +
+                    "-L$openalPath/lib/arm64-v8a -lopenal -lz"
         }
 
-        "Loader_${platform.name}" {
-            target platform.konanTarget
-            inputDir "src/loader"
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
-            outputDir platform.artifact
-            outputName 'libloader'
-        }
+    }
+}
 
-        "$platform.artifact" {
-            useInterop "openal_${platform.name}"
-            library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
-            library konanArtifacts["KJson_${platform.name}"].compilationTask.artifact
-            library konanArtifacts["Kurl_${platform.name}"].compilationTask.artifact
-            library konanInterop["jansson_${platform.name}"].interopProcessingTask.klib
-            library konanInterop["libcurl_${platform.name}"].interopProcessingTask.klib
-            dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
-            dependsOn(konanArtifacts["KJson_${platform.name}"].compilationTask)
-            dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
-            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -L${project.ext.openalPath}/lib/${platform.targetPlatform} -lopenal -lz"
-            target platform.konanTarget
-            extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
-            outputDir platform.artifact
-            outputName 'libkotlin3d'
-            inputFiles fileTree('../shared/src/main/kotlin')
-            inputFiles fileTree('src/main/kotlin')
-            enableOptimization()
+task copyLibs(type: Copy) {
+    dependsOn konanArtifacts.Kotlin3d
+    dependsOn konanArtifacts.Loader
+    destinationDir projectDir
+
+    platforms.each { _, platform ->
+        into(platform.directory) {
+            from konanArtifacts.Kotlin3d."$platform.konanTarget".artifact
+            from konanArtifacts.Loader."$platform.konanTarget".artifact
         }
     }
 }
 
+clean {
+    doLast {
+        delete 'out'
+    }
+}
 
-
-apply plugin: "com.android.model.application"
+tasks.matching { it.name == 'preBuild' }.all {
+    it.dependsOn copyLibs
+}
 
 model {
     android {
@@ -138,7 +108,7 @@ model {
         productFlavors {
             create("arm") {
                 ndk {
-                    abiFilters.addAll(platforms.collect { it.targetPlatform })
+                    abiFilters.addAll("armeabi-v7a", "arm64-v8a")
                 }
             }
         }
@@ -160,12 +130,11 @@ model {
                 }
             }
         }
-}
+    }
 
     android.signingConfigs {
       create("release") {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
-            println(project.getProperty("RELEASE_STORE_FILE"))
             storeFile file(RELEASE_STORE_FILE)
             storePassword RELEASE_STORE_PASSWORD
             keyAlias RELEASE_KEY_ALIAS
@@ -179,25 +148,28 @@ model {
             libkotlin3d {
                     binaries.withType(SharedLibraryBinary) {
                         def name = targetPlatform.getName()
-                        def index = platforms.collect { it.targetPlatform }.indexOf(name)
-                        if (index >= 0)
-                            sharedLibraryFile = file("${platforms[index].artifact}/libkotlin3d.so")
+                        def platform = platforms[name]
+                        if (platform != null) {
+                            sharedLibraryFile = file("$platform.directory/libkotlin3d.so")
+                        }
                     }
             }
             libloader {
                 binaries.withType(SharedLibraryBinary) {
                     def name = targetPlatform.getName()
-                    def index = platforms.collect { it.targetPlatform }.indexOf(name)
-                    if (index >= 0)
-                        sharedLibraryFile = file("${platforms[index].artifact}/libloader.so")
+                    def platform = platforms[name]
+                    if (platform != null) {
+                        sharedLibraryFile = file("$platform.directory/libloader.so")
+                    }
                 }
             }
             libopenal {
                     binaries.withType(SharedLibraryBinary) {
                         def name = targetPlatform.getName()
-                        def index = platforms.collect { it.targetPlatform }.indexOf(name)
-                        if (index >= 0)
-                            sharedLibraryFile = file("${project.ext.openalPath}/lib/${name}/libopenal.so")
+                        def platform = platforms[name]
+                        if (platform != null) {
+                            sharedLibraryFile = file("$openalPath/lib/$name/libopenal.so")
+                        }
                     }
             }
        }
@@ -213,16 +185,12 @@ model {
             }
         }
     }
-
 }
 
-tasks.matching { it.name == 'preBuild' }.all {
-    platforms.each { platform ->
-        it.dependsOn "compileKonanLoader_${platform.name}"
-        it.dependsOn "compileKonan${platform.artifact}"
-    }
-}
-
-task buildApk(type: DefaultTask) {
+task buildApk(type: Copy) {
     dependsOn "assembleDebug"
+    destinationDir projectDir
+    from ('build/outputs/apk') {
+        into 'out'
+    }
 }

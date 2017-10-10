@@ -1,23 +1,19 @@
 apply plugin: 'konan'
 
-konanInterop {
-    microhttpd {
-        defFile 'microhttpd/microhttpd.def'
-        klibDependsOn common
-    }
-}
 
 konanArtifacts {
-    HttpServer {
-        inputDir '.'
-        useInterop 'microhttpd'
-        useInteropsFromProject common // TODO: Remove (dependencies)
-        useInteropsFromProject json // TODO: the same
-        useInteropsFromProject kurl // TODO: the same
-        useInteropsFromProject sql  // TODO: the same
+    interop('microhttpd') {
+        defFile 'microhttpd/microhttpd.def'
+    }
+
+
+    program('HttpServer') {
+        srcDir 'src'
+        enableOptimizations true
+
         libraries {
-            fromProjects common, json, kurl, sql, getopt
+            allLibrariesFrom common, json, sql, getopt
+            artifact 'microhttpd'
         }
-        enableOptimization()
     }
 }

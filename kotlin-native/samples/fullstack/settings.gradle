@@ -1,0 +1,21 @@
+rootProject.name = "kotlin-native-demo"
+
+def konanBuildPath = gradle.startParameter.projectProperties['konan.build']
+if (konanBuildPath != null) {
+    includeBuild(konanBuildPath)
+    gradle.allprojects {
+        it.extensions.extraProperties.set('konan.home', "$konanBuildPath/dist")
+    }
+}
+
+
+include ':clients:android'
+include ':clients:cli'
+include ':clients:ios'
+include ':clients:webassembly'
+include ':common'
+include ':getopt'
+include ':httpserver'
+include ':json'
+include ':kurl'
+include ':sql'

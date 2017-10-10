@@ -1,31 +1,10 @@
 apply plugin: 'konan'
 
-/*
-
-konanc Client.kt \
-                     -library $DIR/../../json/kjson.klib \
-                     -library $DIR/../../json/jansson.klib \
-                     -library $DIR/../../kurl/kurl.klib \
-                     -library $DIR/../../kurl/libcurl.klib \
-                     -library $DIR/../../getopt/kliopt.klib \
-                     -library $DIR/../../common/common.klib \
-                     -library $DIR/../../common/kommon.klib \
-                     -o CliClient
-
- */
-
 konanArtifacts {
-    CliClient {
-
-        inputFiles 'Client.kt'
-
-        useInteropsFromProject common // TODO: Remove (dependencies)
-        useInteropsFromProject json  // TODO: the same
-        useInteropsFromProject kurl // TODO: the same
-        useInteropsFromProject sql  // TODO: the same
-
+    program('CliClient') {
+        srcDir 'src'
         libraries {
-            fromProjects common, json, kurl, sql, getopt
+            allLibrariesFrom common, json, kurl, sql, getopt
         }
     }
 }
