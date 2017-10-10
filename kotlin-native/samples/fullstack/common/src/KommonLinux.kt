@@ -1,6 +1,6 @@
 package kommon
 
-import common.*
+import platform.posix.*
 import kotlinx.cinterop.*
 
 fun randomInit() = memScoped {

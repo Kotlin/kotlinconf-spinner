@@ -15,10 +15,10 @@
  */
 
 import kotlinx.cinterop.*
-import android.*
+import platform.android.*
 import kotlin.system.*
-import common.utsname
-import common.uname
+import platform.posix.*
+import kommon.machineName
 import kurl.*
 import kjson.*
 import konan.worker.*
@@ -31,7 +31,7 @@ fun logError(message: String) {
 fun logInfo(message: String) = println(message)
 
 val errno: Int
-    get() = interop_errno()
+    get() = posix_errno()
 
 fun getUnixError() = strerror(errno)!!.toKString()
 
@@ -46,15 +46,6 @@ fun main(args: Array<String>) {
         getNativeActivityState(state.ptr)
         val engine = Engine(this, state)
         engine.mainLoop()
-    }
-}
-
-fun machineName() = memScoped {
-    val u = alloc<utsname>()
-    if (uname(u.ptr) == 0) {
-        "${u.sysname.toKString()} ${u.machine.toKString()}"
-    } else {
-        "unknown"
     }
 }
 

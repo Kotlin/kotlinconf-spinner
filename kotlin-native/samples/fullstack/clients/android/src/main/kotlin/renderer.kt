@@ -15,9 +15,10 @@
  */
 
 import kotlinx.cinterop.*
-import android.*
-import common.utsname
-import common.uname
+import platform.android.*
+import platform.egl.*
+import platform.gles2.*
+import platform.gles3.*
 import kurl.*
 import kjson.*
 import konan.worker.*

@@ -1,7 +1,7 @@
 package kommon
 
 import kotlinx.cinterop.*
-import android.*
+import platform.android.*
 
 fun readResource(resourceName: String): ByteArray {
     memScoped {
@@ -22,4 +22,3 @@ fun readResource(resourceName: String): ByteArray {
         }
     }
 }
-

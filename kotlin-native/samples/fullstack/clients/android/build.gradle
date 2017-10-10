@@ -34,19 +34,10 @@ def platforms = [
 
 konanInterop {
     platforms.each { platform ->
-        "platform_${platform.name}" {
-            defFile "android.def"
-            pkg "android"
-            // TODO: launcher header will be part of the platform library.
+        "openal_${platform.name}" {
+            defFile "openal.def"
             includeDirs "${project.ext.openalPath}/include"
             includeDirs "."
-            target platform.konanTarget
-        }
-
-        "common_${platform.name}" {
-            defFile "../../common/src/common.def"
-            pkg "common"
-            //includeDirs  ""
             target platform.konanTarget
         }
 
@@ -69,8 +60,6 @@ konanInterop {
 konanArtifacts {
     platforms.each { platform ->
         "Kommon_${platform.name}" {
-            useInterop "common_${platform.name}"
-            useInterop "platform_${platform.name}"
             inputFiles "../../common/src/Kommon.kt", "../../common/src/KommonLinux.kt", "../../common/src/KommonAndroid.kt"
             produce "library"
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
@@ -88,7 +77,6 @@ konanArtifacts {
         }
 
         "Kurl_${platform.name}" {
-            useInterop "common_${platform.name}"
             useInterop "libcurl_${platform.name}"
             inputFiles "../../kurl/src/KUrl.kt"
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
@@ -99,7 +87,6 @@ konanArtifacts {
         }
 
         "Loader_${platform.name}" {
-            useInterop "platform_${platform.name}"
             target platform.konanTarget
             inputDir "src/loader"
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
@@ -108,11 +95,10 @@ konanArtifacts {
         }
 
         "$platform.artifact" {
-            useInterop "platform_${platform.name}"
+            useInterop "openal_${platform.name}"
             library konanArtifacts["Kommon_${platform.name}"].compilationTask.artifact
             library konanArtifacts["KJson_${platform.name}"].compilationTask.artifact
             library konanArtifacts["Kurl_${platform.name}"].compilationTask.artifact
-            library konanInterop["common_${platform.name}"].interopProcessingTask.klib
             library konanInterop["jansson_${platform.name}"].interopProcessingTask.klib
             library konanInterop["libcurl_${platform.name}"].interopProcessingTask.klib
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
@@ -173,12 +159,13 @@ model {
                    signingConfig = $("android.signingConfigs.release")
                 }
             }
-}
+        }
 }
 
     android.signingConfigs {
       create("release") {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
+            println(project.getProperty("RELEASE_STORE_FILE"))
             storeFile file(RELEASE_STORE_FILE)
             storePassword RELEASE_STORE_PASSWORD
             keyAlias RELEASE_KEY_ALIAS
@@ -230,10 +217,10 @@ model {
 }
 
 tasks.matching { it.name == 'preBuild' }.all {
-    it.dependsOn 'compileKonanLoader_arm32'
-    it.dependsOn 'compileKonanLoader_arm64'
-    it.dependsOn 'compileKonanKotlin3dArm32'
-    it.dependsOn 'compileKonanKotlin3dArm64'
+    platforms.each { platform ->
+        it.dependsOn "compileKonanLoader_${platform.name}"
+        it.dependsOn "compileKonan${platform.artifact}"
+    }
 }
 
 task buildApk(type: DefaultTask) {

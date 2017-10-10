@@ -2,7 +2,7 @@ package kurl
 
 import kotlinx.cinterop.*
 import libcurl.*
-import common.size_t
+import platform.posix.size_t
 
 class KUrlError(message: String) : Error(message)
 

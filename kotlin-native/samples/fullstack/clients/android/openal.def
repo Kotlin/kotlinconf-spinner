@@ -1,0 +1,8 @@
+package = platform.OpenAL
+depends = posix
+headers = AL/al.h AL/alc.h androidLauncher.h
+---
+
+static int interop_errno() {
+	return errno;
+}

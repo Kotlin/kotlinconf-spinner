@@ -1,4 +1,5 @@
-import android.*
+import platform.posix.*
+import platform.android.*
 import kotlinx.cinterop.*
 import kotlin.text.*
 

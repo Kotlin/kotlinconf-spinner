@@ -1,12 +1,12 @@
 package kommon
 
-import common.*
+import platform.posix.*
 import kotlinx.cinterop.*
 
-fun allocMemory(size: Int) = common.calloc(1, size.signExtend())
-fun freeMemory(ptr: COpaquePointer) = common.free(ptr)
+fun allocMemory(size: Int) = calloc(1, size.signExtend())
+fun freeMemory(ptr: COpaquePointer) = free(ptr)
 
-fun random() = common.random()
+fun random() = platform.posix.random()
 
 fun readFileData(path: String): ByteArray? {
     return memScoped {
@@ -58,7 +58,7 @@ fun sockaddrAsString(sockaddr: CPointer<sockaddr>?, socklen: socklen_t) =
 
 fun machineName() =
         memScoped {
-            val u = alloc<utsname>()
+            val u = alloc<platform.posix.utsname>()
             if (uname(u.ptr) == 0) {
                 "${u.sysname.toKString()} ${u.machine.toKString()}"
             } else {
@@ -66,7 +66,7 @@ fun machineName() =
             }
         }
 
-fun usleep(microseconds: Int) = common.usleep(microseconds)
+fun usleep(microseconds: Int) = platform.posix.usleep(microseconds)
 
 class BMPHeader(val rawPtr: NativePtr) {
     inline fun <reified T : CPointed> memberAt(offset: Long): T {

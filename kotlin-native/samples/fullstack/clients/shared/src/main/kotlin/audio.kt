@@ -15,7 +15,8 @@
  */
 
 import kotlinx.cinterop.*
-import android.*
+import platform.posix.*
+import platform.OpenAL.*
 
 private fun CPointer<ByteVar>.toKString(length: Int): String {
     val bytes = this.readBytes(length)
@@ -71,6 +72,7 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
     }
 
     fun initialize() {
+        deinit()
         println("Initializing Open AL...")
         device = alcOpenDevice(null)
         if (device == null) {
