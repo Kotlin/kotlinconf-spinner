@@ -129,9 +129,13 @@ class BMPHeader(val rawPtr: NativePtr) {
         get() = memberAt<IntVar>(66).value.toInt()
         set(value) { memberAt<IntVar>(66).value = value }
 
-    val dataV3
-        get() = interpretCPointer<ByteVar>(rawPtr + 54) as CArrayPointer<ByteVar>
+    val data
+        get() = interpretCPointer<ByteVar>(rawPtr + 14 + headerSize.toLong()) as CArrayPointer<ByteVar>
 
-    val dataV5
-        get() = interpretCPointer<ByteVar>(rawPtr + 138) as CArrayPointer<ByteVar>
+    val version
+        get() = when (headerSize) {
+            40 -> 3
+            124 -> 5
+            else -> TODO()
+        }
 }

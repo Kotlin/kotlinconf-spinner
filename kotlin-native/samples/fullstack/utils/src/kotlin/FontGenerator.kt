@@ -21,16 +21,16 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
         val bmpHeader = BMPHeader(pinned.addressOf(0).rawValue)
         bmpHeader.magic = 0x4d42
         bmpHeader.fileSize = bmpHeaderData.size + bmpDataSize
-        bmpHeader.headerSize = headerSize - 14
+        bmpHeader.headerSize = headerSize - 14 /* sizeof(BITMAPFILEHEADER) */
         bmpHeader.dataOffset = bmpHeaderData.size
         bmpHeader.compressionMethod = 3
         bmpHeader.width = bitmap.width
         bmpHeader.height = bitmap.rows
         bmpHeader.colorPlanes = 1
         bmpHeader.bits = bpp.toShort()
-        bmpHeader.redChannelMask   = 0x0000_ff00
+        bmpHeader.redChannelMask   = 0xff00_0000.toInt()
         bmpHeader.greenChannelMask = 0x00ff_0000
-        bmpHeader.blueChannelMask  = 0xff00_0000.toInt()
+        bmpHeader.blueChannelMask  = 0x0000_ff00
         bmpHeader.alphaChannelMask = 0x0000_00ff
     }
     writeToFileData(path, bmpHeaderData)
@@ -40,10 +40,10 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
             var srcIndex = y * bitmap.width + x
             var color = (bitmap.buffer + srcIndex)!!.pointed.value
             var dstIndex = bmpWidth * (bitmap.rows - 1 - y) + x * bpp / 8
-            bmpData[dstIndex]     = color
-            bmpData[dstIndex + 1] = color
-            bmpData[dstIndex + 2] = color
-            bmpData[dstIndex + 3] = color
+            bmpData[dstIndex]     = color // Alpha channel.
+            bmpData[dstIndex + 1] = color // Red.
+            bmpData[dstIndex + 2] = color // Green.
+            bmpData[dstIndex + 3] = color // Blue.
 
         }
     }
@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
             OptionDescriptor(OptionType.STRING, "f", "font", "Font to use", "/Library/Fonts/Andale Mono.ttf"),
             OptionDescriptor(OptionType.INT, "s", "size", "Size of the font", "72"),
             OptionDescriptor(OptionType.STRING, "c", "chars", "Characters to render", "0123456789"),
-            OptionDescriptor(OptionType.STRING, "d", "directory", "Direct to use", "./glyphs")
+            OptionDescriptor(OptionType.STRING, "d", "directory", "Directory to use", "./glyphs")
     ), args).forEach {
         when (it.descriptor?.longName) {
             "font" -> fontName = it.stringValue
@@ -69,6 +69,8 @@ fun main(args: Array<String>) {
             "directory" -> directory = it.stringValue
         }
     }
+
+    mkdir(directory, 493 /* 0755 */ )
 
     memScoped {
         val ftLibrary = alloc<FT_LibraryVar>()
@@ -85,7 +87,6 @@ fun main(args: Array<String>) {
                 throw Error("Could not load character $ch")
             }
             val glyph = ftFace.value!!.pointed.glyph
-            mkdir(directory, 493 /* 0755 */ )
             saveGlyphTo(glyph!!, "$directory/$ch.bmp")
         }
     }

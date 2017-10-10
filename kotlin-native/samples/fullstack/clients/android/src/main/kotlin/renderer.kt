@@ -124,7 +124,6 @@ class Renderer(val nativeActivity: ANativeActivity, val playSound: Boolean = fal
             this@Renderer.screen = Vector2(width.value.toFloat(), height.value.toFloat())
 
             gameRenderer = GameRenderer()
-
             initialized = true
 
             return true
