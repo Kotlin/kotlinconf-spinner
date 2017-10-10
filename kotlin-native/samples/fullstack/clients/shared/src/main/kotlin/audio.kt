@@ -26,14 +26,15 @@ private fun CPointer<ByteVar>.toKString(length: Int): String {
 class SoundPlayerImpl(val resourceName: String): SoundPlayer {
     var device: CPointer<ALCdevice>? = null
     var context: CPointer<ALCcontext>? = null
-    var source: ALuintVar? = null
-    var buffer: ALuintVar? = null
+    val source: ALuintVar
+    val buffer: ALuintVar
 
-    val arena = Arena()
-    var rawWAV: CArrayPointer<ByteVar>? = null
-    var rawWAVSize = 0
+    private val arena = Arena()
+    private lateinit var rawWAV: ByteArray
+    private var pinnedBuffer: Pinned<ByteArray>? = null
     var samplesPerSec = 0
     var format = 0
+    var enabled = true
 
     init {
         val fileBytes = kommon.readResource(resourceName)
@@ -57,9 +58,8 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
                 logError("Error parsing wav file 4")
                 return@usePinned
             }
-            rawWAV = arena.allocArray<ByteVar>(header.dataSize)
-            memcpy(rawWAV, header.rawData, header.dataSize.signExtend())
-            rawWAVSize = header.dataSize.toInt()
+            rawWAV = ByteArray(header.dataSize)
+            memcpy(rawWAV.refTo(0), header.rawData, rawWAV.size.signExtend())
             samplesPerSec = header.samplesPerSec
 
             format = when (header.bitsPerSample) {
@@ -69,10 +69,16 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
             }
             println("Wav successfully parsed")
         }
+
+        buffer = nativeHeap.alloc<ALuintVar>()
+        source = nativeHeap.alloc<ALuintVar>()
+    }
+
+    fun enable(enabled: Boolean) {
+        this.enabled = enabled
     }
 
     fun initialize() {
-        deinit()
         println("Initializing Open AL...")
         device = alcOpenDevice(null)
         if (device == null) {
@@ -86,41 +92,51 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
             return
         }
         alcMakeContextCurrent(context)
-        rawWAV?.let {
-            buffer = arena.alloc<ALuintVar>()
-            alGenBuffers(1, buffer!!.ptr)
-            alBufferData(buffer!!.value, format, it, rawWAVSize.signExtend(), samplesPerSec)
-        }
+        alGenBuffers(1, buffer!!.ptr)
+        pinnedBuffer = rawWAV.pin()
+        alBufferData(buffer!!.value, format, pinnedBuffer!!.addressOf(0), rawWAV.size, samplesPerSec)
+        alGenSources(1, source!!.ptr)
     }
 
     override fun play() {
+        if (!enabled) return
         stop()
-        buffer?.let {
-            if (source == null) {
-                source = arena.alloc<ALuintVar>()
-                alGenSources(1, source!!.ptr)
-            }
-            alSourceQueueBuffers(source!!.value, 1, it.ptr)
-            alSourcePlay(source!!.value)
-        }
+        alSourceQueueBuffers(source!!.value, 1, buffer!!.ptr)
+        alSourcePlay(source!!.value)
     }
 
     fun stop() {
-        if (source == null) return
-        buffer?.let {
-            alSourceStop(source!!.value)
-            alSourceUnqueueBuffers(source!!.value, 1, it.ptr)
-        }
+        alSourceStop(source!!.value)
+        alSourceUnqueueBuffers(source!!.value, 1, buffer!!.ptr)
     }
 
     fun deinit() {
+        println("Deitializing Open AL...")
+
         stop()
-        source?.let { alDeleteSources(1, it.ptr) }
-        buffer?.let { alDeleteBuffers(1, it.ptr) }
+        if (source != null) {
+            // Let playback finish.
+            memScoped {
+                val state = alloc<ALintVar>()
+                do {
+                    alGetSourcei(source.value, AL_SOURCE_STATE, state.ptr)
+                } while (state.value == AL_PLAYING)
+            }
+        }
+
+        alDeleteSources(1, source.ptr)
+        alDeleteBuffers(1, buffer.ptr)
 
         alcMakeContextCurrent(null)
         context?.let { alcDestroyContext(it) }
+        context = null
         device?.let { alcCloseDevice(it) }
+        device = null
+
+        pinnedBuffer?.let {
+            it.unpin()
+        }
+        pinnedBuffer = null
     }
 }
 

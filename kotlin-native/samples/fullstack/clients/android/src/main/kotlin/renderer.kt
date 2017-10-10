@@ -23,7 +23,7 @@ import kurl.*
 import kjson.*
 import konan.worker.*
 
-class Renderer(val nativeActivity: ANativeActivity, val playSound: Boolean = false) {
+class Renderer(val nativeActivity: ANativeActivity) {
 
     private val arena = Arena()
     private var display: EGLDisplay? = null
@@ -35,7 +35,7 @@ class Renderer(val nativeActivity: ANativeActivity, val playSound: Boolean = fal
     private lateinit var gameRenderer: GameRenderer
 
     fun initialize(window: CPointer<ANativeWindow>): Boolean {
-        with(arena) {
+        with (arena) {
             logInfo("Initializing context..")
             display = eglGetDisplay(null)
             if (display == null) {
@@ -76,11 +76,11 @@ class Renderer(val nativeActivity: ANativeActivity, val playSound: Boolean = fal
                 val d = alloc<EGLintVar>()
                 val z = alloc<EGLintVar>()
                 if (eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RED_SIZE, r.ptr) != 0 &&
-                        eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_GREEN_SIZE, g.ptr) != 0 &&
-                        eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_BLUE_SIZE, b.ptr) != 0 &&
-                        eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_DEPTH_SIZE, d.ptr) != 0 &&
-                        eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RENDERABLE_TYPE, z.ptr) != 0 &&
-                        r.value == 8 && g.value == 8 && b.value == 8 && d.value >= 24 && (z.value and EGL_OPENGL_ES2_BIT) != 0) {
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_GREEN_SIZE, g.ptr) != 0 &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_BLUE_SIZE, b.ptr) != 0 &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_DEPTH_SIZE, d.ptr) != 0 &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RENDERABLE_TYPE, z.ptr) != 0 &&
+                    r.value == 8 && g.value == 8 && b.value == 8 && d.value >= 24 && (z.value and EGL_OPENGL_ES2_BIT) != 0) {
                     break
                 }
                 ++configIndex
@@ -143,16 +143,17 @@ class Renderer(val nativeActivity: ANativeActivity, val playSound: Boolean = fal
 
         logInfo("Destroying context..")
 
-        eglMakeCurrent(display, null, null, null)
-        context?.let { eglDestroyContext(display, it) }
-        surface?.let { eglDestroySurface(display, it) }
-        eglTerminate(display)
-
-        display = null
-        surface = null
-        context = null
+        if (display != null) {
+            eglMakeCurrent(display, null, null, null)
+            context?.let { eglDestroyContext(display, it) }
+            context = null
+            surface?.let { eglDestroySurface(display, it) }
+            surface = null
+            eglTerminate(display)
+            display = null
+        }
         initialized = false
 
-        arena.clear()
+        // arena.clear()
     }
 }

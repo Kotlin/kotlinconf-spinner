@@ -39,7 +39,6 @@ const val LOOPER_ID_INPUT = 2
 
 const val LOOPER_ID_SENSOR = 3
 
-@konan.internal.ExportForCppRuntime
 fun main(args: Array<String>) {
     memScoped {
         val state = alloc<NativeActivityState>()
@@ -116,9 +115,9 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
                     result!!
                 }
             } catch (error: KUrlError) {
-                "network problem: $error"
+                "Network problem: $error"
             } catch (t: Throwable) {
-                "Esception: $t"
+                "Exception: $t"
             } finally {
                 kurl.close()
             }
@@ -140,7 +139,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private val gameState = GameState(SceneState(), statsFetcher, soundPlayer)
     private val touchControl = TouchControl(gameState)
 
-    private val renderer = Renderer(state.activity!!.pointed, true)
+    private val renderer = Renderer(state.activity!!.pointed)
     private var queue: CPointer<AInputQueue>? = null
     private var sensorQueue: CPointer<ASensorEventQueue>? = null
     private var sensor: CPointer<ASensor>? = null
@@ -150,6 +149,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private var startTime = 0.0f
     private var startPoint = Vector2.Zero
     private var diagonal = 0.0f
+    private var hasSound = true
     private var playSound = true
 
     fun initSensors() {
@@ -211,14 +211,15 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     println("NativeActivityEventKind.START")
                     needRedraw = true
                     ASensorEventQueue_enableSensor(sensorQueue, sensor)
-                    if (playSound)
+                    if (hasSound)
                         soundPlayer.initialize()
+                    soundPlayer.enable(playSound)
                 }
 
                 NativeActivityEventKind.STOP -> {
                     println("NativeActivityEventKind.STOP")
                     ASensorEventQueue_disableSensor(sensorQueue, sensor)
-                    if (playSound)
+                    if (hasSound)
                         soundPlayer.deinit()
                 }
 
@@ -325,7 +326,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     }
 
     var shakeTimestamp: Long = 0
-
 
     private fun processSensorInput(): Unit = memScoped {
         if (sensorQueue == null) return

@@ -80,7 +80,7 @@ class TouchControl(val gameState: GameState) {
     fun shake(acceleration: Vector3) {
         val velocity = directionProjection(acceleration)
         gameState.startIntertialRotation(axis = Vector2(velocity.y, -velocity.x),
-                angularSpeed = 2.0f * M_PI.toFloat(), angularAcceleration = -M_PI.toFloat())
+                angularSpeed = 2.5f * M_PI.toFloat(), angularAcceleration = -M_PI.toFloat())
     }
 
     private fun movementToRotation(movement: Vector2) =

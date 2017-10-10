@@ -180,7 +180,7 @@ private class KotlinLogoRenderer {
         val texcoord = Vector2Attribute("texcoord")
     }
 
-    private val poly = KotlinLogo(0.5f, 0.167f)
+    private val poly = KotlinLogo(0.5f, 0.5f)
 
     fun render(modelview: Matrix4, projection: Matrix4) {
 
