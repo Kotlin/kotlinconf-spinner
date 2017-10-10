@@ -135,7 +135,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         it.asyncFetch()
     }
 
-    private val soundPlayer = SoundPlayerImpl("tintin.wav")
+    private val soundPlayer = SoundPlayerImpl("swish.wav")
 
     private val gameState = GameState(SceneState(), statsFetcher, soundPlayer)
     private val touchControl = TouchControl(gameState)
@@ -326,21 +326,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
 
     var shakeTimestamp: Long = 0
 
-    private fun directionProjection(vector3: Vector3): Vector2 {
-        val array3 = FloatArray(3)
-        array3[0] = vector3.x
-        array3[1] = vector3.y
-        array3[2] = vector3.z
-        var gravityIndex = -1
-        for (i in 0 .. 2) {
-            if (fabsf(array3[i] - ASENSOR_STANDARD_GRAVITY) < 2.0f) {
-                gravityIndex = i
-            }
-        }
-        if (gravityIndex >= 0)
-            array3[gravityIndex] = array3[gravityIndex] - ASENSOR_STANDARD_GRAVITY
-        return Vector2(array3[0], array3[1]).normalized()
-    }
 
     private fun processSensorInput(): Unit = memScoped {
         if (sensorQueue == null) return
@@ -352,16 +337,8 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             if (force < 2.1f || shakeTimestamp + 1000 > now) {
                 continue
             }
-            val screenDirection = directionProjection(Vector3(a.x, a.y, a.z))
-            shakeTimestamp = now
-            // TODO: uncomment.
-//            animating = true
-//            velocity = screenDirection * renderer.screen.length * 3.0f
-//            acceleration = velocity.normalized() * (-renderer.screen.length * 1.0f)
-//            animationEndTime = velocity.length / acceleration.length
-//            startTime = getTime()
-//            startPoint = currentPoint
-
+            touchControl.shake(Vector3(
+                    a.x / ASENSOR_STANDARD_GRAVITY, a.y / ASENSOR_STANDARD_GRAVITY, a.z / ASENSOR_STANDARD_GRAVITY))
         }
     }
 }

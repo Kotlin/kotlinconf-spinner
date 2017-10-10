@@ -15,6 +15,7 @@
  */
 
 import platform.posix.M_PI
+import platform.posix.fabsf
 
 // Note: all coordinates are normed by the screen size
 // and grow when going from bottom-left corner to top-right one;
@@ -58,7 +59,29 @@ class TouchControl(val gameState: GameState) {
         gameState.startIntertialRotation(axis, angularSpeed, angularAcceleration = -M_PI.toFloat())
     }
 
+    private fun directionProjection(vector3: Vector3): Vector2 {
+        val array3 = FloatArray(3)
+        array3[0] = vector3.x
+        array3[1] = vector3.y
+        array3[2] = vector3.z
+        var gravityIndex = -1
+        for (i in 0 .. 2) {
+            if (fabsf(array3[i] - 1.0f) < 0.2f) {
+                gravityIndex = i
+            }
+        }
+        if (gravityIndex >= 0)
+            array3[gravityIndex] = array3[gravityIndex] - 1.0f
+        return Vector2(array3[0], array3[1]).normalized()
+    }
+
     private data class Rotation(val axis: Vector2, val angle: Float)
+
+    fun shake(acceleration: Vector3) {
+        val velocity = directionProjection(acceleration)
+        gameState.startIntertialRotation(axis = Vector2(velocity.y, -velocity.x),
+                angularSpeed = 2.0f * M_PI.toFloat(), angularAcceleration = -M_PI.toFloat())
+    }
 
     private fun movementToRotation(movement: Vector2) =
             Rotation(
