@@ -104,7 +104,7 @@ konanArtifacts {
             dependsOn(konanArtifacts["Kommon_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["KJson_${platform.name}"].compilationTask)
             dependsOn(konanArtifacts["Kurl_${platform.name}"].compilationTask)
-            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -L${project.ext.openalPath}/lib/${platform.targetPlatform} -lopenal"
+            linkerOpts "-L${project.ext.libcurlPath}/lib/${platform.targetPlatform} -lcurl ${project.ext.janssonPath}/${platform.name}/lib/libjansson.a -L${project.ext.openalPath}/lib/${platform.targetPlatform} -lopenal -lz"
             target platform.konanTarget
             extraOpts "-r", "build/konan/bin", "-r", "build/konan/c_interop"
             outputDir platform.artifact
