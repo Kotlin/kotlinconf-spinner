@@ -71,6 +71,10 @@ open class GlShaderProgram(vertexShaderSource: String, fragmentShaderSource: Str
         val location = glGetUniformLocation(this@GlShaderProgram.program, name)
     }
 
+    inner class IntUniform(name: String) : Uniform(name) {
+        fun assign(value: Int) = glUniform1i(this.location, value)
+    }
+
     inner class Vector2Uniform(name: String) : Uniform(name) {
         fun assign(value: Vector2) = glUniform2f(this.location, value.x, value.y)
     }

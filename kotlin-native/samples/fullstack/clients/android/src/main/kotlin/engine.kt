@@ -81,6 +81,7 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
                         logError("A KJsonObject expected but was $it")
                     else {
                         val myColor = it.getInt("color") - 1
+                        val myContribution = it.getInt("contribution")
                         val colors = it.getArray("colors")
                         val counts = IntArray(colors.size)
                         counts.indices.forEach {
@@ -91,7 +92,7 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
                             counts[color - 1] = counter
                         }
                         it.close()
-                        mostRecentlyFetched = Stats(counts, enumValues<Team>()[myColor])
+                        mostRecentlyFetched = Stats(counts, enumValues<Team>()[myColor], myContribution)
                     }
                 }
             }

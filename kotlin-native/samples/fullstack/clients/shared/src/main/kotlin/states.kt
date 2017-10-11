@@ -31,7 +31,7 @@ enum class Team(val colorVector: Vector3) {
     }
 }
 
-class Stats(private val counts: IntArray, val myTeam: Team) {
+class Stats(private val counts: IntArray, val myTeam: Team, val myContribution: Int) {
     fun getCount(team: Team): Int = counts[team.ordinal]
 }
 

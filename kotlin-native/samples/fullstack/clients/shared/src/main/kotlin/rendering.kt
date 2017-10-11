@@ -17,6 +17,7 @@
 import kotlinx.cinterop.*
 import platform.glescommon.*
 import platform.gles3.*
+import kommon.*
 
 private class RectRenderer {
     private val program = object : GlShaderProgram(
@@ -73,6 +74,71 @@ private class RectRenderer {
     }
 }
 
+private class TexturedRectRenderer {
+    private val program = object : GlShaderProgram(
+            vertexShaderSource = """
+                #version 300 es
+
+                precision mediump float;
+
+                in vec2 position;
+                in vec2 texcoord;
+                out vec2 fragTexcoord;
+
+                void main()
+                {
+                    gl_Position = vec4(position, 0.99, 1.0);
+
+                    fragTexcoord = texcoord;
+                }
+            """.trimIndent(),
+
+            fragmentShaderSource = """
+                #version 300 es
+
+                precision mediump float;
+
+                uniform sampler2D tex;
+
+                in vec2 fragTexcoord;
+                out vec4 outColor;
+
+                void main()
+                {
+                    outColor = texture(tex, fragTexcoord);
+                }
+            """.trimIndent()
+    ) {
+        val position = Vector2Attribute("position")
+        val texcoord = Vector2Attribute("texcoord")
+        val tex = IntUniform("tex")
+    }
+
+    /**
+     * Draws a 2D rectangle specified in a normalized device coordinates,
+     * i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.
+     */
+    fun render(x: Float, y: Float, w: Float, h: Float, texture: GLuint) {
+        this.program.let {
+            it.activate()
+
+            val positions = listOf(
+                    Vector2(x, y), Vector2(x + w, y), Vector2(x, y + h),
+                    Vector2(x + w, y), Vector2(x + w, y + h), Vector2(x, y + h)
+            )
+            val texCoords = listOf(
+                    Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f), Vector2(0.0f, 1.0f),
+                    Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f), Vector2(0.0f, 1.0f)
+            )
+            it.position.assign(positions)
+            it.texcoord.assign(texCoords)
+            it.tex.assign(texture)
+
+            glDrawArrays(GL_TRIANGLES, 0, positions.size)
+        }
+    }
+}
+
 private class KotlinLogo(val s: Float, val d: Float) {
 
     class Face(val indices: IntArray, val texCoords: Array<Vector2>)
@@ -114,7 +180,7 @@ private class KotlinLogo(val s: Float, val d: Float) {
     )
 }
 
-private class KotlinLogoRenderer {
+private class KotlinLogoRenderer(val texture: GLuint) {
     private val program = object : GlShaderProgram(
             vertexShaderSource = """
                 #version 300 es
@@ -178,6 +244,7 @@ private class KotlinLogoRenderer {
         val position = Vector3Attribute("position")
         val normal = Vector3Attribute("normal")
         val texcoord = Vector2Attribute("texcoord")
+        val tex = IntUniform("tex")
     }
 
     private val poly = KotlinLogo(0.5f, 0.5f)
@@ -218,6 +285,7 @@ private class KotlinLogoRenderer {
             it.position.assign(positions)
             it.normal.assign(normals)
             it.texcoord.assign(texCoords)
+            it.tex.assign(texture)
 
             glDrawElements(
                     GL_TRIANGLES,
@@ -227,18 +295,10 @@ private class KotlinLogoRenderer {
             )
         }
     }
-
-    init {
-        loadTextureFromBmpResource("rsz_3kotlin_logo_3d.bmp")
-    }
 }
 
-private fun loadTextureFromBmpResource(resourceName: String) {
-    val texture = memScoped {
-        val resultVar = alloc<GLuintVar>()
-        glGenTextures(1, resultVar.ptr)
-        resultVar.value
-    }
+private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, texture: GLuint) {
+    glActiveTexture(textureId)
     glBindTexture(GL_TEXTURE_2D, texture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
@@ -249,22 +309,56 @@ private fun loadTextureFromBmpResource(resourceName: String) {
     fileBytes.usePinned {
         val fileBytesPtr = it.addressOf(0)
         with(BMPHeader(fileBytesPtr.rawValue)) {
-            if (magic != 0x4d42 || zero != 0 || size != fileBytes.size || bits != 24) {
+            if (magic.toInt() != 0x4d42 || fileSize != fileBytes.size) {
                 throw Error("Error parsing texture file")
             }
-            val numberOfBytes = width * height * 3
-            for (i in 0 until numberOfBytes step 3) {
-                val t = data[i]
-                data[i] = data[i + 2]
-                data[i + 2] = t
+            when (bits.toInt()) {
+                24 -> {
+                    val numberOfBytes = width * height * 3
+                    for (i in 0 until numberOfBytes step 3) {
+                        val t = data[i]
+                        data[i] = data[i + 2]
+                        data[i + 2] = t
+                    }
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data)
+                }
+                32 -> {
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data)
+                }
+                else -> error("Unsupported bmp format")
             }
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data)
         }
     }
 }
 
+private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int) {
+    val margin = 0.01f
+    val digitWidth = (w - 4 * margin) / 5
+    val digits = mutableListOf<Int>()
+    var s = score
+    while (s > 0) {
+        digits += s % 10
+        s /= 10
+    }
+    if (digits.size == 0)
+        digits += 0
+    digits.reverse()
+    var cx = maxOf(0.0f, w - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
+    val digitHeight = minOf(h, digitWidth * 1.5f)
+    digits.forEachIndexed { i, d ->
+        render(
+                x + cx, y + margin,
+                digitWidth, digitHeight - margin,
+                d
+        )
+        cx += digitWidth + margin
+    }
+}
+
+
 private class StatsBarChartRenderer {
     val rectRenderer = RectRenderer()
+    val texturedRectRenderer = TexturedRectRenderer()
 
     /**
      * Renders a stats bar chart inside the specified rectangle.
@@ -293,12 +387,19 @@ private class StatsBarChartRenderer {
                     0.01f + (stats.getCount(team).toFloat() / maxCount * h / 2),
                     team.colorVector
             )
+            texturedRectRenderer.renderScore(
+                    x + (barWidth + marginWidth) * team.ordinal + marginWidth,
+                    y + h / 4 + (0.01f + (stats.getCount(team).toFloat() / maxCount * h / 2)),
+                    barWidth,
+                    h / 8 - 0.01f,
+                    stats.getCount(team)
+            )
         }
     }
 }
 
 class GameRenderer {
-    private val kotlinLogoRenderer = KotlinLogoRenderer()
+    private val kotlinLogoRenderer = KotlinLogoRenderer(10)
     private val statsBarChartRenderer = StatsBarChartRenderer()
 
     init {
@@ -309,6 +410,16 @@ class GameRenderer {
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
         glEnable(GL_DEPTH_TEST)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        memScoped {
+            val textures = allocArray<GLuintVar>(11 /* Logo + digits */)
+            glGenTextures(11, textures)
+            loadTextureFromBmpResource("rsz_3kotlin_logo_3d.bmp", GL_TEXTURE10, textures[10])
+            for (d in 0..9)
+                loadTextureFromBmpResource("$d.bmp", GL_TEXTURE0 + d, textures[d])
+        }
     }
 
     /**
@@ -331,10 +442,17 @@ class GameRenderer {
         val squareSize = minOf(screenWidth, screenHeight)
 
         if (stats != null) {
+            val width = 2 * squareSize / screenWidth
             statsBarChartRenderer.rectRenderer.render(
                     -1.0f, 1.0f - 2 * squareSize / screenHeight,
-                    2 * squareSize / screenWidth, 2 * squareSize / screenHeight,
+                    width, 2 * squareSize / screenHeight,
                     stats.myTeam.colorVector
+            )
+
+            statsBarChartRenderer.texturedRectRenderer.renderScore(
+                    - (width / 8), 0.85f,
+                    width / 4, 0.1f,
+                    stats.myContribution
             )
         }
 
