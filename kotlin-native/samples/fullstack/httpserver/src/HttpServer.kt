@@ -187,7 +187,8 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
     }
 }
 
-fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?, socklen: socklen_t) {
+fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?,
+                  socklen: platform.posix.socklen_t) {
     val ip = kommon.sockaddrAsString(sockaddr, socklen)
     println("connection from $ip")
     db.execute("INSERT INTO connections (ip, timestamp) VALUES ('$ip', DateTime('now'))")
