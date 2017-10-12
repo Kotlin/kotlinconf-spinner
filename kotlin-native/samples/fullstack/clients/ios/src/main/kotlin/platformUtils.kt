@@ -81,6 +81,9 @@ class StatsFetcherImpl : StatsFetcher {
     override fun getMostRecentFetched(): Stats? = this.mostRecentFetched
 }
 
+private fun NSDictionary.intValueForKey(key: String): Int? =
+        this.valueForKey(key)?.let { it.reinterpret<NSNumber>().integerValue().toInt() }
+
 private fun parseJsonResponse(data: NSData): Stats? {
     val jsonObject = memScoped {
         val errorVar = alloc<ObjCObjectVar<NSError?>>()
@@ -94,8 +97,10 @@ private fun parseJsonResponse(data: NSData): Stats? {
 
     val dict = jsonObject.reinterpret<NSDictionary>()
 
-    val myTeamIndex = dict.valueForKey("color")!!.reinterpret<NSNumber>().integerValue().toInt() - 1
+    val myTeamIndex = dict.intValueForKey("color")!! - 1
     val myTeam = Team.values()[myTeamIndex]
+
+    val myConribution = dict.intValueForKey("contribution")!!
 
     val colors = dict.valueForKey("colors")!!.reinterpret<NSArray>()
     val counts = IntArray(Team.count)
@@ -106,5 +111,5 @@ private fun parseJsonResponse(data: NSData): Stats? {
         counts[i.toInt()] = counter
     }
 
-    return Stats(counts, myTeam)
+    return Stats(counts, myTeam, myConribution)
 }
