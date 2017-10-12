@@ -35,6 +35,8 @@ val errno: Int
 
 fun getUnixError() = strerror(errno)!!.toKString()
 
+fun getTime() = kotlin.system.getTimeMicros() / 1_000_000.0
+
 const val LOOPER_ID_INPUT = 2
 
 const val LOOPER_ID_SENSOR = 3
@@ -145,7 +147,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private var sensorQueue: CPointer<ASensorEventQueue>? = null
     private var sensor: CPointer<ASensor>? = null
     private var rendererState: COpaquePointer? = null
-    private var lastUpdateTime = 0.0f
+    private var lastUpdateTime = 0.0
     private var needRedraw = true
     private var startTime = 0.0f
     private var startPoint = Vector2.Zero
@@ -189,7 +191,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     }
                 }
                 val currentTime = getTime()
-                gameState.update(currentTime - lastUpdateTime)
+                gameState.update((currentTime - lastUpdateTime).toFloat())
                 lastUpdateTime = currentTime
                 renderer.draw(gameState.sceneState)
             }
@@ -280,14 +282,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         return true
     }
 
-    private fun getTime(): Float {
-        memScoped {
-            val now = alloc<timespec>()
-            clock_gettime(CLOCK_MONOTONIC, now.ptr)
-            return now.tv_sec + now.tv_nsec / 1_000_000_000.0f
-        }
-    }
-
     private fun getEventPoint(event: CPointer<AInputEvent>?, i: Int) =
             Vector2(AMotionEvent_getRawX(event, i.signExtend<size_t>()) / diagonal, -AMotionEvent_getRawY(event, i.signExtend<size_t>()) / diagonal)
 
@@ -326,18 +320,19 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         AInputQueue_finishEvent(queue, event.value, 1)
     }
 
-    var shakeTimestamp: Long = 0
+    var shakeTimestamp = 0.0
 
     private fun processSensorInput(): Unit = memScoped {
         if (sensorQueue == null) return
         val event = alloc<ASensorEvent>()
-        val now = kotlin.system.getTimeMillis()
+        val now = getTime()
         while (ASensorEventQueue_getEvents(sensorQueue, event.ptr, 1) > 0) {
             val a = event.acceleration
             val force = sqrtf(a.x * a.x + a.y * a.y + a.z * a.z) / ASENSOR_STANDARD_GRAVITY
-            if (force < 2.1f || shakeTimestamp + 1000 > now) {
+            if (force < 2.5f || shakeTimestamp + 1.0 > now) {
                 continue
             }
+            shakeTimestamp = now
             touchControl.shake(Vector3(
                     a.x / ASENSOR_STANDARD_GRAVITY, a.y / ASENSOR_STANDARD_GRAVITY, a.z / ASENSOR_STANDARD_GRAVITY))
         }

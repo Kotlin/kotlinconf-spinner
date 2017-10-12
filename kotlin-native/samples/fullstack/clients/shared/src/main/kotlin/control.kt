@@ -65,13 +65,15 @@ class TouchControl(val gameState: GameState) {
         array3[1] = vector3.y
         array3[2] = vector3.z
         var gravityIndex = -1
+        var gravitySign = 0
         for (i in 0 .. 2) {
             if (fabsf(array3[i] - 1.0f) < 0.2f) {
                 gravityIndex = i
+                gravitySign = if (array3[i] > 0) 1 else -1
             }
         }
         if (gravityIndex >= 0)
-            array3[gravityIndex] = array3[gravityIndex] - 1.0f
+            array3[gravityIndex] = array3[gravityIndex] - 1.0f * gravitySign
         return Vector2(array3[0], array3[1]).normalized()
     }
 
