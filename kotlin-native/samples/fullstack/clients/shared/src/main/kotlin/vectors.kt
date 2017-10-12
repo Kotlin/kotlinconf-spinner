@@ -40,6 +40,8 @@ data class Vector2(val x: Float, val y: Float) {
 }
 
 data class Vector3(val x: Float, val y: Float, val z: Float) {
+    constructor(vector2: Vector2, z: Float) : this(vector2.x, vector2.y, z) {}
+
     val length get() = sqrtf(x * x + y * y + z * z)
 
     fun crossProduct(other: Vector3): Vector3 =

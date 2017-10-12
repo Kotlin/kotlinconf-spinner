@@ -15,7 +15,8 @@
  */
 
 import kotlinx.cinterop.*
-import platform.CoreGraphics.CGRect
+import platform.CoreGraphics.*
+import platform.CoreMotion.*
 import platform.EAGL.*
 import platform.Foundation.*
 import platform.GLKit.*
@@ -49,12 +50,19 @@ class ViewController : GLKViewController {
     override fun initWithCoder(aDecoder: NSCoder) = initBy(ViewController(aDecoder))
 
     private lateinit var context: EAGLContext
+    private lateinit var motionManager: CMMotionManager
 
     private val statsFetcher = StatsFetcherImpl().also {
         it.asyncFetch()
     }
 
-    private val gameState = GameState(SceneState(), statsFetcher)
+    private val gameState = GameState(
+            SceneState(), statsFetcher,
+            SoundPlayerImpl("swish.wav").also {
+                it.initialize()
+                it.enable(true)
+            }
+    )
     private val touchControl = TouchControl(gameState)
 
     private lateinit var gameRenderer: GameRenderer
@@ -70,6 +78,12 @@ class ViewController : GLKViewController {
         EAGLContext.setCurrentContext(this.context)
 
         gameRenderer = GameRenderer()
+
+        motionManager = CMMotionManager().also {
+            println(this.framesPerSecond)
+            it.deviceMotionUpdateInterval = 1.0 / this.framesPerSecond
+            it.startDeviceMotionUpdates()
+        }
     }
 
     private var panGestureBeganDate: NSDate? = null
@@ -102,6 +116,42 @@ class ViewController : GLKViewController {
     @ObjCAction
     fun update() {
         gameState.update(this.timeSinceLastUpdate.toFloat())
+        getUserAcceleration()?.let {
+            touchControl.shake(it)
+        }
+    }
+
+    private fun getUserAcceleration(): Vector3? {
+        val deviceMotion = this.motionManager.deviceMotion ?: return null
+        val userAcceleration = deviceMotion.userAcceleration.toVector3() *
+                -1.0f // TODO: for some reason Core Motion seems to report the acceleration inverted.
+
+        // Detect the interface orientation and then transform the acceleration according to it:
+        val screen = this.view.window!!.screen
+        val screenCorner = screen.coordinateSpace.convertPoint(
+                CGPointMake(0.0, 0.0),
+                toCoordinateSpace = screen.fixedCoordinateSpace
+        ).toVector2()
+
+        val orientedAccelerationProjection = if (screenCorner.x == 0.0f) {
+            if (screenCorner.y == 0.0f) {
+                // portrait
+                Vector2(userAcceleration.x, userAcceleration.y)
+            } else {
+                // landscape right
+                Vector2(userAcceleration.y, -userAcceleration.x)
+            }
+        } else {
+            if (screenCorner.y == 0.0f) {
+                // landscape left
+                Vector2(-userAcceleration.y, userAcceleration.x)
+            } else {
+                // portrait upside-down
+                Vector2(-userAcceleration.x, -userAcceleration.y)
+            }
+        }
+
+        return Vector3(orientedAccelerationProjection, userAcceleration.z)
     }
 
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
@@ -113,3 +163,7 @@ class ViewController : GLKViewController {
     }
 
 }
+
+private fun CValue<CMAcceleration>.toVector3() = this.useContents { Vector3(x.toFloat(), y.toFloat(), z.toFloat()) }
+
+private fun CValue<CGPoint>.toVector2() = this.useContents { Vector2(x.toFloat(), y.toFloat()) }

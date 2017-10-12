@@ -331,7 +331,7 @@ private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, 
     }
 }
 
-private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int) {
+private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int, digitAspect: Float) {
     val margin = 0.01f
     val digitWidth = (w - 4 * margin) / 5
     val digits = mutableListOf<Int>()
@@ -344,7 +344,7 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Fl
         digits += 0
     digits.reverse()
     var cx = maxOf(0.0f, w - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
-    val digitHeight = minOf(h, digitWidth * 1.5f)
+    val digitHeight = minOf(h, digitWidth / digitAspect)
     digits.forEachIndexed { i, d ->
         render(
                 x + cx, y + margin,
@@ -366,7 +366,7 @@ private class StatsBarChartRenderer {
      *
      * It makes a padding around the chart.
      */
-    fun render(x: Float, y: Float, w: Float, h: Float, stats: Stats?) {
+    fun render(x: Float, y: Float, w: Float, h: Float, stats: Stats?, digitAspect: Float) {
         if (stats == null) return
 
         val barsCount = Team.count
@@ -392,7 +392,8 @@ private class StatsBarChartRenderer {
                     y + h / 4 + (0.01f + (stats.getCount(team).toFloat() / maxCount * h / 2)),
                     barWidth,
                     h / 8 - 0.01f,
-                    stats.getCount(team)
+                    stats.getCount(team),
+                    digitAspect
             )
         }
     }
@@ -435,6 +436,8 @@ class GameRenderer {
         // Note: all rectangles being drawn below are specified in normalized device coordinates,
         // i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.
 
+        val digitAspect = 0.375f * screenHeight / screenWidth
+
         val stats = sceneState.stats
 
         // 1. Draw a square of maximal size in a top-left corner.
@@ -452,7 +455,8 @@ class GameRenderer {
             statsBarChartRenderer.texturedRectRenderer.renderScore(
                     - (width / 8), 0.85f,
                     width / 4, 0.1f,
-                    stats.myContribution
+                    stats.myContribution,
+                    digitAspect
             )
         }
 
@@ -475,7 +479,8 @@ class GameRenderer {
             statsBarChartRenderer.render(
                     -1.0f, -1.0f,
                     2.0f, 2 * (screenHeight - squareSize) / screenHeight,
-                    stats
+                    stats,
+                    digitAspect
             )
         } else {
             // Landscape orientation. Draw chart to the right of the square:
@@ -483,7 +488,8 @@ class GameRenderer {
             statsBarChartRenderer.render(
                     1.0f - width, -1.0f,
                     width, 2.0f,
-                    stats
+                    stats,
+                    digitAspect
             )
         }
 

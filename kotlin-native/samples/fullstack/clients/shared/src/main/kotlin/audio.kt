@@ -96,18 +96,18 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
         pinnedBuffer = rawWAV.pin()
         alBufferData(buffer!!.value, format, pinnedBuffer!!.addressOf(0), rawWAV.size, samplesPerSec)
         alGenSources(1, source!!.ptr)
+
+        alSourceQueueBuffers(source!!.value, 1, buffer!!.ptr)
     }
 
     override fun play() {
         if (!enabled) return
         stop()
-        alSourceQueueBuffers(source!!.value, 1, buffer!!.ptr)
         alSourcePlay(source!!.value)
     }
 
     fun stop() {
         alSourceStop(source!!.value)
-        alSourceUnqueueBuffers(source!!.value, 1, buffer!!.ptr)
     }
 
     fun deinit() {

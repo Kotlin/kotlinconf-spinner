@@ -26,6 +26,7 @@ konanArtifacts {
         inputFiles fileTree('src/main/kotlin')
 
         // TODO: use the kommon.klib instead:
-        inputFiles file('../../common/KommonIOs.kt')
+        inputFiles file('../../common/src/KommonIOs.kt')
+        inputFiles file('../../common/src/Kommon.kt')
     }
 }

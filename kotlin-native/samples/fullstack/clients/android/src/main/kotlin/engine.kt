@@ -333,8 +333,29 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                 continue
             }
             shakeTimestamp = now
-            touchControl.shake(Vector3(
-                    a.x / ASENSOR_STANDARD_GRAVITY, a.y / ASENSOR_STANDARD_GRAVITY, a.z / ASENSOR_STANDARD_GRAVITY))
+            val accelerationWithGravity = Vector3(
+                    a.x / ASENSOR_STANDARD_GRAVITY, a.y / ASENSOR_STANDARD_GRAVITY, a.z / ASENSOR_STANDARD_GRAVITY)
+
+            touchControl.shake(guessUserAcceleration(accelerationWithGravity))
         }
+    }
+
+    fun guessUserAcceleration(accelerationWithGravity: Vector3): Vector3 {
+        val array3 = FloatArray(3)
+        array3[0] = accelerationWithGravity.x
+        array3[1] = accelerationWithGravity.y
+        array3[2] = accelerationWithGravity.z
+        var gravityIndex = -1
+        var gravitySign = 0
+        for (i in 0 .. 2) {
+            if (fabsf(array3[i] - 1.0f) < 0.2f) {
+                gravityIndex = i
+                gravitySign = if (array3[i] > 0) 1 else -1
+            }
+        }
+        if (gravityIndex >= 0)
+            array3[gravityIndex] = array3[gravityIndex] - 1.0f * gravitySign
+
+        return Vector3(array3[0], array3[1], array3[2])
     }
 }
