@@ -54,7 +54,13 @@ class ViewController : GLKViewController {
         it.asyncFetch()
     }
 
-    private val gameState = GameState(SceneState(), statsFetcher)
+    private val gameState = GameState(
+            SceneState(), statsFetcher,
+            SoundPlayerImpl("swish.wav").also {
+                it.initialize()
+                it.enable(true)
+            }
+    )
     private val touchControl = TouchControl(gameState)
 
     private lateinit var gameRenderer: GameRenderer

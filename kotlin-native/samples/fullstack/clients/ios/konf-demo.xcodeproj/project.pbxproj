@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C7B37DF1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */; };
+		2C7B37E11F8E65B800743D7C /* swish.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E01F8E65B700743D7C /* swish.wav */; };
 		2CED25DF1F75246200A6326D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25DE1F75246200A6326D /* AppDelegate.m */; };
 		2CED25E21F75246200A6326D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25E11F75246200A6326D /* ViewController.m */; };
 		2CED25E51F75246200A6326D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25E31F75246200A6326D /* Main.storyboard */; };
@@ -20,6 +21,7 @@
 
 /* Begin PBXFileReference section */
 		2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = rsz_3kotlin_logo_3d.bmp; path = ../../android/src/main/assets/rsz_3kotlin_logo_3d.bmp; sourceTree = "<group>"; };
+		2C7B37E01F8E65B700743D7C /* swish.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = swish.wav; path = ../../android/src/main/assets/swish.wav; sourceTree = "<group>"; };
 		2CED25DA1F75246200A6326D /* konf-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "konf-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CED25DD1F75246200A6326D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2CED25DE1F75246200A6326D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
+				2C7B37E01F8E65B700743D7C /* swish.wav */,
 				2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */,
 				2CED25DD1F75246200A6326D /* AppDelegate.h */,
 				2CED25DE1F75246200A6326D /* AppDelegate.m */,
@@ -153,6 +156,7 @@
 			files = (
 				2C7B37DF1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp in Resources */,
 				2CED25EA1F75246200A6326D /* LaunchScreen.storyboard in Resources */,
+				2C7B37E11F8E65B800743D7C /* swish.wav in Resources */,
 				2CED25E71F75246200A6326D /* Assets.xcassets in Resources */,
 				2CED25E51F75246200A6326D /* Main.storyboard in Resources */,
 			);

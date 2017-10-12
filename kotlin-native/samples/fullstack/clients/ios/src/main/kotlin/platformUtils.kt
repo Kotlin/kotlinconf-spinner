@@ -113,3 +113,8 @@ private fun parseJsonResponse(data: NSData): Stats? {
 
     return Stats(counts, myTeam, myConribution)
 }
+
+// TODO: consider not using logError function on Android.
+fun logError(message: String) {
+    println(message)
+}
