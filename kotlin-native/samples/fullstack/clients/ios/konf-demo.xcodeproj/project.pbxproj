@@ -9,16 +9,16 @@
 /* Begin PBXBuildFile section */
 		2C7B37DF1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */; };
 		2C7B37E11F8E65B800743D7C /* swish.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E01F8E65B700743D7C /* swish.wav */; };
-		2C7B37EC1F8F855900743D7C /* 2.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E21F8F855800743D7C /* 2.bmp */; };
-		2C7B37ED1F8F855900743D7C /* 1.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E31F8F855800743D7C /* 1.bmp */; };
-		2C7B37EE1F8F855900743D7C /* 8.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E41F8F855800743D7C /* 8.bmp */; };
-		2C7B37EF1F8F855900743D7C /* 3.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E51F8F855800743D7C /* 3.bmp */; };
-		2C7B37F01F8F855900743D7C /* 4.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E61F8F855800743D7C /* 4.bmp */; };
-		2C7B37F11F8F855900743D7C /* 6.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E71F8F855800743D7C /* 6.bmp */; };
-		2C7B37F21F8F855900743D7C /* 9.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E81F8F855800743D7C /* 9.bmp */; };
-		2C7B37F31F8F855900743D7C /* 7.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E91F8F855800743D7C /* 7.bmp */; };
-		2C7B37F41F8F855900743D7C /* 5.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37EA1F8F855900743D7C /* 5.bmp */; };
-		2C7B37F51F8F855900743D7C /* 0.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37EB1F8F855900743D7C /* 0.bmp */; };
+		2C7B38001F8FB96300743D7C /* 5.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F61F8FB96200743D7C /* 5.bmp */; };
+		2C7B38011F8FB96300743D7C /* 8.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F71F8FB96200743D7C /* 8.bmp */; };
+		2C7B38021F8FB96300743D7C /* 6.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F81F8FB96200743D7C /* 6.bmp */; };
+		2C7B38031F8FB96300743D7C /* 3.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F91F8FB96200743D7C /* 3.bmp */; };
+		2C7B38041F8FB96300743D7C /* 9.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FA1F8FB96200743D7C /* 9.bmp */; };
+		2C7B38051F8FB96300743D7C /* 2.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FB1F8FB96200743D7C /* 2.bmp */; };
+		2C7B38061F8FB96300743D7C /* 1.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FC1F8FB96200743D7C /* 1.bmp */; };
+		2C7B38071F8FB96300743D7C /* 7.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FD1F8FB96200743D7C /* 7.bmp */; };
+		2C7B38081F8FB96300743D7C /* 0.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FE1F8FB96200743D7C /* 0.bmp */; };
+		2C7B38091F8FB96300743D7C /* 4.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FF1F8FB96200743D7C /* 4.bmp */; };
 		2CED25DF1F75246200A6326D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25DE1F75246200A6326D /* AppDelegate.m */; };
 		2CED25E21F75246200A6326D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25E11F75246200A6326D /* ViewController.m */; };
 		2CED25E51F75246200A6326D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25E31F75246200A6326D /* Main.storyboard */; };
@@ -32,16 +32,16 @@
 /* Begin PBXFileReference section */
 		2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = rsz_3kotlin_logo_3d.bmp; path = ../../android/src/main/assets/rsz_3kotlin_logo_3d.bmp; sourceTree = "<group>"; };
 		2C7B37E01F8E65B700743D7C /* swish.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = swish.wav; path = ../../android/src/main/assets/swish.wav; sourceTree = "<group>"; };
-		2C7B37E21F8F855800743D7C /* 2.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 2.bmp; path = ../../android/src/main/assets/2.bmp; sourceTree = "<group>"; };
-		2C7B37E31F8F855800743D7C /* 1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 1.bmp; path = ../../android/src/main/assets/1.bmp; sourceTree = "<group>"; };
-		2C7B37E41F8F855800743D7C /* 8.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 8.bmp; path = ../../android/src/main/assets/8.bmp; sourceTree = "<group>"; };
-		2C7B37E51F8F855800743D7C /* 3.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 3.bmp; path = ../../android/src/main/assets/3.bmp; sourceTree = "<group>"; };
-		2C7B37E61F8F855800743D7C /* 4.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 4.bmp; path = ../../android/src/main/assets/4.bmp; sourceTree = "<group>"; };
-		2C7B37E71F8F855800743D7C /* 6.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 6.bmp; path = ../../android/src/main/assets/6.bmp; sourceTree = "<group>"; };
-		2C7B37E81F8F855800743D7C /* 9.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 9.bmp; path = ../../android/src/main/assets/9.bmp; sourceTree = "<group>"; };
-		2C7B37E91F8F855800743D7C /* 7.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 7.bmp; path = ../../android/src/main/assets/7.bmp; sourceTree = "<group>"; };
-		2C7B37EA1F8F855900743D7C /* 5.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 5.bmp; path = ../../android/src/main/assets/5.bmp; sourceTree = "<group>"; };
-		2C7B37EB1F8F855900743D7C /* 0.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 0.bmp; path = ../../android/src/main/assets/0.bmp; sourceTree = "<group>"; };
+		2C7B37F61F8FB96200743D7C /* 5.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 5.bmp; path = ../../../utils/ios/5.bmp; sourceTree = "<group>"; };
+		2C7B37F71F8FB96200743D7C /* 8.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 8.bmp; path = ../../../utils/ios/8.bmp; sourceTree = "<group>"; };
+		2C7B37F81F8FB96200743D7C /* 6.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 6.bmp; path = ../../../utils/ios/6.bmp; sourceTree = "<group>"; };
+		2C7B37F91F8FB96200743D7C /* 3.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 3.bmp; path = ../../../utils/ios/3.bmp; sourceTree = "<group>"; };
+		2C7B37FA1F8FB96200743D7C /* 9.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 9.bmp; path = ../../../utils/ios/9.bmp; sourceTree = "<group>"; };
+		2C7B37FB1F8FB96200743D7C /* 2.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 2.bmp; path = ../../../utils/ios/2.bmp; sourceTree = "<group>"; };
+		2C7B37FC1F8FB96200743D7C /* 1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 1.bmp; path = ../../../utils/ios/1.bmp; sourceTree = "<group>"; };
+		2C7B37FD1F8FB96200743D7C /* 7.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 7.bmp; path = ../../../utils/ios/7.bmp; sourceTree = "<group>"; };
+		2C7B37FE1F8FB96200743D7C /* 0.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 0.bmp; path = ../../../utils/ios/0.bmp; sourceTree = "<group>"; };
+		2C7B37FF1F8FB96200743D7C /* 4.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 4.bmp; path = ../../../utils/ios/4.bmp; sourceTree = "<group>"; };
 		2CED25DA1F75246200A6326D /* konf-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "konf-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CED25DD1F75246200A6326D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2CED25DE1F75246200A6326D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -89,16 +89,16 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
-				2C7B37EB1F8F855900743D7C /* 0.bmp */,
-				2C7B37E31F8F855800743D7C /* 1.bmp */,
-				2C7B37E21F8F855800743D7C /* 2.bmp */,
-				2C7B37E51F8F855800743D7C /* 3.bmp */,
-				2C7B37E61F8F855800743D7C /* 4.bmp */,
-				2C7B37EA1F8F855900743D7C /* 5.bmp */,
-				2C7B37E71F8F855800743D7C /* 6.bmp */,
-				2C7B37E91F8F855800743D7C /* 7.bmp */,
-				2C7B37E41F8F855800743D7C /* 8.bmp */,
-				2C7B37E81F8F855800743D7C /* 9.bmp */,
+				2C7B37FE1F8FB96200743D7C /* 0.bmp */,
+				2C7B37FC1F8FB96200743D7C /* 1.bmp */,
+				2C7B37FB1F8FB96200743D7C /* 2.bmp */,
+				2C7B37F91F8FB96200743D7C /* 3.bmp */,
+				2C7B37FF1F8FB96200743D7C /* 4.bmp */,
+				2C7B37F61F8FB96200743D7C /* 5.bmp */,
+				2C7B37F81F8FB96200743D7C /* 6.bmp */,
+				2C7B37FD1F8FB96200743D7C /* 7.bmp */,
+				2C7B37F71F8FB96200743D7C /* 8.bmp */,
+				2C7B37FA1F8FB96200743D7C /* 9.bmp */,
 				2C7B37E01F8E65B700743D7C /* swish.wav */,
 				2C7B37DE1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp */,
 				2CED25DD1F75246200A6326D /* AppDelegate.h */,
@@ -184,20 +184,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C7B37F11F8F855900743D7C /* 6.bmp in Resources */,
-				2C7B37EC1F8F855900743D7C /* 2.bmp in Resources */,
+				2C7B38051F8FB96300743D7C /* 2.bmp in Resources */,
+				2C7B38021F8FB96300743D7C /* 6.bmp in Resources */,
+				2C7B38081F8FB96300743D7C /* 0.bmp in Resources */,
+				2C7B38041F8FB96300743D7C /* 9.bmp in Resources */,
+				2C7B38061F8FB96300743D7C /* 1.bmp in Resources */,
 				2C7B37DF1F864FA800743D7C /* rsz_3kotlin_logo_3d.bmp in Resources */,
-				2C7B37F41F8F855900743D7C /* 5.bmp in Resources */,
-				2C7B37F21F8F855900743D7C /* 9.bmp in Resources */,
-				2C7B37EE1F8F855900743D7C /* 8.bmp in Resources */,
+				2C7B38091F8FB96300743D7C /* 4.bmp in Resources */,
 				2CED25EA1F75246200A6326D /* LaunchScreen.storyboard in Resources */,
 				2C7B37E11F8E65B800743D7C /* swish.wav in Resources */,
+				2C7B38001F8FB96300743D7C /* 5.bmp in Resources */,
 				2CED25E71F75246200A6326D /* Assets.xcassets in Resources */,
-				2C7B37F51F8F855900743D7C /* 0.bmp in Resources */,
-				2C7B37F01F8F855900743D7C /* 4.bmp in Resources */,
-				2C7B37F31F8F855900743D7C /* 7.bmp in Resources */,
-				2C7B37EF1F8F855900743D7C /* 3.bmp in Resources */,
-				2C7B37ED1F8F855900743D7C /* 1.bmp in Resources */,
+				2C7B38071F8FB96300743D7C /* 7.bmp in Resources */,
+				2C7B38031F8FB96300743D7C /* 3.bmp in Resources */,
+				2C7B38011F8FB96300743D7C /* 8.bmp in Resources */,
 				2CED25E51F75246200A6326D /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
