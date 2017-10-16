@@ -53,7 +53,7 @@
     <li>HTTP server works in multithreaded mode, state sharing between sessions performed via SQLite DB access</li>
     <li>Android app is split into separate <a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/android/src/loader/kotlin/loader.kt">loader</a>
      and application code, so that dynamic library (libopenal.so) included with application can be used on older Androids</li>
-    <li><li><a href="https://github.com/JetBrains/kotlin-conf-demos/tree/master/kotlin-native/samples/fullstack/clients/webassembly">WebAssembly frontend</a>
+    <li><a href="https://github.com/JetBrains/kotlin-conf-demos/tree/master/kotlin-native/samples/fullstack/clients/webassembly">WebAssembly frontend</a>
                can fetch and render stats in the browser</li>
 </ul>
 
