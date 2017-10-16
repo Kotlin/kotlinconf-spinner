@@ -15,7 +15,7 @@
 <h2>Technical details</h2>
 <ul>
     <li>Whole application's stack is implemented using <a href="https://github.com/JetBrains/kotlin-native">Kotlin/Native</a></li>
-    <li><a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/httpserver/HttpServer.kt">Server side</a>
+    <li><a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/httpserver/src/HttpServer.kt">Server side</a>
         runs on Linux server and is implemented using:
         <ul>
           <li><a href="https://www.gnu.org/software/libmicrohttpd/">microHTTPD</a> HTTP server library</li>
@@ -30,7 +30,7 @@
          <li><a href="https://developer.android.com/ndk/reference/group___input.html">NDK input handling</a> for input processing</li>
          <li><a href="https://www.openal.org/">Open AL</a> interop for sound playback</li>
          <li><a href="https://developer.android.com/ndk/reference/group___sensor.html">Sensors native API</a></li>
-         <li><a href="https://curl.haxx.se/libcurl/">libcurl</a> file transfer library
+         <li><a href="https://curl.haxx.se/libcurl/">libcurl</a> file transfer library as HTTP client
         </ul>
     <li><a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/ios">Client side</a>
        for iOS is implemented in pure Kotlin/Native using:
@@ -47,7 +47,7 @@
         </li>
        </ul>
        </li>
-    <li>Most graphical code, sound playback and and user input reaction is shared between Android and iOS</li>
+    <li>Most graphical code, sound playback and user input reaction is <a href="https://github.com/JetBrains/kotlin-conf-demos/tree/master/kotlin-native/samples/fullstack/clients/shared/src/main/kotlin">shared</a> between Android and iOS</li>
     <li>Server interaction on Android is <a href="https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt#L107">asynchronous</a>
         from the UI thread, using <a href="https://github.com/JetBrains/kotlin-native/tree/master/samples/workers">workers</a></li>
     <li>HTTP server works in multithreaded mode, state sharing between sessions performed via SQLite DB access</li>
