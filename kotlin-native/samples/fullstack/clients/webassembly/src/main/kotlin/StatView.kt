@@ -4,9 +4,7 @@ import konan.internal.ExportForCppRuntime
 
 object Model {
     val tupleSize = 5
-    // Matching OpenGL demo colors:
-    //val colors = arrayOf(Vector3(0.0f, 0.8f, 0.8f), Vector3(0.8f, 0.0f, 0.8f), Vector3(0.8f, 0.0f, 0.0f), Vector3(0.0f, 0.8f, 0.0f), Vector3(0.0f, 0.0f, 0.8f))
-    val styles = arrayOf("#00cdcd", "#cd00cd", "#cd0000", "#00cd00", "#0000cd")
+    val styles = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff")
 
     val backLogSize = 100
     private val backLog = IntArray(backLogSize * tupleSize, {0})
@@ -67,7 +65,7 @@ class View(canvas: Canvas) {
 
     fun showValue(value: Int, y: Int, color: String) {
         context.fillStyle = color;
-        context.setter("font", "30px Verdana")
+        context.setter("font", "30px Roboto Mono")
         //TODO : Right align the numbers.
         //context.fillText("$value", fieldWidth + 10,  y, rectWidth - fieldWidth - 20) 
         context.fillText("$value", fieldWidth + 10,  rectHeight - y - 10, rectWidth) 
@@ -82,7 +80,7 @@ class View(canvas: Canvas) {
     }
 
     fun clean() {
-        context.fillStyle = "#222222"
+        context.fillStyle = "#16103F"
         context.fillRect(0, 0, rectWidth, rectHeight)
     }
 
