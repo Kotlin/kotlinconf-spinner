@@ -2,6 +2,7 @@ import freetype2.*
 import kotlinx.cinterop.*
 import kommon.*
 import kliopt.*
+import platform.posix.mkdir
 
 fun alignUp4(x: Int) = (x + 3) and 3.inv()
 
