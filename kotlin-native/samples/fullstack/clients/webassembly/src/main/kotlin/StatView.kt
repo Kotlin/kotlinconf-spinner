@@ -44,17 +44,20 @@ class View(canvas: Canvas) {
     val rectWidth = rectRight - rectLeft
     val rectHeight = rectBottom - rectTop
 
+    val fieldWidth = rectWidth * 4 / 5
+    val fieldHeight = rectHeight
+
     fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) {
         context.beginPath()
         context.lineWidth = 2; // In pixels.
         context.setter("strokeStyle", style)
         context.setter("fillStyle", style)
 
-        context.moveTo(x1, rectHeight - y11)
-        context.lineTo(x1, rectHeight - y12)
-        context.lineTo(x2, rectHeight - y22)
-        context.lineTo(x2, rectHeight - y21)
-        context.lineTo(x1, rectHeight - y11)
+        context.moveTo(x1, fieldHeight - y11)
+        context.lineTo(x1, fieldHeight - y12)
+        context.lineTo(x2, fieldHeight - y22)
+        context.lineTo(x2, fieldHeight - y21)
+        context.lineTo(x1, fieldHeight - y11)
 
         context.fill()
 
@@ -62,12 +65,20 @@ class View(canvas: Canvas) {
         context.stroke()
     }
 
+    fun showValue(value: Int, y: Int, color: String) {
+        context.fillStyle = color;
+        context.setter("font", "30px Verdana")
+        //TODO : Right align the numbers.
+        //context.fillText("$value", fieldWidth + 10,  y, rectWidth - fieldWidth - 20) 
+        context.fillText("$value", fieldWidth + 10,  rectHeight - y - 10, rectWidth) 
+    }
+
     fun scaleX(x: Int): Int {
-        return x * rectWidth / (Model.backLogSize - 2) 
+        return x * fieldWidth / (Model.backLogSize - 2) 
     }
 
     fun scaleY(y: Float): Int {
-        return (y * rectHeight).toInt()
+        return (y * fieldHeight).toInt()
     }
 
     fun clean() {
@@ -109,6 +120,13 @@ class View(canvas: Canvas) {
                 oldHeight += oldValue
                 newHeight += newValue
             }
+        }
+        for (i in 0 until Model.tupleSize) {
+            val style = Model.styles[i]
+            val value = Model.colors((Model.current + Model.backLogSize - 1) % Model.backLogSize, i)
+
+            val y = scaleY(i.toFloat() / (Model.tupleSize).toFloat())
+            showValue(value, y, style)
         }
     }
 }
