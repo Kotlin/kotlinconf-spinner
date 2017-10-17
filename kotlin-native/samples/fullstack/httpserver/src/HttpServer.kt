@@ -30,6 +30,12 @@ fun stats(db: KSqlite, session: Session, json: KJsonObject) {
         colors.appendObject(record)
         0
     }
+    db.execute("SELECT startTime, status FROM games WHERE current = 'true'") {
+        _, data ->
+        json.setString("startTime", data[0])
+        json.setString("status", data[1])
+        0
+    }
     json.setArray("colors", colors)
     json.setInt("color", session.color)
     db.execute("SELECT counter, winner FROM sessions WHERE cookie='${db.escape(session.cookie)}'") { _, data ->
@@ -113,7 +119,6 @@ fun error(json: KJsonObject, session: Session, message: String) {
 
 fun makeJson(url: String, db: KSqlite, session: Session): String {
     withJson(KJsonObject()) {
-        it.setString("url", url)
         when {
             url.startsWith("/json/click") -> click(db, session, it)
             url.startsWith("/json/stats") -> stats(db, session, it)
