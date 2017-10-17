@@ -16,15 +16,19 @@
 
 import platform.posix.M_PI
 
+fun intToColorVector(color: Int) =
+        Vector3(((color shr 16) and 0xff) / 255.0f, ((color shr 8) and 0xff) / 255.0f, (color and 0xff) / 255.0f)
+
 enum class Team(val colorVector: Vector3) {
-    CYAN(0.0f, 0.8f, 0.8f),
-    MAGENTA(0.8f, 0.0f, 0.8f),
-    RED(0.8f, 0.0f, 0.0f),
-    GREEN(0.0f, 0.8f, 0.0f),
-    BLUE(0.0f, 0.0f, 0.8f)
+    CYAN(0xff7616),
+    MAGENTA(0xf72e2e),
+    RED(0x7a6aea),
+    GREEN(0x4bb8f6),
+    BLUE(0xffffff)
     ;
 
     constructor(r: Float, g: Float, b: Float) : this(Vector3(r, g, b))
+    constructor(color: Int): this(intToColorVector(color))
 
     companion object {
         val count = Team.values().size
@@ -39,6 +43,7 @@ class Stats(private val counts: IntArray, val myTeam: Team, val myContribution: 
  * The aspect of the game state enough to draw the scene.
  */
 class SceneState(
+        var initialized: Boolean = false,
         var rotationMatrix: Matrix3 = diagonalMatrix(1.0f, 1.0f, 1.0f),
         var stats: Stats? = null
 ) {

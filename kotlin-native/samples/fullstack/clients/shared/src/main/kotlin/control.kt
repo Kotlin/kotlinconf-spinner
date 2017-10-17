@@ -28,6 +28,7 @@ class TouchControl(val gameState: GameState) {
      * To be called when the screen gets touched.
      */
     fun down() {
+        gameState.sceneState.initialized = true
         previous = Vector2.Zero
     }
 

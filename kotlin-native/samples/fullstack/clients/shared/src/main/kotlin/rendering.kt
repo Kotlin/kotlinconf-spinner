@@ -87,7 +87,7 @@ private class TexturedRectRenderer {
 
                 void main()
                 {
-                    gl_Position = vec4(position, 0.99, 1.0);
+                    gl_Position = vec4(position, -0.999, 1.0);
 
                     fragTexcoord = texcoord;
                 }
@@ -148,34 +148,34 @@ private class KotlinLogo(val s: Float, val d: Float) {
             Vector3(-s, s, +d), Vector3(s, s, +d), Vector3(0.0f, 0.0f, +d), Vector3(s, -s, +d), Vector3(-s, -s, +d)
     )
 
-    val p = 1.0f / 6.0f
-
     val faces = arrayOf(
             Face(intArrayOf(0, 1, 2, 3, 4), arrayOf(
-                    Vector2(p, 1.0f - p), Vector2(1.0f - p, 1.0f - p), Vector2(0.5f, 0.5f),
-                    Vector2(1.0f - p, p), Vector2(p, p))
+                    Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f), Vector2(0.5f, 0.5f),
+                    Vector2(1.0f, 1.0f), Vector2(1.0f, 0.0f))
             ),
             Face(intArrayOf(5, 9, 8, 7, 6), arrayOf(
-                    Vector2(p, 1.0f - p), Vector2(p, p), Vector2(1.0f - p, p),
-                    Vector2(0.5f, 0.5f), Vector2(1.0f - p, 1.0f - p))
+                    Vector2(1.0f, 0.0f), Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f),
+                    Vector2(0.5f, 0.5f), Vector2(1.0f, 1.0f))
             ),
             Face(intArrayOf(0, 5, 6, 1), arrayOf(
-                    Vector2(p, 1.0f - p), Vector2(p, 1.0f),
-                    Vector2(1.0f - p, 1.0f), Vector2(1.0f - p, 1.0f - p))
+                    Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f),
+                    Vector2(1.0f, 1.0f), Vector2(1.0f, 0.0f))
             ),
             Face(intArrayOf(1, 6, 7, 2), arrayOf(
-                    Vector2(1.0f - p, 1.0f - p), Vector2(1.0f - 2 * p, 1.0f),
-                    Vector2(0.5f - p, 0.5f + p), Vector2(0.5f, 0.5f)
+                    Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f),
+                    Vector2(0.5f, 1.0f), Vector2(0.5f, 0.0f)
             )),
             Face(intArrayOf(7, 8, 3, 2), arrayOf(
-                    Vector2(0.5f - p, 0.5f - p), Vector2(1.0f - 2 * p, 0.0f),
-                    Vector2(1.0f - p, p), Vector2(0.5f, 0.5f)
+                    Vector2(0.0f, 0.0f), Vector2(0.5f, 0.0f),
+                    Vector2(0.5f, 1.0f), Vector2(0.0f, 1.0f)
             )),
             Face(intArrayOf(3, 8, 9, 4), arrayOf(
-                    Vector2(1.0f - p, p), Vector2(1.0f - p, 0.0f), Vector2(p, 0.0f), Vector2(p, p)
+                    Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f),
+                    Vector2(1.0f, 1.0f), Vector2(0.0f, 1.0f)
             )),
             Face(intArrayOf(0, 4, 9, 5), arrayOf(
-                    Vector2(p, 1.0f - p), Vector2(p, p), Vector2(0.0f, p), Vector2(0.0f, 1.0f - p)
+                    Vector2(0.0f, 0.0f), Vector2(0.0f, 1.0f),
+                    Vector2(1.0f, 1.0f), Vector2(1.0f, 0.0f)
             ))
     )
 }
@@ -232,7 +232,8 @@ private class KotlinLogoRenderer(val texture: GLuint) {
                     // The trivial hard-coded ambient-diffuse light:
                     vec3 surfaceToLight = vec3(0, 0, 2) - vec3(modelview * fragPosition);
                     float brightness = dot(normal, surfaceToLight) / (length(surfaceToLight) * length(normal));
-                    brightness = 0.05 + 0.95 * clamp(brightness, 0.0, 1.0);
+                    //brightness = 0.05 + 0.95 * clamp(brightness, 0.0, 1.0);
+                    brightness = 0.15 + 0.85 * clamp(brightness, 0.0, 1.0);
 
                     vec4 textureColor = texture(tex, fragTexcoord);
                     outColor = vec4(brightness * textureColor.rgb, textureColor.a);
@@ -314,12 +315,6 @@ private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, 
             }
             when (bits.toInt()) {
                 24 -> {
-                    val numberOfBytes = width * height * 3
-                    for (i in 0 until numberOfBytes step 3) {
-                        val t = data[i]
-                        data[i] = data[i + 2]
-                        data[i + 2] = t
-                    }
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data)
                 }
                 32 -> {
@@ -329,6 +324,7 @@ private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, 
             }
         }
     }
+    checkGlError()
 }
 
 private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int, digitAspect: Float) {
@@ -355,6 +351,8 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Fl
     }
 }
 
+private val backgroundColor = intToColorVector(0x16103f)
+private val teamNumberColor = intToColorVector(0x38335b)
 
 private class StatsBarChartRenderer {
     val rectRenderer = RectRenderer()
@@ -366,35 +364,60 @@ private class StatsBarChartRenderer {
      *
      * It makes a padding around the chart.
      */
-    fun render(x: Float, y: Float, w: Float, h: Float, stats: Stats?, digitAspect: Float) {
+    fun render(x: Float, y: Float, w: Float, h: Float, stats: Stats?, digitAspect: Float, screenAspect: Float) {
         if (stats == null) return
 
         val barsCount = Team.count
         val marginsCount = barsCount + 1
-        val marginToBar = 0.75f
+        val marginToBar = 0.6f
+        val highlightedMarginToBar = 0.9f
 
-        val barWidth = w / (barsCount + marginToBar * marginsCount)
+        val barWidth = w / (barsCount + marginToBar * (marginsCount - 2) + highlightedMarginToBar * 2)
         val marginWidth = barWidth * marginToBar
+        val highlightedMarginWidth = barWidth * highlightedMarginToBar
 
         var maxCount = Team.values().map { stats.getCount(it) }.max() ?: 0
         if (maxCount == 0) maxCount = 1
 
+        val zh = h * 0.4f
+        val maxBarH = h * 0.4f
+        var barX = x + (if (stats.myTeam.ordinal == 0) highlightedMarginWidth else marginWidth)
+
         for (team in Team.values()) {
+            val barH = 0.01f + (stats.getCount(team).toFloat() / maxCount * maxBarH)
             rectRenderer.render(
-                    x + (barWidth + marginWidth) * team.ordinal + marginWidth,
-                    y + h / 4,
+                    barX,
+                    y + zh,
                     barWidth,
-                    0.01f + (stats.getCount(team).toFloat() / maxCount * h / 2),
+                    barH,
                     team.colorVector
             )
             texturedRectRenderer.renderScore(
-                    x + (barWidth + marginWidth) * team.ordinal + marginWidth,
-                    y + h / 4 + (0.01f + (stats.getCount(team).toFloat() / maxCount * h / 2)),
+                    barX,
+                    y + zh + barH,
                     barWidth,
                     h / 8 - 0.01f,
                     stats.getCount(team),
                     digitAspect
             )
+            val teamSquareSize = if (team == stats.myTeam) barWidth * 1.3f else barWidth
+            rectRenderer.render(
+                    barX + (barWidth - teamSquareSize) / 2,
+                    y + (zh - teamSquareSize / screenAspect) * 2 / 3,
+                    teamSquareSize,
+                    teamSquareSize / screenAspect,
+                    teamNumberColor
+            )
+            var digitSize = if (team == stats.myTeam) 0.4f else 0.3f
+            texturedRectRenderer.render(
+                    barX + (barWidth - teamSquareSize) / 2 + teamSquareSize * (1 - digitSize) / 2,
+                    y + (zh - teamSquareSize / screenAspect) * 2 / 3 + (teamSquareSize / screenAspect * (1 - digitSize) / 2),
+                    teamSquareSize * digitSize,
+                    teamSquareSize / screenAspect * digitSize,
+                    team.ordinal + 1
+            )
+            val curMarginWidth = if (team == stats.myTeam || team.ordinal + 1 == stats.myTeam.ordinal) highlightedMarginWidth else marginWidth
+            barX += barWidth + curMarginWidth
         }
     }
 }
@@ -415,9 +438,10 @@ class GameRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         memScoped {
-            val textures = allocArray<GLuintVar>(11 /* Logo + digits */)
-            glGenTextures(11, textures)
-            loadTextureFromBmpResource("rsz_3kotlin_logo_3d.bmp", GL_TEXTURE10, textures[10])
+            val textures = allocArray<GLuintVar>(12 /* Logo + message + digits */)
+            glGenTextures(12, textures)
+            loadTextureFromBmpResource("mesh_pattern.bmp", GL_TEXTURE10, textures[10])
+            loadTextureFromBmpResource("spinner_game_text.bmp", GL_TEXTURE11, textures[11])
             for (d in 0..9)
                 loadTextureFromBmpResource("$d.bmp", GL_TEXTURE0 + d, textures[d])
         }
@@ -430,35 +454,18 @@ class GameRenderer {
      * @param screenHeight physical height of the screen in the same units as [screenWidth]
      */
     fun render(sceneState: SceneState, screenWidth: Float, screenHeight: Float) {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
+        glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         // Note: all rectangles being drawn below are specified in normalized device coordinates,
         // i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.
 
-        val digitAspect = 0.375f * screenHeight / screenWidth
+        val screenAspect = screenHeight / screenWidth
+        val digitAspect = 0.375f * screenAspect
 
         val stats = sceneState.stats
 
-        // 1. Draw a square of maximal size in a top-left corner.
-
         val squareSize = minOf(screenWidth, screenHeight)
-
-        if (stats != null) {
-            val width = 2 * squareSize / screenWidth
-            statsBarChartRenderer.rectRenderer.render(
-                    -1.0f, 1.0f - 2 * squareSize / screenHeight,
-                    width, 2 * squareSize / screenHeight,
-                    stats.myTeam.colorVector
-            )
-
-            statsBarChartRenderer.texturedRectRenderer.renderScore(
-                    - (width / 8), 0.85f,
-                    width / 4, 0.1f,
-                    stats.myContribution,
-                    digitAspect
-            )
-        }
 
         // Project (0, 0, 0) to the center of the screen and
         // make `squareSize / 2` on the screen correspond to `1` in the world,
@@ -474,30 +481,63 @@ class GameRenderer {
                         0.1f, 100.0f
                 )
 
-        if (screenWidth <= screenHeight) {
-            // Portrait orientation. Draw chart below the square:
-            statsBarChartRenderer.render(
-                    -1.0f, -1.0f,
-                    2.0f, 2 * (screenHeight - squareSize) / screenHeight,
-                    stats,
-                    digitAspect
-            )
-        } else {
-            // Landscape orientation. Draw chart to the right of the square:
-            val width = 2 * (screenWidth - squareSize) / screenWidth
-            statsBarChartRenderer.render(
-                    1.0f - width, -1.0f,
-                    width, 2.0f,
-                    stats,
-                    digitAspect
-            )
-        }
-
         kotlinLogoRenderer.render(
                 translationMatrix(0.0f, 0.0f, -2.0f) * Matrix4(sceneState.rotationMatrix),
                 projectionMatrix
         )
 
+        if (sceneState.initialized) {
+
+            if (stats != null) {
+                val width = 2 * squareSize / screenWidth
+
+                statsBarChartRenderer.texturedRectRenderer.renderScore(
+                        -(width / 8), 0.85f,
+                        width / 4, 0.1f,
+                        stats.myContribution,
+                        digitAspect
+                )
+            }
+
+            if (screenWidth <= screenHeight) {
+                // Portrait orientation. Draw chart below the square:
+                statsBarChartRenderer.render(
+                        -1.0f, -1.0f,
+                        2.0f, 2 * (screenHeight - squareSize) / screenHeight,
+                        stats,
+                        digitAspect,
+                        screenAspect
+                )
+            } else {
+                // Landscape orientation. Draw chart to the right of the square:
+                val width = 2 * (screenWidth - squareSize) / screenWidth
+                statsBarChartRenderer.render(
+                        1.0f - width, -1.0f,
+                        width, 2.0f,
+                        stats,
+                        digitAspect,
+                        screenAspect
+                )
+            }
+        } else {
+            val ratio = 236.0f / 816.0f
+            if (screenWidth <= screenHeight) {
+                // Portrait orientation. Draw chart below the square:
+                statsBarChartRenderer.texturedRectRenderer.render(
+                        -1.0f, -0.5f,
+                        2.0f, 2.0f * ratio,//2 * (screenHeight - squareSize) / screenHeight,
+                        11
+                )
+            } else {
+                // Landscape orientation. Draw chart to the right of the square:
+                val width = 2 * (screenWidth - squareSize) / screenWidth
+                statsBarChartRenderer.texturedRectRenderer.render(
+                        1.0f - width, -1.0f,
+                        width, width * ratio,
+                        11
+                )
+            }
+        }
 
     }
 }
