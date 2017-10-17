@@ -29,10 +29,10 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
         bmpHeader.height = bitmap.rows
         bmpHeader.colorPlanes = 1
         bmpHeader.bits = bpp.toShort()
-        bmpHeader.redChannelMask   = 0xff00_0000.toInt()
-        bmpHeader.greenChannelMask = 0x00ff_0000
-        bmpHeader.blueChannelMask  = 0x0000_ff00
-        bmpHeader.alphaChannelMask = 0x0000_00ff
+        bmpHeader.redChannelMask   = 0x0000_00ff
+        bmpHeader.greenChannelMask = 0x0000_ff00
+        bmpHeader.blueChannelMask  = 0x00ff_0000
+        bmpHeader.alphaChannelMask = 0xff00_0000.toInt()
     }
     writeToFileData(path, bmpHeaderData)
     val bmpData = ByteArray(bmpDataSize)
