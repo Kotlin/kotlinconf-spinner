@@ -13,26 +13,37 @@ Simple spinner-like game intended to demonstrate capabilities of Kotlin/Native s
 *   The team with the highest score wins
 
 ## Technical details
+The entire application is implemented using [Kotlin/Native](https://github.com/JetBrains/kotlin-native)
 
-*   The entire application is implemented using [Kotlin/Native](https://github.com/JetBrains/kotlin-native)
-*   [Server side](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/httpserver/src/HttpServer.kt) runs on a linux server and is implemented using:
-    *   [microHTTPD](https://www.gnu.org/software/libmicrohttpd/) HTTP server library
-    *   [SQLite](https://www.sqlite.org/) for the database, storing score
-    *   [Jansson](http://www.digip.org/jansson/) for JSON serialization and client/server communication
+### Server-Side
 
-*   [Client side](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt) for Android is implemented in pure Kotlin/Native, as a Native Activity using:
-    *   [GLES version 3](https://developer.android.com/guide/topics/graphics/opengl.html) interop for 3D rendering
-    *   [NDK input handling](https://developer.android.com/ndk/reference/group___input.html) for input processing
-    *   [Open AL](https://www.openal.org/) interop for sound playback
-    *   [Sensors native API](https://developer.android.com/ndk/reference/group___sensor.html)
-    *   [libcurl](https://curl.haxx.se/libcurl/) file transfer library as HTTP client
+[Server side](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/httpserver/src/HttpServer.kt) runs on a linux server and is implemented using:
 
-*   [Client side](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/ios) for iOS is implemented in pure Kotlin/Native using:
-    *   [GLES version 3 framework](https://developer.apple.com/documentation/opengles) for 3D rendering
-    *   [UIKit framework](https://developer.apple.com/documentation/uikit) for windows and views
-    *   [CoreMotion framework](https://developer.apple.com/documentation/coremotion) for sensors access
-    *   [OpenAL framework](https://developer.apple.com/library/content/documentation/Miscellaneous/Conceptual/iPhoneOSTechOverview/MediaLayer/MediaLayer.html#//apple_ref/doc/uid/TP40007898-CH9-SW13) for audio playback
-    
+*   [microHTTPD](https://www.gnu.org/software/libmicrohttpd/) HTTP server library
+*   [SQLite](https://www.sqlite.org/) for the database, storing score
+*   [Jansson](http://www.digip.org/jansson/) for JSON serialization and client/server communication
+
+### Client-Side 
+
+#### Android 
+
+[Client side](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt) for Android is implemented in pure Kotlin/Native, as a Native Activity using:
+*   [GLES version 3](https://developer.android.com/guide/topics/graphics/opengl.html) interop for 3D rendering
+*   [NDK input handling](https://developer.android.com/ndk/reference/group___input.html) for input processing
+*   [Open AL](https://www.openal.org/) interop for sound playback
+*   [Sensors native API](https://developer.android.com/ndk/reference/group___sensor.html)
+*   [libcurl](https://curl.haxx.se/libcurl/) file transfer library as HTTP client
+
+#### iOS
+
+[Client side](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/ios) for iOS is implemented in pure Kotlin/Native using:
+*   [GLES version 3 framework](https://developer.apple.com/documentation/opengles) for 3D rendering
+*   [UIKit framework](https://developer.apple.com/documentation/uikit) for windows and views
+*   [CoreMotion framework](https://developer.apple.com/documentation/coremotion) for sensors access
+*   [OpenAL framework](https://developer.apple.com/library/content/documentation/Miscellaneous/Conceptual/iPhoneOSTechOverview/MediaLayer/MediaLayer.html#//apple_ref/doc/uid/TP40007898-CH9-SW13) for audio playback
+
+### Implementation details
+
 *   Most graphical code, sound playback and user input reaction is [shared](https://github.com/JetBrains/kotlin-conf-demos/tree/master/kotlin-native/samples/fullstack/clients/shared/src/main/kotlin) between Android and iOS
 *   Server interaction on Android is [asynchronous](https://github.com/JetBrains/kotlin-conf-demos/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt#L107) from the UI thread, using [workers](https://github.com/JetBrains/kotlin-native/tree/master/samples/workers)
 *   HTTP server works in multithreaded mode, state sharing between sessions performed via SQLite DB access
