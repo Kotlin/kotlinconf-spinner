@@ -32,24 +32,65 @@ fun stats(db: KSqlite, session: Session, json: KJsonObject) {
     }
     json.setArray("colors", colors)
     json.setInt("color", session.color)
-    db.execute("SELECT counter FROM sessions WHERE cookie='${db.escape(session.cookie)}'") { _, data ->
+    db.execute("SELECT counter, winner FROM sessions WHERE cookie='${db.escape(session.cookie)}'") { _, data ->
         json.setInt("contribution", data[0].toInt())
+        json.setInt("winner", data[1].toInt())
         0
     }
 }
 
 fun click(db: KSqlite, session: Session, json: KJsonObject) {
-    db.execute("UPDATE colors SET counter = counter + 1 WHERE color=${session.color}")
-    db.execute("UPDATE sessions SET counter = counter + 1 WHERE cookie='${db.escape(session.cookie)}'")
+    var running = false
+    db.execute("SELECT status FROM games WHERE current = 'true'") {
+        _, data ->
+        // Check if game is currently in progress.
+        running = (data[0].toInt() == 1)
+        0
+    }
+    if (running) {
+        db.execute("UPDATE colors SET counter = counter + 1 WHERE color=${session.color}")
+        db.execute("UPDATE sessions SET counter = counter + 1 WHERE cookie='${db.escape(session.cookie)}'")
+    }
     stats(db, session, json)
 }
 
-fun clear(db: KSqlite, session: Session, json: KJsonObject) {
+fun start(db: KSqlite, session: Session, json: KJsonObject) {
     if (!session.isAdmin(db)) {
         error(json, session,"Unauthorized")
         return
     }
+    db.execute("UPDATE games SET current = 'false' WHERE current = 'true'")
+    db.execute("INSERT INTO games (current, status, startTime) VALUES ('true', 1, DateTime('now'))")
     db.execute("UPDATE colors SET counter = 0")
+    db.execute("UPDATE sessions SET counter = 0, winner = 0")
+    stats(db, session, json)
+}
+
+fun stop(db: KSqlite, session: Session, json: KJsonObject) {
+    if (!session.isAdmin(db)) {
+        error(json, session,"Unauthorized")
+        return
+    }
+    var winner = -1
+    db.execute("SELECT color FROM colors ORDER BY counter DESC LIMIT 1") {
+        _, data ->
+        winner = data[0].toInt()
+        0
+    }
+    db.execute("UPDATE games SET status = 0, endTime = DateTime('now'), winner=$winner WHERE current = 'true'")
+    println("Winner team is $winner!!!!!")
+
+    // Now update top 10 contributors.
+    val winners = mutableListOf<String>()
+    db.execute("SELECT cookie FROM sessions WHERE color=$winner ORDER BY counter DESC LIMIT 10") {
+        _, data ->
+        winners += data[0]
+        0
+    }
+    println("Winners are ${winners.joinToString(", ")}")
+    winners.forEach {
+        db.execute("UPDATE sessions SET winner = 1 WHERE cookie='$it'")
+    }
     stats(db, session, json)
 }
 
@@ -76,7 +117,9 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
         when {
             url.startsWith("/json/click") -> click(db, session, it)
             url.startsWith("/json/stats") -> stats(db, session, it)
-            url.startsWith("/json/clear") -> clear(db, session, it)
+            url.startsWith("/json/start") -> start(db, session, it)
+            url.startsWith("/json/stop") -> stop(db, session, it)
+            else -> error(it, session,"Unknown command")
         }
         return it.toString()
     }
@@ -129,6 +172,7 @@ val createDbCommand = """
         name VARCHAR(255),
         color INT NOT NULL,
         cookie VARCHAR(64) NOT NULL PRIMARY KEY,
+        winner INT,
         counter INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS colors(
@@ -143,6 +187,13 @@ val createDbCommand = """
         user VARCHAR(64) NOT NULL PRIMARY KEY,
         secret VARCHAR(64)
     );
+    CREATE TABLE IF NOT EXISTS games(
+        current BOOLEAN NOT NULL,
+        status INTEGER NOT NULL,
+        winner INTEGER,
+        startTime DATE,
+        endTime DATE
+    );
 """
 
 fun rnd() = kommon.random()
@@ -152,7 +203,7 @@ fun makeSession(name: String, password: String, db: KSqlite): Session {
     val freshBakery = "${rnd().toString(16)}${rnd().toString(16)}${rnd().toString(16)}"
     val color = (rnd() % MAX_COLORS + 1).toInt()
     db.execute(
-            "INSERT INTO sessions (cookie, color, name, counter) VALUES ('$freshBakery', $color, '${db.escape(name)}', 0)")
+            "INSERT INTO sessions (cookie, color, name, counter, winner) VALUES ('$freshBakery', $color, '${db.escape(name)}', 0, 0)")
     return Session(color, name, freshBakery, password)
 }
 
@@ -277,7 +328,7 @@ fun main(args: Array<String>) {
             "port" -> port = it.intValue
             "daemon" -> isDaemon = true
             "help" -> showUsage(makeUsage(cliOptions))
-            "secret" -> secret = it.stringValue
+            "admin" -> secret = it.stringValue
             "https" -> isHttps = true
         }
     }
