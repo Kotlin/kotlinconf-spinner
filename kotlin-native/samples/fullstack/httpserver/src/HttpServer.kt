@@ -33,7 +33,7 @@ fun stats(db: KSqlite, session: Session, json: KJsonObject) {
     db.execute("SELECT startTime, status FROM games WHERE current = 'true'") {
         _, data ->
         json.setString("startTime", data[0])
-        json.setString("status", data[1])
+        json.setInt("status", data[1].toInt())
         0
     }
     json.setArray("colors", colors)
@@ -60,6 +60,7 @@ fun click(db: KSqlite, session: Session, json: KJsonObject) {
     stats(db, session, json)
 }
 
+// Admin API.
 fun start(db: KSqlite, session: Session, json: KJsonObject) {
     if (!session.isAdmin(db)) {
         error(json, session,"Unauthorized")
@@ -72,19 +73,29 @@ fun start(db: KSqlite, session: Session, json: KJsonObject) {
     stats(db, session, json)
 }
 
-fun stop(db: KSqlite, session: Session, json: KJsonObject) {
+fun resume(db: KSqlite, session: Session, json: KJsonObject) {
     if (!session.isAdmin(db)) {
         error(json, session,"Unauthorized")
         return
     }
+    db.execute("UPDATE games SET status = 1, winner=NULL WHERE current = 'true'")
+    db.execute("UPDATE sessions SET winner = 0")
+    stats(db, session, json)
+}
+
+fun setWinner(db: KSqlite, endGame: Boolean) {
     var winner = -1
     db.execute("SELECT color FROM colors ORDER BY counter DESC LIMIT 1") {
         _, data ->
         winner = data[0].toInt()
         0
     }
-    db.execute("UPDATE games SET status = 0, endTime = DateTime('now'), winner=$winner WHERE current = 'true'")
+
     println("Winner team is $winner!!!!!")
+    db.execute("UPDATE games SET status = 0, winner=$winner WHERE current = 'true'")
+    if (endGame) {
+        db.execute("UPDATE games SET endTime = DateTime('now') WHERE current = 'true'")
+    }
 
     // Now update top 10 contributors.
     val winners = mutableListOf<String>()
@@ -97,6 +108,23 @@ fun stop(db: KSqlite, session: Session, json: KJsonObject) {
     winners.forEach {
         db.execute("UPDATE sessions SET winner = 1 WHERE cookie='$it'")
     }
+}
+
+fun pause(db: KSqlite, session: Session, json: KJsonObject) {
+    if (!session.isAdmin(db)) {
+        error(json, session,"Unauthorized")
+        return
+    }
+    setWinner(db, false)
+    stats(db, session, json)
+}
+
+fun stop(db: KSqlite, session: Session, json: KJsonObject) {
+    if (!session.isAdmin(db)) {
+        error(json, session,"Unauthorized")
+        return
+    }
+    setWinner(db, true)
     stats(db, session, json)
 }
 
@@ -123,6 +151,8 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
             url.startsWith("/json/click") -> click(db, session, it)
             url.startsWith("/json/stats") -> stats(db, session, it)
             url.startsWith("/json/start") -> start(db, session, it)
+            url.startsWith("/json/pause") -> pause(db, session, it)
+            url.startsWith("/json/resume") -> resume(db, session, it)
             url.startsWith("/json/stop") -> stop(db, session, it)
             else -> error(it, session,"Unknown command")
         }
