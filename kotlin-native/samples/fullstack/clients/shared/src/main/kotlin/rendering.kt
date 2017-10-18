@@ -521,19 +521,22 @@ class GameRenderer {
             }
         } else {
             val ratio = 236.0f / 816.0f
+            //  Draw text at the bottom of the square:
             if (screenWidth <= screenHeight) {
-                // Portrait orientation. Draw chart below the square:
+                // Portrait orientation.
+                val height = 2.0f * ratio / screenAspect
+                val y = 1.0f - 2.2f * squareSize / screenHeight
                 statsBarChartRenderer.texturedRectRenderer.render(
-                        -1.0f, -0.5f,
-                        2.0f, 2.0f * ratio,//2 * (screenHeight - squareSize) / screenHeight,
+                        -1.0f, y,
+                        2.0f, height,
                         11
                 )
             } else {
-                // Landscape orientation. Draw chart to the right of the square:
-                val width = 2 * (screenWidth - squareSize) / screenWidth
+                // Landscape orientation.
+                val width = 2 * squareSize / screenWidth
                 statsBarChartRenderer.texturedRectRenderer.render(
-                        1.0f - width, -1.0f,
-                        width, width * ratio,
+                        -1.0f, -1.0f,
+                        width, width * ratio / screenAspect,
                         11
                 )
             }

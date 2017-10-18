@@ -66,6 +66,8 @@ class TouchControl(val gameState: GameState) {
         val projectedUserAcceleration = Vector2(userAcceleration.x, userAcceleration.y)
         if (projectedUserAcceleration.length < 2.3f) return
 
+        gameState.sceneState.initialized = true
+
         // Note: the axis is inverted intentionally to react to movement stop rather than start.
         val axis = Vector2(projectedUserAcceleration.y, -projectedUserAcceleration.x)
 
