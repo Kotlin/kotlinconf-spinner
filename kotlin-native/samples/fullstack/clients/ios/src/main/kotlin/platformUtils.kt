@@ -101,6 +101,8 @@ private fun parseJsonResponse(data: NSData): Stats? {
     val myTeam = Team.values()[myTeamIndex]
 
     val myConribution = dict.intValueForKey("contribution")!!
+    val status = dict.intValueForKey("status")!!
+    val winner = dict.intValueForKey("winner")!!
 
     val colors = dict.valueForKey("colors")!!.reinterpret<NSArray>()
     val counts = IntArray(Team.count)
@@ -111,7 +113,7 @@ private fun parseJsonResponse(data: NSData): Stats? {
         counts[i.toInt()] = counter
     }
 
-    return Stats(counts, myTeam, myConribution)
+    return Stats(counts, myTeam, myConribution, status, winner != 0)
 }
 
 // TODO: consider not using logError function on Android.

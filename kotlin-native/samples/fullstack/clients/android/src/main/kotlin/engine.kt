@@ -84,6 +84,8 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
                     else {
                         val myColor = it.getInt("color") - 1
                         val myContribution = it.getInt("contribution")
+                        val status = it.getInt("status")
+                        val winner = it.getInt("winner")
                         val colors = it.getArray("colors")
                         val counts = IntArray(colors.size)
                         counts.indices.forEach {
@@ -94,7 +96,7 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
                             counts[color - 1] = counter
                         }
                         it.close()
-                        mostRecentlyFetched = Stats(counts, enumValues<Team>()[myColor], myContribution)
+                        mostRecentlyFetched = Stats(counts, enumValues<Team>()[myColor], myContribution, status, winner != 0)
                     }
                 }
             }

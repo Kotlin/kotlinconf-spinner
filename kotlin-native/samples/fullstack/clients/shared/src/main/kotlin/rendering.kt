@@ -401,9 +401,10 @@ private class StatsBarChartRenderer {
                     digitAspect
             )
             val teamSquareSize = if (team == stats.myTeam) barWidth * 1.3f else barWidth
+            val centerY = (zh - barWidth / screenAspect) * 2 / 3 + (barWidth / screenAspect) / 2
             rectRenderer.render(
                     barX + (barWidth - teamSquareSize) / 2,
-                    y + (zh - teamSquareSize / screenAspect) * 2 / 3,
+                    y + centerY - (teamSquareSize / screenAspect / 2),
                     teamSquareSize,
                     teamSquareSize / screenAspect,
                     teamNumberColor
@@ -411,7 +412,7 @@ private class StatsBarChartRenderer {
             var digitSize = if (team == stats.myTeam) 0.4f else 0.3f
             texturedRectRenderer.render(
                     barX + (barWidth - teamSquareSize) / 2 + teamSquareSize * (1 - digitSize) / 2,
-                    y + (zh - teamSquareSize / screenAspect) * 2 / 3 + (teamSquareSize / screenAspect * (1 - digitSize) / 2),
+                    y + centerY - (teamSquareSize / screenAspect / 2) + (teamSquareSize / screenAspect * (1 - digitSize) / 2),
                     teamSquareSize * digitSize,
                     teamSquareSize / screenAspect * digitSize,
                     team.ordinal + 1
@@ -422,8 +423,14 @@ private class StatsBarChartRenderer {
     }
 }
 
+const val kotlinTextureId = 10
+const val startScreenTextureId = 11
+const val loserScreenTextureId = 12
+const val winnerScreenTextureId = 13
+const val numberOfTextures = 14
+
 class GameRenderer {
-    private val kotlinLogoRenderer = KotlinLogoRenderer(10)
+    private val kotlinLogoRenderer = KotlinLogoRenderer(kotlinTextureId)
     private val statsBarChartRenderer = StatsBarChartRenderer()
 
     init {
@@ -438,10 +445,12 @@ class GameRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         memScoped {
-            val textures = allocArray<GLuintVar>(12 /* Logo + message + digits */)
-            glGenTextures(12, textures)
-            loadTextureFromBmpResource("mesh_pattern.bmp", GL_TEXTURE10, textures[10])
-            loadTextureFromBmpResource("spinner_game_text.bmp", GL_TEXTURE11, textures[11])
+            val textures = allocArray<GLuintVar>(numberOfTextures)
+            glGenTextures(numberOfTextures, textures)
+            loadTextureFromBmpResource("mesh_pattern.bmp", GL_TEXTURE10, textures[kotlinTextureId])
+            loadTextureFromBmpResource("spinner_game_text.bmp", GL_TEXTURE11, textures[startScreenTextureId])
+            loadTextureFromBmpResource("0.bmp", GL_TEXTURE12, textures[loserScreenTextureId])
+            loadTextureFromBmpResource("1.bmp", GL_TEXTURE13, textures[winnerScreenTextureId])
             for (d in 0..9)
                 loadTextureFromBmpResource("$d.bmp", GL_TEXTURE0 + d, textures[d])
         }
@@ -461,86 +470,94 @@ class GameRenderer {
         // i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.
 
         val screenAspect = screenHeight / screenWidth
-        val digitAspect = 0.375f * screenAspect
 
         val stats = sceneState.stats
 
-        val squareSize = minOf(screenWidth, screenHeight)
-
-        // Project (0, 0, 0) to the center of the screen and
-        // make `squareSize / 2` on the screen correspond to `1` in the world,
-        // and then move the screen center to the square center:
-        val projectionMatrix =
-                translationMatrix(
-                        squareSize / screenWidth - 1,
-                        1 - squareSize / screenHeight,
-                        0.0f
-                ) * orthographicProjectionMatrix(
-                        -screenWidth / squareSize, screenWidth / squareSize,
-                        -screenHeight / squareSize, screenHeight / squareSize,
-                        0.1f, 100.0f
-                )
-
-        kotlinLogoRenderer.render(
-                translationMatrix(0.0f, 0.0f, -2.0f) * Matrix4(sceneState.rotationMatrix),
-                projectionMatrix
-        )
-
-        if (sceneState.initialized) {
-
-            if (stats != null) {
-                val width = 2 * squareSize / screenWidth
-
-                statsBarChartRenderer.texturedRectRenderer.renderScore(
-                        -(width / 8), 0.85f,
-                        width / 4, 0.1f,
-                        stats.myContribution,
-                        digitAspect
-                )
-            }
-
-            if (screenWidth <= screenHeight) {
-                // Portrait orientation. Draw chart below the square:
-                statsBarChartRenderer.render(
-                        -1.0f, -1.0f,
-                        2.0f, 2 * (screenHeight - squareSize) / screenHeight,
-                        stats,
-                        digitAspect,
-                        screenAspect
-                )
-            } else {
-                // Landscape orientation. Draw chart to the right of the square:
-                val width = 2 * (screenWidth - squareSize) / screenWidth
-                statsBarChartRenderer.render(
-                        1.0f - width, -1.0f,
-                        width, 2.0f,
-                        stats,
-                        digitAspect,
-                        screenAspect
-                )
-            }
+        if (sceneState.initialized && stats?.status == 0) {
+            statsBarChartRenderer.texturedRectRenderer.render(
+                    -1.0f, -1.0f,
+                    2.0f, 2.0f,
+                    if (stats.winner) winnerScreenTextureId else loserScreenTextureId
+            )
         } else {
-            val ratio = 236.0f / 816.0f
-            //  Draw text at the bottom of the square:
-            if (screenWidth <= screenHeight) {
-                // Portrait orientation.
-                val height = 2.0f * ratio / screenAspect
-                val y = 1.0f - 2.2f * squareSize / screenHeight
-                statsBarChartRenderer.texturedRectRenderer.render(
-                        -1.0f, y,
-                        2.0f, height,
-                        11
-                )
+
+            val squareSize = minOf(screenWidth, screenHeight)
+            val digitAspect = 0.375f * screenAspect
+
+            // Project (0, 0, 0) to the center of the screen and
+            // make `squareSize / 2` on the screen correspond to `1` in the world,
+            // and then move the screen center to the square center:
+            val projectionMatrix =
+                    translationMatrix(
+                            squareSize / screenWidth - 1,
+                            1 - squareSize / screenHeight,
+                            0.0f
+                    ) * orthographicProjectionMatrix(
+                            -screenWidth / squareSize, screenWidth / squareSize,
+                            -screenHeight / squareSize, screenHeight / squareSize,
+                            0.1f, 100.0f
+                    )
+
+            kotlinLogoRenderer.render(
+                    translationMatrix(0.0f, 0.0f, -2.0f) * Matrix4(sceneState.rotationMatrix),
+                    projectionMatrix
+            )
+
+            if (sceneState.initialized) {
+
+                if (stats != null) {
+                    val width = 2 * squareSize / screenWidth
+
+                    statsBarChartRenderer.texturedRectRenderer.renderScore(
+                            -(width / 8), 0.85f,
+                            width / 4, 0.1f,
+                            stats.myContribution,
+                            digitAspect
+                    )
+                }
+
+                if (screenWidth <= screenHeight) {
+                    // Portrait orientation. Draw chart below the square:
+                    statsBarChartRenderer.render(
+                            -1.0f, -1.0f,
+                            2.0f, 2 * (screenHeight - squareSize) / screenHeight,
+                            stats,
+                            digitAspect,
+                            screenAspect
+                    )
+                } else {
+                    // Landscape orientation. Draw chart to the right of the square:
+                    val width = 2 * (screenWidth - squareSize) / screenWidth
+                    statsBarChartRenderer.render(
+                            1.0f - width, -1.0f,
+                            width, 2.0f,
+                            stats,
+                            digitAspect,
+                            screenAspect
+                    )
+                }
             } else {
-                // Landscape orientation.
-                val width = 2 * squareSize / screenWidth
-                statsBarChartRenderer.texturedRectRenderer.render(
-                        -1.0f, -1.0f,
-                        width, width * ratio / screenAspect,
-                        11
-                )
+                val ratio = 236.0f / 816.0f
+                //  Draw text at the bottom of the square:
+                if (screenWidth <= screenHeight) {
+                    // Portrait orientation.
+                    val height = 2.0f * ratio / screenAspect
+                    val y = 1.0f - 2.2f * squareSize / screenHeight
+                    statsBarChartRenderer.texturedRectRenderer.render(
+                            -1.0f, y,
+                            2.0f, height,
+                            11
+                    )
+                } else {
+                    // Landscape orientation.
+                    val width = 2 * squareSize / screenWidth
+                    statsBarChartRenderer.texturedRectRenderer.render(
+                            -1.0f, -1.0f,
+                            width, width * ratio / screenAspect,
+                            11
+                    )
+                }
             }
         }
-
     }
 }
