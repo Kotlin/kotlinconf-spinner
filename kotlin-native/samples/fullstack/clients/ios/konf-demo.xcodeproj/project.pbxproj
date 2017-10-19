@@ -28,6 +28,7 @@
 		2CED25FA1F7544A200A6326D /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CED25F91F7544A100A6326D /* GLKit.framework */; };
 		2CF5BF2B1F963C1500F1A06D /* spinner_game_text.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */; };
 		2CF5BF311F965CC600F1A06D /* mesh_pattern.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */; };
+		2CF5BF331F98C66C00F1A06D /* spins.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF321F98C66C00F1A06D /* spins.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		2CED25F91F7544A100A6326D /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spinner_game_text.bmp; path = ../../android/src/main/assets/spinner_game_text.bmp; sourceTree = "<group>"; };
 		2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = mesh_pattern.bmp; path = ../../android/src/main/assets/mesh_pattern.bmp; sourceTree = "<group>"; };
+		2CF5BF321F98C66C00F1A06D /* spins.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spins.bmp; path = ../../android/src/main/assets/spins.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +93,7 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
+				2CF5BF321F98C66C00F1A06D /* spins.bmp */,
 				2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */,
 				2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */,
 				2C7B37FE1F8FB96200743D7C /* 0.bmp */,
@@ -194,6 +197,7 @@
 				2C7B38061F8FB96300743D7C /* 1.bmp in Resources */,
 				2CF5BF311F965CC600F1A06D /* mesh_pattern.bmp in Resources */,
 				2C7B38091F8FB96300743D7C /* 4.bmp in Resources */,
+				2CF5BF331F98C66C00F1A06D /* spins.bmp in Resources */,
 				2CED25EA1F75246200A6326D /* LaunchScreen.storyboard in Resources */,
 				2C7B37E11F8E65B800743D7C /* swish.wav in Resources */,
 				2C7B38001F8FB96300743D7C /* 5.bmp in Resources */,

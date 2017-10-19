@@ -327,9 +327,11 @@ private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, 
     checkGlError()
 }
 
-private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int, digitAspect: Float) {
+private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int, digitAspect: Float,
+                                             labelTexture: Int, labelWidth: Float, labelHeight: Float, labelShift: Float) {
     val margin = 0.01f
-    val digitWidth = (w - 4 * margin) / 5
+    val labelMargin = if (labelTexture >= 0) 0.02f else 0.0f
+    val digitWidth = (w - labelWidth - labelMargin - 4 * margin) / 5
     val digits = mutableListOf<Int>()
     var s = score
     while (s > 0) {
@@ -339,7 +341,7 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Fl
     if (digits.size == 0)
         digits += 0
     digits.reverse()
-    var cx = maxOf(0.0f, w - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
+    var cx = maxOf(0.0f, w - labelWidth - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
     val digitHeight = minOf(h, digitWidth / digitAspect)
     digits.forEachIndexed { i, d ->
         render(
@@ -348,6 +350,13 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Fl
                 d
         )
         cx += digitWidth + margin
+    }
+    if (labelTexture >= 0) {
+        cx += labelMargin - margin
+        render(x + cx, y + digitHeight - labelHeight + labelShift,
+                labelWidth, labelHeight,
+                labelTexture
+        )
     }
 }
 
@@ -398,7 +407,8 @@ private class StatsBarChartRenderer {
                     barWidth,
                     h / 8 - 0.01f,
                     stats.getCount(team),
-                    digitAspect
+                    digitAspect,
+                    -1, 0.0f, 0.0f, 0.0f
             )
             val teamSquareSize = if (team == stats.myTeam) barWidth * 1.3f else barWidth
             val centerY = (zh - barWidth / screenAspect) * 2 / 3 + (barWidth / screenAspect) / 2
@@ -427,7 +437,8 @@ const val kotlinTextureId = 10
 const val startScreenTextureId = 11
 const val loserScreenTextureId = 12
 const val winnerScreenTextureId = 13
-const val numberOfTextures = 14
+const val spinsTextureId = 14
+const val numberOfTextures = 15
 
 class GameRenderer {
     private val kotlinLogoRenderer = KotlinLogoRenderer(kotlinTextureId)
@@ -451,6 +462,7 @@ class GameRenderer {
             loadTextureFromBmpResource("spinner_game_text.bmp", GL_TEXTURE11, textures[startScreenTextureId])
             loadTextureFromBmpResource("0.bmp", GL_TEXTURE12, textures[loserScreenTextureId])
             loadTextureFromBmpResource("1.bmp", GL_TEXTURE13, textures[winnerScreenTextureId])
+            loadTextureFromBmpResource("spins.bmp", GL_TEXTURE14, textures[spinsTextureId])
             for (d in 0..9)
                 loadTextureFromBmpResource("$d.bmp", GL_TEXTURE0 + d, textures[d])
         }
@@ -508,11 +520,15 @@ class GameRenderer {
                 if (stats != null) {
                     val width = 2 * squareSize / screenWidth
 
+                    val scoreH = 0.1f
+                    val spinsH = scoreH * 0.5f
+                    val spinsW = spinsH * (87.0f / 36.0f) * screenAspect
                     statsBarChartRenderer.texturedRectRenderer.renderScore(
                             -(width / 8), 0.85f,
-                            width / 4, 0.1f,
+                            width / 4, scoreH,
                             stats.myContribution,
-                            digitAspect
+                            digitAspect,
+                            spinsTextureId, spinsW, spinsH, 0.0160f
                     )
                 }
 
