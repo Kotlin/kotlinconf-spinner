@@ -12,6 +12,7 @@
 @interface ViewController : GLKViewController
 
 - (IBAction)handlePanGesture:(UIPanGestureRecognizer *)sender;
+@property (strong, nonatomic) IBOutlet UIButton *gameCenterButton;
 
 @end
 

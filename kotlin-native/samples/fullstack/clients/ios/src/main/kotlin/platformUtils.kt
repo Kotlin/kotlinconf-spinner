@@ -16,6 +16,7 @@
 
 import kotlinx.cinterop.*
 import platform.darwin.NSObject
+import platform.GameKit.*
 import platform.Foundation.*
 
 class StatsFetcherImpl : StatsFetcher {
@@ -63,6 +64,7 @@ class StatsFetcherImpl : StatsFetcher {
                 val receivedStats = parseJsonResponse(receivedData)
                 if (receivedStats != null) {
                     mostRecentFetched = receivedStats
+                    receivedStats.reportToGameCenter()
                 }
             }
         }
@@ -114,6 +116,18 @@ private fun parseJsonResponse(data: NSData): Stats? {
     }
 
     return Stats(counts, myTeam, myConribution, status, winner != 0)
+}
+
+fun Stats.reportToGameCenter() {
+    if (!GKLocalPlayer.localPlayer().isAuthenticated()) return
+
+    val gkScore = GKScore("main")
+    gkScore.value = this.myContribution.signExtend()
+    gkScore.context = 0
+
+    val gkScoreArray = NSArray.arrayWithObject(gkScore)
+
+    GKScore.reportScores(gkScoreArray, withCompletionHandler = null)
 }
 
 // TODO: consider not using logError function on Android.

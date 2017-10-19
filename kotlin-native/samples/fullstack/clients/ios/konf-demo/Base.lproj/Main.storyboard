@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="oik-7P-CJs">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
+        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -11,8 +15,20 @@
             <objects>
                 <glkViewController preferredFramesPerSecond="30" id="oik-7P-CJs" customClass="ViewController" sceneMemberID="viewController">
                     <glkView key="view" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" enableSetNeedsDisplay="NO" id="cMk-xM-rhv">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BDx-wC-PsF">
+                                <rect key="frame" x="334" y="18" width="23" height="24"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
+                                <inset key="imageEdgeInsets" minX="4" minY="5" maxX="4" maxY="4"/>
+                                <state key="normal" image="GameCenter"/>
+                                <connections>
+                                    <action selector="gameCenterButtonPressed:" destination="oik-7P-CJs" eventType="touchUpInside" id="vF3-ig-HUN"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <gestureRecognizers/>
                         <viewLayoutGuide key="safeArea" id="nyv-WX-aSd"/>
                         <connections>
@@ -20,6 +36,9 @@
                             <outletCollection property="gestureRecognizers" destination="N7K-WW-oa4" appends="YES" id="ZUk-Ix-mkq"/>
                         </connections>
                     </glkView>
+                    <connections>
+                        <outlet property="gameCenterButton" destination="BDx-wC-PsF" id="MEQ-ca-77j"/>
+                    </connections>
                 </glkViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Bah-EO-oxh" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <panGestureRecognizer minimumNumberOfTouches="1" id="N7K-WW-oa4">
@@ -28,7 +47,10 @@
                     </connections>
                 </panGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="117" y="91"/>
+            <point key="canvasLocation" x="116" y="90.404797601199405"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="GameCenter" width="23" height="24"/>
+    </resources>
 </document>

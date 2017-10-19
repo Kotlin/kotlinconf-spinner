@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C61AD611F9892E30094D197 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C61AD601F9892E30094D197 /* GameKit.framework */; };
 		2C7B37E11F8E65B800743D7C /* swish.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E01F8E65B700743D7C /* swish.wav */; };
 		2C7B38001F8FB96300743D7C /* 5.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F61F8FB96200743D7C /* 5.bmp */; };
 		2C7B38011F8FB96300743D7C /* 8.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F71F8FB96200743D7C /* 8.bmp */; };
@@ -32,6 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2C61AD601F9892E30094D197 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		2C7B37E01F8E65B700743D7C /* swish.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = swish.wav; path = ../../android/src/main/assets/swish.wav; sourceTree = "<group>"; };
 		2C7B37F61F8FB96200743D7C /* 5.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 5.bmp; path = ../../../utils/ios/5.bmp; sourceTree = "<group>"; };
 		2C7B37F71F8FB96200743D7C /* 8.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 8.bmp; path = ../../../utils/ios/8.bmp; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C61AD611F9892E30094D197 /* GameKit.framework in Frameworks */,
 				2CED25FA1F7544A200A6326D /* GLKit.framework in Frameworks */,
 				2CED25F81F75449700A6326D /* OpenGLES.framework in Frameworks */,
 			);
@@ -123,6 +126,7 @@
 		2CED25F61F75449700A6326D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2C61AD601F9892E30094D197 /* GameKit.framework */,
 				2CED25F91F7544A100A6326D /* GLKit.framework */,
 				2CED25F71F75449700A6326D /* OpenGLES.framework */,
 			);
@@ -164,6 +168,11 @@
 					2CED25D91F75246200A6326D = {
 						CreatedOnToolsVersion = 9.0;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.GameCenter = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};

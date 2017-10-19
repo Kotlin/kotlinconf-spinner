@@ -25,6 +25,8 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (IBAction)gameCenterButtonPressed:(UIButton *)sender {
+}
 
 - (IBAction)handlePanGesture:(UIPanGestureRecognizer *)sender {
 }

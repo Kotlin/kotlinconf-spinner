@@ -19,6 +19,7 @@ import platform.CoreGraphics.*
 import platform.CoreMotion.*
 import platform.EAGL.*
 import platform.Foundation.*
+import platform.GameKit.*
 import platform.GLKit.*
 import platform.UIKit.*
 
@@ -44,7 +45,7 @@ class AppDelegate : UIResponder(), UIApplicationDelegateProtocol {
 }
 
 @ExportObjCClass
-class ViewController : GLKViewController {
+class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol {
 
     constructor(aDecoder: NSCoder) : super(aDecoder)
     override fun initWithCoder(aDecoder: NSCoder) = initBy(ViewController(aDecoder))
@@ -68,6 +69,14 @@ class ViewController : GLKViewController {
     private lateinit var gameRenderer: GameRenderer
 
     override fun viewDidLoad() {
+        setupGameCenterAuthentication()
+
+        gameCenterButton.apply {
+            layer.borderWidth = 1.0
+            layer.borderColor = UIColor.colorWithRed(0x47/255.0, 0x43/255.0, 0x70/255.0, 1.0).CGColor
+            layer.masksToBounds = true
+        }
+
         this.context = EAGLContext(kEAGLRenderingAPIOpenGLES3)
 
         val view = this.view.reinterpret<GLKView>()
@@ -160,6 +169,62 @@ class ViewController : GLKViewController {
         }
 
         gameRenderer.render(gameState.sceneState, screenWidth.toFloat(), screenHeight.toFloat())
+    }
+
+    // Game Center integration:
+
+    private fun setupGameCenterAuthentication() {
+        GKLocalPlayer.localPlayer().authenticateHandler = { viewController, error ->
+            val localPlayer = GKLocalPlayer.localPlayer()
+            if (viewController != null) {
+                this.gameCenterAuthenticateViewController = viewController
+            } else if (localPlayer.isAuthenticated()) {
+                gameState.sceneState.stats?.reportToGameCenter()
+                if (requestedGameCenter) {
+                    requestedGameCenter = false
+                    showGameCenter()
+                }
+            } else {
+                requestedGameCenter = false
+                // TODO: report an error.
+            }
+        }
+    }
+
+    private var gameCenterAuthenticateViewController: UIViewController? = null
+
+    var requestedGameCenter = false
+
+    @ObjCAction
+    fun gameCenterButtonPressed(sender: UIButton) {
+        if (GKLocalPlayer.localPlayer().isAuthenticated()) {
+            showGameCenter()
+        } else {
+            requestedGameCenter = true
+            gameCenterAuthenticateViewController?.let {
+                this.presentViewController(it, animated = true, completion = null)
+            }
+
+            // TODO: report an error otherwise.
+        }
+    }
+
+    @ObjCOutlet
+    lateinit var gameCenterButton: UIButton
+
+    override fun gameCenterViewControllerDidFinish(gameCenterViewController: GKGameCenterViewController) {
+        gameCenterViewController.dismissViewControllerAnimated(true, completion = null)
+    }
+
+    private fun showGameCenter() {
+        val gkViewController = GKGameCenterViewController().also {
+            it.gameCenterDelegate = this
+            it.viewState = GKGameCenterViewControllerStateLeaderboards
+            it.leaderboardTimeScope = GKLeaderboardTimeScopeToday
+            it.leaderboardCategory = "main"
+        }
+
+        this.presentViewController(gkViewController, animated = true, completion = null)
     }
 
 }
