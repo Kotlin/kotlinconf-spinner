@@ -28,6 +28,13 @@
                                     <action selector="gameCenterButtonPressed:" destination="oik-7P-CJs" eventType="touchUpInside" id="vF3-ig-HUN"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WqN-I0-ZNg">
+                                <rect key="frame" x="326" y="9" width="40" height="43"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="gameCenterButtonPressed:" destination="oik-7P-CJs" eventType="touchUpInside" id="OVL-ci-QOz"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <gestureRecognizers/>
                         <viewLayoutGuide key="safeArea" id="nyv-WX-aSd"/>
