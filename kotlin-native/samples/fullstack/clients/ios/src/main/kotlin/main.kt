@@ -171,6 +171,15 @@ class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol
         gameRenderer.render(gameState.sceneState, screenWidth.toFloat(), screenHeight.toFloat())
     }
 
+    private fun showErrorAlert(title: String, message: String) {
+        val alert = UIAlertController.alertControllerWithTitle(title, message, UIAlertControllerStyleAlert)
+        val ok = UIAlertAction.actionWithTitle("OK", style = UIAlertActionStyleDefault, handler = {
+            alert.dismissViewControllerAnimated(true, completion = null)
+        })
+        alert.addAction(ok)
+        this.presentViewController(alert, animated = true, completion = null)
+    }
+
     // Game Center integration:
 
     private fun setupGameCenterAuthentication() {
@@ -185,8 +194,13 @@ class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol
                     showGameCenter()
                 }
             } else {
-                requestedGameCenter = false
-                // TODO: report an error.
+                if (requestedGameCenter) {
+                    requestedGameCenter = false
+                    showErrorAlert(
+                            "Game Center error",
+                            "Ensure that Game Center is enabled in Settings and that the credentials are correct"
+                    )
+                }
             }
         }
     }
@@ -200,12 +214,16 @@ class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol
         if (GKLocalPlayer.localPlayer().isAuthenticated()) {
             showGameCenter()
         } else {
-            requestedGameCenter = true
-            gameCenterAuthenticateViewController?.let {
-                this.presentViewController(it, animated = true, completion = null)
+            val authenticate = this.gameCenterAuthenticateViewController
+            if (authenticate != null) {
+                requestedGameCenter = true
+                this.presentViewController(authenticate, animated = true, completion = null)
+            } else {
+                showErrorAlert(
+                        "Game Center error",
+                        "Try to restart the application"
+                )
             }
-
-            // TODO: report an error otherwise.
         }
     }
 
