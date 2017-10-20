@@ -118,7 +118,9 @@ private class TexturedRectRenderer {
      * Draws a 2D rectangle specified in a normalized device coordinates,
      * i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.
      */
-    fun render(x: Float, y: Float, w: Float, h: Float, texture: GLuint) {
+    fun render(x: Float, y: Float, w: Float, h: Float, texture: GLuint,
+               texBottomLeft: Vector2 = Vector2(0.0f, 0.0f),
+               texUpperRight: Vector2 = Vector2(1.0f, 1.0f)) {
         this.program.let {
             it.activate()
 
@@ -127,8 +129,8 @@ private class TexturedRectRenderer {
                     Vector2(x + w, y), Vector2(x + w, y + h), Vector2(x, y + h)
             )
             val texCoords = listOf(
-                    Vector2(0.0f, 0.0f), Vector2(1.0f, 0.0f), Vector2(0.0f, 1.0f),
-                    Vector2(1.0f, 0.0f), Vector2(1.0f, 1.0f), Vector2(0.0f, 1.0f)
+                    texBottomLeft, Vector2(texUpperRight.x, texBottomLeft.y), Vector2(texBottomLeft.x, texUpperRight.y),
+                    Vector2(texUpperRight.x, texBottomLeft.y), texUpperRight, Vector2(texBottomLeft.x, texUpperRight.y)
             )
             it.position.assign(positions)
             it.texcoord.assign(texCoords)
@@ -327,11 +329,11 @@ private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, 
     checkGlError()
 }
 
-private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Float, score: Int, digitAspect: Float,
-                                             labelTexture: Int, labelWidth: Float, labelHeight: Float, labelShift: Float) {
+private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, score: Int, maxDigits: Float, digitAspect: Float,
+                                             labelTexture: Int, labelAspect: Float, labelScale: Float, labelShift: Float) {
     val margin = 0.01f
     val labelMargin = if (labelTexture >= 0) 0.02f else 0.0f
-    val digitWidth = (w - labelWidth - labelMargin - 4 * margin) / 5
+    val digitWidth = (w - labelMargin - (maxDigits - 1) * margin) / (maxDigits + labelAspect * labelScale / digitAspect)
     val digits = mutableListOf<Int>()
     var s = score
     while (s > 0) {
@@ -341,19 +343,21 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, h: Fl
     if (digits.size == 0)
         digits += 0
     digits.reverse()
-    var cx = maxOf(0.0f, w - labelWidth - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
-    val digitHeight = minOf(h, digitWidth / digitAspect)
+    val digitHeight = digitWidth / digitAspect
+    val labelHeight = digitHeight * labelScale
+    val labelWidth  = labelHeight * labelAspect
+    var cx = (w - labelWidth - labelMargin - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
     digits.forEachIndexed { i, d ->
         render(
-                x + cx, y + margin,
-                digitWidth, digitHeight - margin,
+                x + cx, y,
+                digitWidth, digitHeight,
                 d
         )
         cx += digitWidth + margin
     }
     if (labelTexture >= 0) {
         cx += labelMargin - margin
-        render(x + cx, y + digitHeight - labelHeight + labelShift,
+        render(x + cx, y + digitHeight - labelHeight + labelShift * labelHeight,
                 labelWidth, labelHeight,
                 labelTexture
         )
@@ -377,20 +381,22 @@ private class StatsBarChartRenderer {
         if (stats == null) return
 
         val barsCount = Team.count
-        val marginsCount = barsCount + 1
-        val marginToBar = 0.6f
-        val highlightedMarginToBar = 0.9f
+        val allMarginsCount = barsCount - 1
+        val highlightedMarginsCount = if (stats.myTeam.ordinal == 0 || stats.myTeam.ordinal == Team.count - 1) 1 else 2
+        val marginsCount = allMarginsCount - highlightedMarginsCount
+        val marginToBar = 4.53333f / 10.93333f
+        val highlightedMarginToBar = 9.06667f / 10.93333f
 
-        val barWidth = w / (barsCount + marginToBar * (marginsCount - 2) + highlightedMarginToBar * 2)
+        val barWidth = w / (barsCount + marginToBar * marginsCount + highlightedMarginToBar * highlightedMarginsCount)
         val marginWidth = barWidth * marginToBar
         val highlightedMarginWidth = barWidth * highlightedMarginToBar
 
         var maxCount = Team.values().map { stats.getCount(it) }.max() ?: 0
         if (maxCount == 0) maxCount = 1
 
-        val zh = h * 0.4f
-        val maxBarH = h * 0.4f
-        var barX = x + (if (stats.myTeam.ordinal == 0) highlightedMarginWidth else marginWidth)
+        val maxBarH = (h - barWidth / screenAspect - 4 * marginWidth / screenAspect)
+        val zh = barWidth / screenAspect + 2 * marginWidth / screenAspect
+        var barX = x
 
         for (team in Team.values()) {
             val barH = 0.01f + (stats.getCount(team).toFloat() / maxCount * maxBarH)
@@ -401,17 +407,18 @@ private class StatsBarChartRenderer {
                     barH,
                     team.colorVector
             )
+            val teamSquareSize = if (team == stats.myTeam) barWidth * 1.3f else barWidth
+            val centerY = (zh - barWidth / screenAspect) * 1 / 2 + (barWidth / screenAspect) / 2
+            val dist = zh - (centerY + (teamSquareSize / screenAspect) * 0.5f)
             texturedRectRenderer.renderScore(
                     barX,
-                    y + zh + barH,
+                    y + zh + barH + dist * 0.5f,
                     barWidth,
-                    h / 8 - 0.01f,
                     stats.getCount(team),
+                    if (team == stats.myTeam) 5.5f * 12 / 16 else 5.5f,
                     digitAspect,
                     -1, 0.0f, 0.0f, 0.0f
             )
-            val teamSquareSize = if (team == stats.myTeam) barWidth * 1.3f else barWidth
-            val centerY = (zh - barWidth / screenAspect) * 2 / 3 + (barWidth / screenAspect) / 2
             rectRenderer.render(
                     barX + (barWidth - teamSquareSize) / 2,
                     y + centerY - (teamSquareSize / screenAspect / 2),
@@ -419,12 +426,14 @@ private class StatsBarChartRenderer {
                     teamSquareSize / screenAspect,
                     teamNumberColor
             )
-            var digitSize = if (team == stats.myTeam) 0.4f else 0.3f
+            val digitSize = if (team == stats.myTeam) 0.3f else 0.2f
+            val digitW = digitSize
+            val digitH = digitW / digitAspect
             texturedRectRenderer.render(
-                    barX + (barWidth - teamSquareSize) / 2 + teamSquareSize * (1 - digitSize) / 2,
-                    y + centerY - (teamSquareSize / screenAspect / 2) + (teamSquareSize / screenAspect * (1 - digitSize) / 2),
-                    teamSquareSize * digitSize,
-                    teamSquareSize / screenAspect * digitSize,
+                    barX + (barWidth - teamSquareSize) / 2 + teamSquareSize * (1 - digitW) / 2,
+                    y + centerY - (teamSquareSize / screenAspect / 2) + ((teamSquareSize / screenAspect - teamSquareSize * digitH) / 2),
+                    teamSquareSize * digitW,
+                    teamSquareSize * digitH,
                     team.ordinal + 1
             )
             val curMarginWidth = if (team == stats.myTeam || team.ordinal + 1 == stats.myTeam.ordinal) highlightedMarginWidth else marginWidth
@@ -494,7 +503,7 @@ class GameRenderer {
         } else {
 
             val squareSize = minOf(screenWidth, screenHeight)
-            val digitAspect = 0.375f * screenAspect
+            val digitAspect = 48.0f / 76.0f * screenAspect
 
             // Project (0, 0, 0) to the center of the screen and
             // make `squareSize / 2` on the screen correspond to `1` in the world,
@@ -502,7 +511,7 @@ class GameRenderer {
             val projectionMatrix =
                     translationMatrix(
                             squareSize / screenWidth - 1,
-                            1 - squareSize / screenHeight,
+                            0.0f - (-1.0f + 33.03448f / 100 * 2.0f),
                             0.0f
                     ) * orthographicProjectionMatrix(
                             -screenWidth / squareSize, screenWidth / squareSize,
@@ -520,23 +529,33 @@ class GameRenderer {
                 if (stats != null) {
                     val width = 2 * squareSize / screenWidth
 
-                    val scoreH = 0.1f
-                    val spinsH = scoreH * 0.5f
-                    val spinsW = spinsH * (87.0f / 36.0f) * screenAspect
+                    val scoreH = 0.06f
+                    val spinsAspect = (87.0f / 36.0f) * screenAspect
+                    val scoreW = scoreH * digitAspect * 7
                     statsBarChartRenderer.texturedRectRenderer.renderScore(
-                            -(width / 8), 0.85f,
-                            width / 4, scoreH,
+                            -1.0f + (2.0f - scoreW) / 2, 1.0f - (8.0f / 100 * 2.0f),
+                            scoreW,
                             stats.myContribution,
+                            5.5f * 12 / 18,
                             digitAspect,
-                            spinsTextureId, spinsW, spinsH, 0.0160f
+                            spinsTextureId, spinsAspect, 0.6f, 0.32f
                     )
                 }
+
+                val margin = 9.06667f / 100 * 2.0f
+                statsBarChartRenderer.rectRenderer.render(
+                        (-1.0f + margin),
+                        (1.0f - 62.0f / 100 * 2.0f),
+                        (2.0f - margin * 2),
+                        0.005f,
+                        Vector3(1.0f, 1.0f, 1.0f)
+                )
 
                 if (screenWidth <= screenHeight) {
                     // Portrait orientation. Draw chart below the square:
                     statsBarChartRenderer.render(
-                            -1.0f, -1.0f,
-                            2.0f, 2 * (screenHeight - squareSize) / screenHeight,
+                            -1.0f + margin, -1.0f,
+                            2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
                             stats,
                             digitAspect,
                             screenAspect
