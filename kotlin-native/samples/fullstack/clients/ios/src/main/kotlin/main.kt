@@ -221,7 +221,7 @@ class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol
             } else {
                 showErrorAlert(
                         "Game Center error",
-                        "Try to restart the application"
+                        "Ensure that Game Center is enabled in Settings and try to restart the application"
                 )
             }
         }
