@@ -30,6 +30,7 @@
 		2CF5BF2B1F963C1500F1A06D /* spinner_game_text.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */; };
 		2CF5BF311F965CC600F1A06D /* mesh_pattern.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */; };
 		2CF5BF331F98C66C00F1A06D /* spins.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF321F98C66C00F1A06D /* spins.bmp */; };
+		2CF5BF351F9E4FB900F1A06D /* konan.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF341F9E4FB900F1A06D /* konan.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -60,6 +61,7 @@
 		2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spinner_game_text.bmp; path = ../../android/src/main/assets/spinner_game_text.bmp; sourceTree = "<group>"; };
 		2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = mesh_pattern.bmp; path = ../../android/src/main/assets/mesh_pattern.bmp; sourceTree = "<group>"; };
 		2CF5BF321F98C66C00F1A06D /* spins.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spins.bmp; path = ../../android/src/main/assets/spins.bmp; sourceTree = "<group>"; };
+		2CF5BF341F9E4FB900F1A06D /* konan.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = konan.bmp; path = ../../android/src/main/assets/konan.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +98,7 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
+				2CF5BF341F9E4FB900F1A06D /* konan.bmp */,
 				2CF5BF321F98C66C00F1A06D /* spins.bmp */,
 				2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */,
 				2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */,
@@ -212,6 +215,7 @@
 				2C7B38001F8FB96300743D7C /* 5.bmp in Resources */,
 				2CED25E71F75246200A6326D /* Assets.xcassets in Resources */,
 				2C7B38071F8FB96300743D7C /* 7.bmp in Resources */,
+				2CF5BF351F9E4FB900F1A06D /* konan.bmp in Resources */,
 				2C7B38031F8FB96300743D7C /* 3.bmp in Resources */,
 				2C7B38011F8FB96300743D7C /* 8.bmp in Resources */,
 				2CF5BF2B1F963C1500F1A06D /* spinner_game_text.bmp in Resources */,

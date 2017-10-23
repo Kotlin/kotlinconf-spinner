@@ -235,7 +235,7 @@ private class KotlinLogoRenderer(val texture: GLuint) {
                     vec3 surfaceToLight = vec3(0, 0, 2) - vec3(modelview * fragPosition);
                     float brightness = dot(normal, surfaceToLight) / (length(surfaceToLight) * length(normal));
                     //brightness = 0.05 + 0.95 * clamp(brightness, 0.0, 1.0);
-                    brightness = 0.15 + 0.85 * clamp(brightness, 0.0, 1.0);
+                    brightness = 0.50 + 0.50 * clamp(brightness, 0.0, 1.0);
 
                     vec4 textureColor = texture(tex, fragTexcoord);
                     outColor = vec4(brightness * textureColor.rgb, textureColor.a);
@@ -377,12 +377,14 @@ private class StatsBarChartRenderer {
      *
      * It makes a padding around the chart.
      */
-    fun render(x: Float, y: Float, w: Float, h: Float, stats: Stats?, digitAspect: Float, screenAspect: Float) {
-        if (stats == null) return
-
+    fun render(x: Float, y: Float, w: Float, h: Float, myTeam: Team?, counts: List<Int>, digitAspect: Float, screenAspect: Float) {
         val barsCount = Team.count
         val allMarginsCount = barsCount - 1
-        val highlightedMarginsCount = if (stats.myTeam.ordinal == 0 || stats.myTeam.ordinal == Team.count - 1) 1 else 2
+        val highlightedMarginsCount = when {
+            myTeam == null -> 0
+            myTeam.ordinal == 0 || myTeam.ordinal == Team.count - 1 -> 1
+            else -> 2
+        }
         val marginsCount = allMarginsCount - highlightedMarginsCount
         val marginToBar = 4.53333f / 10.93333f
         val highlightedMarginToBar = 9.06667f / 10.93333f
@@ -391,7 +393,7 @@ private class StatsBarChartRenderer {
         val marginWidth = barWidth * marginToBar
         val highlightedMarginWidth = barWidth * highlightedMarginToBar
 
-        var maxCount = Team.values().map { stats.getCount(it) }.max() ?: 0
+        var maxCount = counts.max() ?: 0
         if (maxCount == 0) maxCount = 1
 
         val maxBarH = (h - barWidth / screenAspect - 4 * marginWidth / screenAspect)
@@ -399,7 +401,7 @@ private class StatsBarChartRenderer {
         var barX = x
 
         for (team in Team.values()) {
-            val barH = 0.01f + (stats.getCount(team).toFloat() / maxCount * maxBarH)
+            val barH = 0.01f + (counts[team.ordinal].toFloat() / maxCount * maxBarH)
             rectRenderer.render(
                     barX,
                     y + zh,
@@ -407,15 +409,15 @@ private class StatsBarChartRenderer {
                     barH,
                     team.colorVector
             )
-            val teamSquareSize = if (team == stats.myTeam) barWidth * 1.3f else barWidth
+            val teamSquareSize = if (team == myTeam) barWidth * 1.3f else barWidth
             val centerY = (zh - barWidth / screenAspect) * 1 / 2 + (barWidth / screenAspect) / 2
             val dist = zh - (centerY + (teamSquareSize / screenAspect) * 0.5f)
             texturedRectRenderer.renderScore(
                     barX,
                     y + zh + barH + dist * 0.5f,
                     barWidth,
-                    stats.getCount(team),
-                    if (team == stats.myTeam) 5.5f * 12 / 16 else 5.5f,
+                    counts[team.ordinal],
+                    if (team == myTeam) 5.5f * 12 / 16 else 5.5f,
                     digitAspect,
                     -1, 0.0f, 0.0f, 0.0f
             )
@@ -426,7 +428,7 @@ private class StatsBarChartRenderer {
                     teamSquareSize / screenAspect,
                     teamNumberColor
             )
-            val digitSize = if (team == stats.myTeam) 0.3f else 0.2f
+            val digitSize = if (team == myTeam) 0.225f else 0.175f
             val digitW = digitSize
             val digitH = digitW / digitAspect
             texturedRectRenderer.render(
@@ -436,7 +438,7 @@ private class StatsBarChartRenderer {
                     teamSquareSize * digitH,
                     team.ordinal + 1
             )
-            val curMarginWidth = if (team == stats.myTeam || team.ordinal + 1 == stats.myTeam.ordinal) highlightedMarginWidth else marginWidth
+            val curMarginWidth = if (team == myTeam || team.ordinal + 1 == myTeam?.ordinal) highlightedMarginWidth else marginWidth
             barX += barWidth + curMarginWidth
         }
     }
@@ -447,7 +449,8 @@ const val startScreenTextureId = 11
 const val loserScreenTextureId = 12
 const val winnerScreenTextureId = 13
 const val spinsTextureId = 14
-const val numberOfTextures = 15
+const val konanTextureId = 15
+const val numberOfTextures = 16
 
 class GameRenderer {
     private val kotlinLogoRenderer = KotlinLogoRenderer(kotlinTextureId)
@@ -472,6 +475,7 @@ class GameRenderer {
             loadTextureFromBmpResource("0.bmp", GL_TEXTURE12, textures[loserScreenTextureId])
             loadTextureFromBmpResource("1.bmp", GL_TEXTURE13, textures[winnerScreenTextureId])
             loadTextureFromBmpResource("spins.bmp", GL_TEXTURE14, textures[spinsTextureId])
+            loadTextureFromBmpResource("konan.bmp", GL_TEXTURE15, textures[konanTextureId])
             for (d in 0..9)
                 loadTextureFromBmpResource("$d.bmp", GL_TEXTURE0 + d, textures[d])
         }
@@ -524,74 +528,96 @@ class GameRenderer {
                     projectionMatrix
             )
 
-            if (sceneState.initialized) {
+            val myContribution = if (sceneState.initialized && stats != null)
+                                     stats.myContribution
+                                 else 0
+            val myTeam = if (sceneState.initialized && stats != null)
+                             stats.myTeam
+                         else null
+            val counts = if (sceneState.initialized && stats != null)
+                             Team.values().map { stats.getCount(it) }
+                         else IntArray(Team.count, { 0 }).asList()
 
-                if (stats != null) {
-                    val width = 2 * squareSize / screenWidth
+            val width = 2 * squareSize / screenWidth
 
-                    val scoreH = 0.06f
-                    val spinsAspect = (87.0f / 36.0f) * screenAspect
-                    val scoreW = scoreH * digitAspect * 7
-                    statsBarChartRenderer.texturedRectRenderer.renderScore(
-                            -1.0f + (2.0f - scoreW) / 2, 1.0f - (8.0f / 100 * 2.0f),
-                            scoreW,
-                            stats.myContribution,
-                            5.5f * 12 / 18,
-                            digitAspect,
-                            spinsTextureId, spinsAspect, 0.6f, 0.32f
-                    )
-                }
+            val scoreH = 0.06f
+            val spinsAspect = (87.0f / 36.0f) * screenAspect
+            val scoreW = scoreH * digitAspect * 7
+            statsBarChartRenderer.texturedRectRenderer.renderScore(
+                    -1.0f + (2.0f - scoreW) / 2, 1.0f - (8.0f / 100 * 2.0f),
+                    scoreW,
+                    myContribution,
+                    5.5f * 12 / 18,
+                    digitAspect,
+                    spinsTextureId, spinsAspect, 0.6f, 0.32f
+            )
 
-                val margin = 9.06667f / 100 * 2.0f
-                statsBarChartRenderer.rectRenderer.render(
-                        (-1.0f + margin),
-                        (1.0f - 62.0f / 100 * 2.0f),
-                        (2.0f - margin * 2),
-                        0.005f,
-                        Vector3(1.0f, 1.0f, 1.0f)
+            val margin = 9.06667f / 100 * 2.0f
+            statsBarChartRenderer.rectRenderer.render(
+                    (-1.0f + margin),
+                    (1.0f - 62.0f / 100 * 2.0f),
+                    (2.0f - margin * 2),
+                    0.005f,
+                    Vector3(1.0f, 1.0f, 1.0f)
+            )
+
+            if (screenWidth <= screenHeight) {
+                // Portrait orientation. Draw chart below the square:
+                statsBarChartRenderer.render(
+                        -1.0f + margin, -1.0f,
+                        2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
+                        myTeam,
+                        counts,
+                        digitAspect,
+                        screenAspect
                 )
-
-                if (screenWidth <= screenHeight) {
-                    // Portrait orientation. Draw chart below the square:
-                    statsBarChartRenderer.render(
-                            -1.0f + margin, -1.0f,
-                            2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
-                            stats,
-                            digitAspect,
-                            screenAspect
-                    )
-                } else {
-                    // Landscape orientation. Draw chart to the right of the square:
-                    val width = 2 * (screenWidth - squareSize) / screenWidth
-                    statsBarChartRenderer.render(
-                            1.0f - width, -1.0f,
-                            width, 2.0f,
-                            stats,
-                            digitAspect,
-                            screenAspect
-                    )
-                }
             } else {
-                val ratio = 236.0f / 816.0f
+                // Landscape orientation. Draw chart to the right of the square:
+                val width = 2 * (screenWidth - squareSize) / screenWidth
+                statsBarChartRenderer.render(
+                        1.0f - width, -1.0f,
+                        width, 2.0f,
+                        myTeam,
+                        counts,
+                        digitAspect,
+                        screenAspect
+                )
+            }
+
+            if (!sceneState.initialized) {
+                val startMessageRatio = 175.0f / 801.0f
                 //  Draw text at the bottom of the square:
                 if (screenWidth <= screenHeight) {
                     // Portrait orientation.
-                    val height = 2.0f * ratio / screenAspect
-                    val y = 1.0f - 2.2f * squareSize / screenHeight
+                    val startMessageWidth = (2.0f - margin * 2)
+                    val startMessageHeight = startMessageWidth * startMessageRatio / screenAspect
+                    val startMessageY = (1.0f - 61.0f / 100 * 2.0f)
                     statsBarChartRenderer.texturedRectRenderer.render(
-                            -1.0f, y,
-                            2.0f, height,
-                            11
+                            -1.0f + margin, startMessageY,
+                            startMessageWidth, startMessageHeight,
+                            startScreenTextureId
                     )
+
+                    val konanLogoRatio = 39.0f / 492.0f
+                    val konanLogoWidth = 1.0f
+                    val konanLogoHeight = konanLogoWidth * konanLogoRatio / screenAspect
+                    val konanLogoY = (1.0f - 75.0f / 100 * 2.0f)
+                    statsBarChartRenderer.texturedRectRenderer.render(
+                            -0.50f, konanLogoY,
+                            konanLogoWidth, konanLogoHeight,
+                            konanTextureId
+                    )
+
                 } else {
                     // Landscape orientation.
                     val width = 2 * squareSize / screenWidth
                     statsBarChartRenderer.texturedRectRenderer.render(
                             -1.0f, -1.0f,
-                            width, width * ratio / screenAspect,
-                            11
+                            width, width * startMessageRatio / screenAspect,
+                            startScreenTextureId
                     )
                 }
+
             }
         }
     }
