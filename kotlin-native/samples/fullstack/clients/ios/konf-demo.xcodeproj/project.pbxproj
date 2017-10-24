@@ -31,6 +31,11 @@
 		2CF5BF311F965CC600F1A06D /* mesh_pattern.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */; };
 		2CF5BF331F98C66C00F1A06D /* spins.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF321F98C66C00F1A06D /* spins.bmp */; };
 		2CF5BF351F9E4FB900F1A06D /* konan.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF341F9E4FB900F1A06D /* konan.bmp */; };
+		2CF5BF3B1F9F58DB00F1A06D /* game_over.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF361F9F58DB00F1A06D /* game_over.bmp */; };
+		2CF5BF3C1F9F58DB00F1A06D /* team_place.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF371F9F58DB00F1A06D /* team_place.bmp */; };
+		2CF5BF3D1F9F58DB00F1A06D /* total_spins.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF381F9F58DB00F1A06D /* total_spins.bmp */; };
+		2CF5BF3E1F9F58DB00F1A06D /* winner.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF391F9F58DB00F1A06D /* winner.bmp */; };
+		2CF5BF3F1F9F58DB00F1A06D /* you_contributed.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF3A1F9F58DB00F1A06D /* you_contributed.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +67,11 @@
 		2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = mesh_pattern.bmp; path = ../../android/src/main/assets/mesh_pattern.bmp; sourceTree = "<group>"; };
 		2CF5BF321F98C66C00F1A06D /* spins.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spins.bmp; path = ../../android/src/main/assets/spins.bmp; sourceTree = "<group>"; };
 		2CF5BF341F9E4FB900F1A06D /* konan.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = konan.bmp; path = ../../android/src/main/assets/konan.bmp; sourceTree = "<group>"; };
+		2CF5BF361F9F58DB00F1A06D /* game_over.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = game_over.bmp; path = ../../android/src/main/assets/game_over.bmp; sourceTree = "<group>"; };
+		2CF5BF371F9F58DB00F1A06D /* team_place.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = team_place.bmp; path = ../../android/src/main/assets/team_place.bmp; sourceTree = "<group>"; };
+		2CF5BF381F9F58DB00F1A06D /* total_spins.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = total_spins.bmp; path = ../../android/src/main/assets/total_spins.bmp; sourceTree = "<group>"; };
+		2CF5BF391F9F58DB00F1A06D /* winner.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = winner.bmp; path = ../../android/src/main/assets/winner.bmp; sourceTree = "<group>"; };
+		2CF5BF3A1F9F58DB00F1A06D /* you_contributed.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = you_contributed.bmp; path = ../../android/src/main/assets/you_contributed.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +108,11 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
+				2CF5BF361F9F58DB00F1A06D /* game_over.bmp */,
+				2CF5BF371F9F58DB00F1A06D /* team_place.bmp */,
+				2CF5BF381F9F58DB00F1A06D /* total_spins.bmp */,
+				2CF5BF391F9F58DB00F1A06D /* winner.bmp */,
+				2CF5BF3A1F9F58DB00F1A06D /* you_contributed.bmp */,
 				2CF5BF341F9E4FB900F1A06D /* konan.bmp */,
 				2CF5BF321F98C66C00F1A06D /* spins.bmp */,
 				2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */,
@@ -210,13 +225,18 @@
 				2CF5BF311F965CC600F1A06D /* mesh_pattern.bmp in Resources */,
 				2C7B38091F8FB96300743D7C /* 4.bmp in Resources */,
 				2CF5BF331F98C66C00F1A06D /* spins.bmp in Resources */,
+				2CF5BF3E1F9F58DB00F1A06D /* winner.bmp in Resources */,
 				2CED25EA1F75246200A6326D /* LaunchScreen.storyboard in Resources */,
 				2C7B37E11F8E65B800743D7C /* swish.wav in Resources */,
+				2CF5BF3F1F9F58DB00F1A06D /* you_contributed.bmp in Resources */,
 				2C7B38001F8FB96300743D7C /* 5.bmp in Resources */,
 				2CED25E71F75246200A6326D /* Assets.xcassets in Resources */,
 				2C7B38071F8FB96300743D7C /* 7.bmp in Resources */,
 				2CF5BF351F9E4FB900F1A06D /* konan.bmp in Resources */,
+				2CF5BF3C1F9F58DB00F1A06D /* team_place.bmp in Resources */,
+				2CF5BF3D1F9F58DB00F1A06D /* total_spins.bmp in Resources */,
 				2C7B38031F8FB96300743D7C /* 3.bmp in Resources */,
+				2CF5BF3B1F9F58DB00F1A06D /* game_over.bmp in Resources */,
 				2C7B38011F8FB96300743D7C /* 8.bmp in Resources */,
 				2CF5BF2B1F963C1500F1A06D /* spinner_game_text.bmp in Resources */,
 				2CED25E51F75246200A6326D /* Main.storyboard in Resources */,

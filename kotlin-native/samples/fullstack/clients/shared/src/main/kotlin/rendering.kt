@@ -19,6 +19,19 @@ import platform.glescommon.*
 import platform.gles3.*
 import kommon.*
 
+const val kotlinTextureId = 10
+const val startScreenTextureId = 11
+const val spinsTextureId = 12
+const val konanTextureId = 13
+const val gameOverTextureId = 14
+const val teamPlaceTextureId = 15
+const val totalSpinsTextureId = 16
+const val youContributedTextureId = 17
+const val winnerTextureId = 18
+const val numberOfTextures = 19
+
+val textures = Array<GLuint>(numberOfTextures) { 0 }
+
 private class RectRenderer {
     private val program = object : GlShaderProgram(
             vertexShaderSource = """
@@ -74,7 +87,7 @@ private class RectRenderer {
     }
 }
 
-private class TexturedRectRenderer {
+private class TexturedRectRenderer(val z: Double = -0.99) {
     private val program = object : GlShaderProgram(
             vertexShaderSource = """
                 #version 300 es
@@ -87,7 +100,7 @@ private class TexturedRectRenderer {
 
                 void main()
                 {
-                    gl_Position = vec4(position, -0.999, 1.0);
+                    gl_Position = vec4(position, $z, 1.0);
 
                     fragTexcoord = texcoord;
                 }
@@ -118,9 +131,10 @@ private class TexturedRectRenderer {
      * Draws a 2D rectangle specified in a normalized device coordinates,
      * i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.
      */
-    fun render(x: Float, y: Float, w: Float, h: Float, texture: GLuint,
+    fun render(x: Float, y: Float, w: Float, h: Float, texture: Int,
                texBottomLeft: Vector2 = Vector2(0.0f, 0.0f),
                texUpperRight: Vector2 = Vector2(1.0f, 1.0f)) {
+        glBindTexture(GL_TEXTURE_2D, textures[texture])
         this.program.let {
             it.activate()
 
@@ -134,7 +148,7 @@ private class TexturedRectRenderer {
             )
             it.position.assign(positions)
             it.texcoord.assign(texCoords)
-            it.tex.assign(texture)
+            it.tex.assign(0)
 
             glDrawArrays(GL_TRIANGLES, 0, positions.size)
         }
@@ -182,7 +196,7 @@ private class KotlinLogo(val s: Float, val d: Float) {
     )
 }
 
-private class KotlinLogoRenderer(val texture: GLuint) {
+private class KotlinLogoRenderer(val texture: Int) {
     private val program = object : GlShaderProgram(
             vertexShaderSource = """
                 #version 300 es
@@ -281,6 +295,8 @@ private class KotlinLogoRenderer(val texture: GLuint) {
             }
         }
 
+        glBindTexture(GL_TEXTURE_2D, textures[texture])
+
         this.program.let {
             it.activate()
             it.projection.assign(projection)
@@ -288,7 +304,7 @@ private class KotlinLogoRenderer(val texture: GLuint) {
             it.position.assign(positions)
             it.normal.assign(normals)
             it.texcoord.assign(texCoords)
-            it.tex.assign(texture)
+            it.tex.assign(0)
 
             glDrawElements(
                     GL_TRIANGLES,
@@ -300,9 +316,8 @@ private class KotlinLogoRenderer(val texture: GLuint) {
     }
 }
 
-private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, texture: GLuint) {
-    glActiveTexture(textureId)
-    glBindTexture(GL_TEXTURE_2D, texture)
+private fun loadTextureFromBmpResource(resourceName: String, texture: Int) {
+    glBindTexture(GL_TEXTURE_2D, textures[texture])
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
@@ -329,10 +344,10 @@ private fun loadTextureFromBmpResource(resourceName: String, textureId: GLenum, 
     checkGlError()
 }
 
-private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, score: Int, maxDigits: Float, digitAspect: Float,
-                                             labelTexture: Int, labelAspect: Float, labelScale: Float, labelShift: Float) {
-    val margin = 0.01f
-    val labelMargin = if (labelTexture >= 0) 0.02f else 0.0f
+private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, score: Int,
+                                             maxDigits: Float, digitAspect: Float, margin: Float,
+                                             labelPlace: Int, labelTexture: Int, labelAspect: Float,
+                                             labelScale: Float, labelShift: Float, labelMargin: Float) {
     val digitWidth = (w - labelMargin - (maxDigits - 1) * margin) / (maxDigits + labelAspect * labelScale / digitAspect)
     val digits = mutableListOf<Int>()
     var s = score
@@ -347,6 +362,13 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, score
     val labelHeight = digitHeight * labelScale
     val labelWidth  = labelHeight * labelAspect
     var cx = (w - labelWidth - labelMargin - digits.size * digitWidth - (digits.size - 1) * margin) * 0.5f
+    if (labelPlace < 0) {
+        render(x + cx, y + digitHeight - labelHeight + labelShift * labelHeight,
+                labelWidth, labelHeight,
+                labelTexture
+        )
+        cx += labelWidth + labelMargin
+    }
     digits.forEachIndexed { i, d ->
         render(
                 x + cx, y,
@@ -355,7 +377,7 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, score
         )
         cx += digitWidth + margin
     }
-    if (labelTexture >= 0) {
+    if (labelPlace > 0) {
         cx += labelMargin - margin
         render(x + cx, y + digitHeight - labelHeight + labelShift * labelHeight,
                 labelWidth, labelHeight,
@@ -418,8 +440,8 @@ private class StatsBarChartRenderer {
                     barWidth,
                     counts[team.ordinal],
                     if (team == myTeam) 5.5f * 12 / 16 else 5.5f,
-                    digitAspect,
-                    -1, 0.0f, 0.0f, 0.0f
+                    digitAspect, 0.01f,
+                    0, -1, 0.0f, 0.0f, 0.0f, 0.02f
             )
             rectRenderer.render(
                     barX + (barWidth - teamSquareSize) / 2,
@@ -444,17 +466,10 @@ private class StatsBarChartRenderer {
     }
 }
 
-const val kotlinTextureId = 10
-const val startScreenTextureId = 11
-const val loserScreenTextureId = 12
-const val winnerScreenTextureId = 13
-const val spinsTextureId = 14
-const val konanTextureId = 15
-const val numberOfTextures = 16
-
 class GameRenderer {
     private val kotlinLogoRenderer = KotlinLogoRenderer(kotlinTextureId)
     private val statsBarChartRenderer = StatsBarChartRenderer()
+    private val placeRenderer = TexturedRectRenderer(-0.999)
 
     init {
         glEnable(GL_DEPTH_TEST)
@@ -468,16 +483,22 @@ class GameRenderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         memScoped {
-            val textures = allocArray<GLuintVar>(numberOfTextures)
-            glGenTextures(numberOfTextures, textures)
-            loadTextureFromBmpResource("mesh_pattern.bmp", GL_TEXTURE10, textures[kotlinTextureId])
-            loadTextureFromBmpResource("spinner_game_text.bmp", GL_TEXTURE11, textures[startScreenTextureId])
-            loadTextureFromBmpResource("0.bmp", GL_TEXTURE12, textures[loserScreenTextureId])
-            loadTextureFromBmpResource("1.bmp", GL_TEXTURE13, textures[winnerScreenTextureId])
-            loadTextureFromBmpResource("spins.bmp", GL_TEXTURE14, textures[spinsTextureId])
-            loadTextureFromBmpResource("konan.bmp", GL_TEXTURE15, textures[konanTextureId])
+            val glGenTexturesResult = allocArray<GLuintVar>(numberOfTextures)
+            glGenTextures(numberOfTextures, glGenTexturesResult)
+            for (i in 0 until numberOfTextures)
+                textures[i] = glGenTexturesResult[i]
+
+            loadTextureFromBmpResource("mesh_pattern.bmp", kotlinTextureId)
+            loadTextureFromBmpResource("spinner_game_text.bmp", startScreenTextureId)
+            loadTextureFromBmpResource("spins.bmp", spinsTextureId)
+            loadTextureFromBmpResource("konan.bmp", konanTextureId)
+            loadTextureFromBmpResource("game_over.bmp", gameOverTextureId)
+            loadTextureFromBmpResource("team_place.bmp", teamPlaceTextureId)
+            loadTextureFromBmpResource("total_spins.bmp", totalSpinsTextureId)
+            loadTextureFromBmpResource("you_contributed.bmp", youContributedTextureId)
+            loadTextureFromBmpResource("winner.bmp", winnerTextureId)
             for (d in 0..9)
-                loadTextureFromBmpResource("$d.bmp", GL_TEXTURE0 + d, textures[d])
+                loadTextureFromBmpResource("$d.bmp", d)
         }
     }
 
@@ -497,49 +518,53 @@ class GameRenderer {
         val screenAspect = screenHeight / screenWidth
 
         val stats = sceneState.stats
+        val gameOver = sceneState.initialized && stats?.status == 0
 
-        if (sceneState.initialized && stats?.status == 0) {
-            statsBarChartRenderer.texturedRectRenderer.render(
-                    -1.0f, -1.0f,
-                    2.0f, 2.0f,
-                    if (stats.winner) winnerScreenTextureId else loserScreenTextureId
-            )
-        } else {
+        val squareSize = minOf(screenWidth, screenHeight)
+        val digitAspect = 48.0f / 76.0f * screenAspect
 
-            val squareSize = minOf(screenWidth, screenHeight)
-            val digitAspect = 48.0f / 76.0f * screenAspect
+        // Project (0, 0, 0) to the center of the screen and
+        // make `squareSize / 2` on the screen correspond to `1` in the world,
+        // and then move the screen center to the square center:
+        val projectionMatrix =
+                translationMatrix(
+                        squareSize / screenWidth - 1,
+                        0.0f - (-1.0f + 33.03448f / 100 * 2.0f),
+                        0.0f
+                ) * orthographicProjectionMatrix(
+                        -screenWidth / squareSize, screenWidth / squareSize,
+                        -screenHeight / squareSize, screenHeight / squareSize,
+                        0.1f, 100.0f
+                )
 
-            // Project (0, 0, 0) to the center of the screen and
-            // make `squareSize / 2` on the screen correspond to `1` in the world,
-            // and then move the screen center to the square center:
-            val projectionMatrix =
-                    translationMatrix(
-                            squareSize / screenWidth - 1,
-                            0.0f - (-1.0f + 33.03448f / 100 * 2.0f),
-                            0.0f
-                    ) * orthographicProjectionMatrix(
-                            -screenWidth / squareSize, screenWidth / squareSize,
-                            -screenHeight / squareSize, screenHeight / squareSize,
-                            0.1f, 100.0f
-                    )
-
+        if (!gameOver) {
             kotlinLogoRenderer.render(
                     translationMatrix(0.0f, 0.0f, -2.0f) * Matrix4(sceneState.rotationMatrix),
                     projectionMatrix
             )
+        }
 
-            val myContribution = if (sceneState.initialized && stats != null)
-                                     stats.myContribution
-                                 else 0
-            val myTeam = if (sceneState.initialized && stats != null)
-                             stats.myTeam
-                         else null
-            val counts = if (sceneState.initialized && stats != null)
-                             Team.values().map { stats.getCount(it) }
-                         else IntArray(Team.count, { 0 }).asList()
+        val myContribution = if (sceneState.initialized && stats != null)
+                                 stats.myContribution
+                             else 0
+        val myTeam = if (sceneState.initialized && stats != null)
+                         stats.myTeam
+                     else null
+        val counts = if (sceneState.initialized && stats != null)
+                         Team.values().map { stats.getCount(it) }
+                     else IntArray(Team.count, { 0 }).asList()
 
-            val width = 2 * squareSize / screenWidth
+        fun renderCenteredTexture(y: Float, w: Float, aspectRatio: Float, textureId: Int) {
+            statsBarChartRenderer.texturedRectRenderer.render(
+                    -1.0f + (2.0f - w) / 2, y,
+                    w, w * aspectRatio / screenAspect,
+                    textureId
+            )
+        }
 
+        val margin = 9.06667f / 100 * 2.0f
+
+        if (!gameOver) {
             val scoreH = 0.06f
             val spinsAspect = (87.0f / 36.0f) * screenAspect
             val scoreW = scoreH * digitAspect * 7
@@ -548,75 +573,121 @@ class GameRenderer {
                     scoreW,
                     myContribution,
                     5.5f * 12 / 18,
-                    digitAspect,
-                    spinsTextureId, spinsAspect, 0.6f, 0.32f
+                    digitAspect, 0.01f,
+                    1, spinsTextureId, spinsAspect, 0.6f, 0.32f, 0.02f
             )
-
-            val margin = 9.06667f / 100 * 2.0f
-            statsBarChartRenderer.rectRenderer.render(
-                    (-1.0f + margin),
-                    (1.0f - 62.0f / 100 * 2.0f),
-                    (2.0f - margin * 2),
-                    0.005f,
-                    Vector3(1.0f, 1.0f, 1.0f)
-            )
-
-            if (screenWidth <= screenHeight) {
-                // Portrait orientation. Draw chart below the square:
-                statsBarChartRenderer.render(
-                        -1.0f + margin, -1.0f,
-                        2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
-                        myTeam,
-                        counts,
-                        digitAspect,
-                        screenAspect
+        } else {
+            if (stats!!.winner) {
+                renderCenteredTexture(
+                        1.0f - (17.5f / 100 * 2.0f),
+                        2.0f - margin * 2,
+                        45.0f / 613.0f,
+                        winnerTextureId
                 )
             } else {
-                // Landscape orientation. Draw chart to the right of the square:
-                val width = 2 * (screenWidth - squareSize) / screenWidth
-                statsBarChartRenderer.render(
-                        1.0f - width, -1.0f,
-                        width, 2.0f,
-                        myTeam,
-                        counts,
-                        digitAspect,
-                        screenAspect
+                renderCenteredTexture(
+                        1.0f - (15.0f / 100 * 2.0f),
+                        2.0f * 0.3f,
+                        48.0f / 291.0f,
+                        gameOverTextureId
                 )
             }
+            renderCenteredTexture(
+                    1.0f - (27.5f / 100 * 2.0f),
+                    2.0f * 0.75f,
+                    57.0f / 969.0f,
+                    teamPlaceTextureId
+            )
+            val myCount = counts[myTeam!!.ordinal]
+            val place = counts.count { it > myCount } + 1
+            val placeH = 0.035f
+            val placeW = placeH * digitAspect
+            placeRenderer.renderScore(
+                    0.165f, 1.0f - (27.0f / 100 * 2.0f),
+                    placeW,
+                    place,
+                    1.0f,
+                    digitAspect, 0.01f,
+                    0, -1, 0.0f, 0.0f, 0.0f, 0.0f
+            )
 
-            if (!sceneState.initialized) {
-                val startMessageRatio = 175.0f / 801.0f
-                //  Draw text at the bottom of the square:
-                if (screenWidth <= screenHeight) {
-                    // Portrait orientation.
-                    val startMessageWidth = (2.0f - margin * 2)
-                    val startMessageHeight = startMessageWidth * startMessageRatio / screenAspect
-                    val startMessageY = (1.0f - 61.0f / 100 * 2.0f)
-                    statsBarChartRenderer.texturedRectRenderer.render(
-                            -1.0f + margin, startMessageY,
-                            startMessageWidth, startMessageHeight,
-                            startScreenTextureId
-                    )
+            val totalH = 0.08f
+            val totalW = totalH * digitAspect * 7
+            statsBarChartRenderer.texturedRectRenderer.renderScore(
+                    -1.0f + (2.0f - totalW) / 2, 1.0f - (37.5f / 100 * 2.0f),
+                    totalW,
+                    myCount,
+                    5.5f * 12 / 20,
+                    digitAspect, 0.03f,
+                    0, -1, 0.0f, 0.0f, 0.0f, 0.0f
+            )
+            renderCenteredTexture(
+                    1.0f - (42.5f / 100 * 2.0f),
+                    2.0f * 0.3f,
+                    57.0f / 342.0f,
+                    totalSpinsTextureId
+            )
 
-                    val konanLogoRatio = 39.0f / 492.0f
-                    val konanLogoWidth = 1.0f
-                    val konanLogoHeight = konanLogoWidth * konanLogoRatio / screenAspect
-                    val konanLogoY = (1.0f - 75.0f / 100 * 2.0f)
-                    statsBarChartRenderer.texturedRectRenderer.render(
-                            -0.50f, konanLogoY,
-                            konanLogoWidth, konanLogoHeight,
-                            konanTextureId
-                    )
+            val scoreH = 0.125f
+            val youContributedAspect = (309.0f / 33.0f) * screenAspect
+            val scoreW = scoreH * digitAspect * 7
+            statsBarChartRenderer.texturedRectRenderer.renderScore(
+                    -1.0f + (2.0f - scoreW) / 2, 1.0f - (58.5f / 100 * 2.0f),
+                    scoreW,
+                    myContribution,
+                    5.5f * 12 / 11,
+                    digitAspect, 0.01f,
+                    -1, youContributedTextureId, youContributedAspect, 1.0f, 0.0f, 0.05f
+            )
+        }
 
-                } else {
-                    // Landscape orientation.
-                    val width = 2 * squareSize / screenWidth
-                    statsBarChartRenderer.texturedRectRenderer.render(
-                            -1.0f, -1.0f,
-                            width, width * startMessageRatio / screenAspect,
-                            startScreenTextureId
-                    )
-                }
+        statsBarChartRenderer.rectRenderer.render(
+                (-1.0f + margin),
+                (1.0f - 62.0f / 100 * 2.0f),
+                (2.0f - margin * 2),
+                0.005f,
+                Vector3(1.0f, 1.0f, 1.0f)
+        )
+
+        if (screenWidth <= screenHeight) {
+            // Portrait orientation. Draw chart below the square:
+            statsBarChartRenderer.render(
+                    -1.0f + margin, -1.0f,
+                    2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
+                    myTeam,
+                    counts,
+                    digitAspect,
+                    screenAspect
+            )
+        } else {
+            // Landscape orientation. Draw chart to the right of the square:
+            val width = 2 * (screenWidth - squareSize) / screenWidth
+            statsBarChartRenderer.render(
+                    1.0f - width, -1.0f,
+                    width, 2.0f,
+                    myTeam,
+                    counts,
+                    digitAspect,
+                    screenAspect
+            )
+        }
+
+        if (!sceneState.initialized) {
+            val startMessageRatio = 175.0f / 801.0f
+            //  Draw text at the bottom of the square:
+            if (screenWidth <= screenHeight) {
+                // Portrait orientation.
+                renderCenteredTexture(
+                        1.0f - 61.0f / 100 * 2.0f,
+                        2.0f - margin * 2, startMessageRatio,
+                        startScreenTextureId
+                )
+
+                renderCenteredTexture(
+                        1.0f - 75.0f / 100 * 2.0f,
+                        1.0f, 39.0f / 492.0f,
+                        konanTextureId
+                )
 
             }
         }
