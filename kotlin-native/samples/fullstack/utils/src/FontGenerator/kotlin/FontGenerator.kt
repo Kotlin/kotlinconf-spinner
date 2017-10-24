@@ -36,11 +36,11 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
     }
     writeToFileData(path, bmpHeaderData)
     val bmpData = ByteArray(bmpDataSize)
-    for (x in 0 .. bitmap.width - 1) {
-        for (y in 0 .. bitmap.rows - 1) {
-            var srcIndex = y * bitmap.width + x
-            var color = (bitmap.buffer + srcIndex)!!.pointed.value
-            var dstIndex = bmpWidth * (bitmap.rows - 1 - y) + x * bpp / 8
+    for (x in 0 until bitmap.width) {
+        for (y in 0 until bitmap.rows) {
+            val srcIndex = y * bitmap.width + x
+            val color = (bitmap.buffer + srcIndex)!!.pointed.value
+            val dstIndex = bmpWidth * (bitmap.rows - 1 - y) + x * bpp / 8
             bmpData[dstIndex]     = color // Alpha channel.
             bmpData[dstIndex + 1] = color // Red.
             bmpData[dstIndex + 2] = color // Green.
@@ -53,7 +53,7 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
 
 fun main(args: Array<String>) {
 
-    var fontName: String = ""
+    var fontName = ""
     var fontSize = 70
     var charsToRender = ""
     var directory = ""
@@ -80,7 +80,7 @@ fun main(args: Array<String>) {
         }
         val ftFace = alloc<FT_FaceVar>()
         if (FT_New_Face(ftLibrary.value, fontName, 0, ftFace.ptr) != 0) {
-            throw Error("Could not open font $fontName");
+            throw Error("Could not open font $fontName")
         }
         FT_Set_Pixel_Sizes(ftFace.value, fontSize, fontSize)
         for (ch in charsToRender) {

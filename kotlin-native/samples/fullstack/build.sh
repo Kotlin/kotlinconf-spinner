@@ -5,7 +5,7 @@ if [ ! -d $KONAN_HOME ]; then
   exit 1
 fi
 
-for l in common getopt json sql kurl httpserver/microhttpd ; do
+for l in common getopt json sql kurl httpserver ; do
   (cd $l && ./make_klib.sh)
 done
 

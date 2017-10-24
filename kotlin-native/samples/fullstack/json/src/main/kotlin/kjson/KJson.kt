@@ -8,10 +8,8 @@ typealias Json = CPointer<json_t>?
 
 class JsonError(message: String): Error(message)
 
-open class KJsonBase {
+open class KJsonBase() {
     var json: Json = null
-
-    constructor() {}
 
     override fun toString(): String {
         if (json == null) return ""
@@ -36,7 +34,7 @@ class KJsonObject : KJsonBase {
     constructor(text: String) {
         memScoped {
             val error = alloc<json_error_t>()
-            json = json_loads(text, 0, error.ptr);
+            json = json_loads(text, 0, error.ptr)
             if (json == null) {
                 throw JsonError("json error on line ${error.line}: ${error.text}")
             }
@@ -54,8 +52,7 @@ class KJsonObject : KJsonBase {
     }
 
     fun getLong(key: String): Long {
-        val value = json_object_get(json, key)
-        if (value == null) throw JsonError("no value")
+        val value = json_object_get(json, key) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_INTEGER)
             throw JsonError("wrong type")
         return json_integer_value(value)
@@ -64,8 +61,7 @@ class KJsonObject : KJsonBase {
     fun getInt(key: String): Int = getLong(key).toInt()
 
     fun getString(key: String): String {
-        val value = json_object_get(json, key)
-        if (value == null) throw JsonError("no value")
+        val value = json_object_get(json, key) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_STRING)
             throw JsonError("wrong type")
         return json_string_value(value)?.let {
@@ -76,8 +72,7 @@ class KJsonObject : KJsonBase {
     }
 
     fun getArray(key: String): KJsonArray {
-        val value = json_object_get(json, key)
-        if (value == null) throw JsonError("no value")
+        val value = json_object_get(json, key) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_ARRAY)
             throw JsonError("wrong type")
         return KJsonArray(value)
@@ -116,7 +111,7 @@ class KJsonArray : KJsonBase {
     constructor(text: String) {
         memScoped {
             val error = alloc<json_error_t>()
-            json = json_loads(text, 0, error.ptr);
+            json = json_loads(text, 0, error.ptr)
             if (json == null) {
                 throw JsonError("json error on line ${error.line}: ${error.text}")
             }
@@ -134,8 +129,7 @@ class KJsonArray : KJsonBase {
     }
 
     fun getLong(index: Int): Long {
-        val value = json_array_get(json, index.signExtend())
-        if (value == null) throw JsonError("no value")
+        val value = json_array_get(json, index.signExtend()) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_INTEGER)
             throw JsonError("wrong type")
         return json_integer_value(value)
@@ -144,8 +138,7 @@ class KJsonArray : KJsonBase {
     fun getInt(index: Int): Int = getLong(index).toInt()
 
     fun getString(index: Int): String {
-        val value = json_array_get(json, index.signExtend())
-        if (value == null) throw JsonError("no value")
+        val value = json_array_get(json, index.signExtend()) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_STRING)
             throw JsonError("wrong type")
         return json_string_value(value)?.let {
@@ -156,16 +149,14 @@ class KJsonArray : KJsonBase {
     }
 
     fun getArray(index: Int): KJsonArray {
-        val value = json_array_get(json, index.signExtend())
-        if (value == null) throw JsonError("no value")
+        val value = json_array_get(json, index.signExtend()) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_ARRAY)
             throw JsonError("wrong type")
         return KJsonArray(value)
     }
 
     fun getObject(index: Int): KJsonObject {
-        val value = json_array_get(json, index.signExtend())
-        if (value == null) throw JsonError("no value")
+        val value = json_array_get(json, index.signExtend()) ?: throw JsonError("no value")
         if (json_typeof(value) != json_type.JSON_OBJECT)
             throw JsonError("wrong type")
         return KJsonObject(value)
@@ -201,7 +192,7 @@ class KJsonArray : KJsonBase {
     val size: Int get() = json_array_size(json).toInt()
 }
 
-public inline fun withJson(text: String, function: (KJsonObject) -> Unit) {
+inline fun withJson(text: String, function: (KJsonObject) -> Unit) {
     val json = KJsonObject(text)
     try {
         function(json)
@@ -210,7 +201,7 @@ public inline fun withJson(text: String, function: (KJsonObject) -> Unit) {
     }
 }
 
-public inline fun withJson(json: KJsonObject, function: (KJsonObject) -> Unit) {
+inline fun withJson(json: KJsonObject, function: (KJsonObject) -> Unit) {
     try {
         function(json)
     } finally {

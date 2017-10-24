@@ -16,5 +16,5 @@ COMPILER_OPTS_osx="-I/opt/local/include"
 var=COMPILER_OPTS_${TARGET}
 COMPILER_OPTS="${!var}"
 
-cinterop -def src/libcurl.def -o libcurl.klib -compilerOpts "$COMPILER_OPTS"
-konanc -p library src/KUrl.kt -l libcurl -o kurl
+cinterop -def src/main/c_interop/libcurl.def -o libcurl.klib -compilerOpts "$COMPILER_OPTS"
+konanc -p library src/main/kotlin -l libcurl -o kurl

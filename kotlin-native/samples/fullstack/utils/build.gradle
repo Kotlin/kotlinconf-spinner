@@ -4,7 +4,6 @@ konan.targets = [ 'linux', 'macbook' ]
 
 konanArtifacts {
     interop('freetype') {
-        defFile 'src/c_interop/freetype.def'
 
         target('macbook') {
             includeDirs '/opt/local/include'
@@ -16,7 +15,7 @@ konanArtifacts {
     }
 
     program('FontGenerator') {
-        srcFiles 'src/kotlin/FontGenerator.kt'
+        srcFiles 'src/FontGenerator/kotlin/FontGenerator.kt'
 
         libraries {
             allLibrariesFrom common, getopt
@@ -25,7 +24,7 @@ konanArtifacts {
     }
 
     program('BmpConvertor') {
-        srcFiles 'src/kotlin/BmpConvertor.kt'
+        srcFiles 'src/BmpConvertor/kotlin/BmpConvertor.kt'
 
         libraries {
             allLibrariesFrom common

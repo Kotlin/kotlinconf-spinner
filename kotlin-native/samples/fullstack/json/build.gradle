@@ -4,9 +4,7 @@ konan.targets += ['android_arm32', 'android_arm64']
 
 konanArtifacts {
     interop('jansson') {
-        defFile 'src/jansson.def'
 
-        // TODO: Add `targets` block?
         target('android_arm32') {
             includeDirs  "$janssonPath/arm32/include"
         }
@@ -17,7 +15,6 @@ konanArtifacts {
     }
 
     library('kjson') {
-        srcDir 'src'
 
         libraries {
             allLibrariesFrom common

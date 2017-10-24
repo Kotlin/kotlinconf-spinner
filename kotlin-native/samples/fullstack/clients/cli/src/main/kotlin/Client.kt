@@ -32,13 +32,13 @@ fun main(args: Array<String>) {
     }
     val machine = machineName()
     println("Connecting to $server as $name from $machine")
-    var kurl = KUrl("cookies.txt")
+    val kurl = KUrl("cookies.txt")
     val url = "$server/json/$command"
     withUrl(kurl) { it.fetch(url,
             mapOf("name" to name, "client" to "cli", "machine" to machine, "password" to password)) {
         content -> withJson(content) {
-            println("Got $it, my color is ${it.getInt("color")}")
+                println("Got $it, my color is ${it.getInt("color")}")
+            }
         }
-      }
     }
 }

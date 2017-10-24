@@ -4,7 +4,6 @@ konan.targets += ['android_arm32', 'android_arm64']
 
 konanArtifacts {
     interop('libcurl') {
-        defFile 'src/libcurl.def'
 
         target('android_arm32') {
             includeDirs  "$libcurlPath/include"
@@ -16,7 +15,6 @@ konanArtifacts {
     }
 
     library('kurl') {
-        srcDir 'src'
 
         libraries {
             allLibrariesFrom common

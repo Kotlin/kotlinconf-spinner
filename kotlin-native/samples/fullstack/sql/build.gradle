@@ -1,9 +1,7 @@
 apply plugin: 'konan'
 
 konanArtifacts {
-    interop('sqlite3') {
-        defFile 'src/sqlite3.def'
-    }
+    interop('sqlite3')
 
     library('ksqlite') {
         srcDir 'src'

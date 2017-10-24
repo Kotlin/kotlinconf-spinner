@@ -11,11 +11,9 @@ fun extractChannelShift(mask: Int): Int {
     return shift
 }
 
+@Suppress("UNCHECKED_CAST")
 fun convertBmp(fileName: String) {
-    val data = readFileData(fileName)
-    if (data == null) {
-        throw Error("$fileName can not be read")
-    }
+    val data = readFileData(fileName) ?: throw Error("$fileName can not be read")
     data.usePinned { pinned ->
         val bmp = BMPHeader(pinned.addressOf(0).rawValue)
         println("BMP ${bmp.width}x${bmp.height}x${bmp.bits}")

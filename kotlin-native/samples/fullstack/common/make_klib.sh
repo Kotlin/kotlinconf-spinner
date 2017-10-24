@@ -3,10 +3,10 @@
 PATH=$KONAN_HOME/bin:$PATH
 
 case "$OSTYPE" in
-  darwin*)  TARGET=Osx;;
-  linux*)   TARGET=Linux ;;
+  darwin*)  TARGET=osx;;
+  linux*)   TARGET=linux ;;
   *)        echo "unknown: $OSTYPE" && exit 1;;
 esac
 
-konanc -p library src/Kommon.kt src/Kommon$TARGET.kt -o kommon.klib
+konanc -p library src/main/kotlin src/$TARGET/kotlin  -o kommon.klib
 

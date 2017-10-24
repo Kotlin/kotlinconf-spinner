@@ -7,8 +7,8 @@ typealias DbConnection = CPointer<sqlite3>?
 
 class KSqliteError(message: String): Error(message)
 
-private fun fromCArray(ptr: CPointer<CPointerVar<ByteVar>>, count: Int): Array<String> =
-        Array<String>(count, { index -> (ptr+index)!!.pointed.value!!.toKString() })
+private fun fromCArray(ptr: CPointer<CPointerVar<ByteVar>>, count: Int) =
+        Array(count, { index -> (ptr+index)!!.pointed.value!!.toKString() })
 
 class KSqlite {
     var dbPath: String = ""
@@ -66,7 +66,7 @@ class KSqlite {
     }
 }
 
-public inline fun withSqlite(path: String, function: (KSqlite) -> Unit) {
+inline fun withSqlite(path: String, function: (KSqlite) -> Unit) {
     val db = KSqlite(path)
     try {
         function(db)
@@ -75,7 +75,7 @@ public inline fun withSqlite(path: String, function: (KSqlite) -> Unit) {
     }
 }
 
-public inline fun withSqlite(db: KSqlite, function: (KSqlite) -> Unit) {
+inline fun withSqlite(db: KSqlite, function: (KSqlite) -> Unit) {
     try {
         function(db)
     } finally {

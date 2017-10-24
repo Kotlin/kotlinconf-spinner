@@ -24,7 +24,7 @@ class KUrl(val cookies: String? = null) {
       } ?: ""
 
     fun fetch(url: String, options: Map<String, String>?, onData: HttpHandler, onHeader: HttpHandler?) {
-        var args =
+        val args =
                 if (options != null)
                     "?" + options.map { (key, value) -> "$key=${escape(value)}"}.joinToString("&")
                 else
@@ -87,7 +87,7 @@ class KUrl(val cookies: String? = null) {
             fetch(url, options, onData,null)
 }
 
-public inline fun <T> withUrl(url: KUrl, function: (KUrl) -> T): T =
+inline fun <T> withUrl(url: KUrl, function: (KUrl) -> T): T =
     try {
         function(url)
     } finally {
