@@ -124,9 +124,9 @@ model {
         buildToolsVersion = '25.0.2'
 
         defaultConfig {
-            applicationId = 'com.jetbrains.konan_activity'
+            applicationId = 'com.jetbrains.konan_activity2'
             minSdkVersion.apiLevel   19
-            targetSdkVersion.apiLevel  21
+            targetSdkVersion.apiLevel 21
         }
 
         ndk {
