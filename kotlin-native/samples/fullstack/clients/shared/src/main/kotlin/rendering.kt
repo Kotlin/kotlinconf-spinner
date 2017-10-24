@@ -519,6 +519,7 @@ class GameRenderer {
 
         val stats = sceneState.stats
         val gameOver = sceneState.initialized && stats?.status == 0
+        val showCopyright = stats?.status == 2
 
         val squareSize = minOf(screenWidth, screenHeight)
         val digitAspect = 48.0f / 76.0f * screenAspect
@@ -683,11 +684,13 @@ class GameRenderer {
                         startScreenTextureId
                 )
 
-                renderCenteredTexture(
-                        1.0f - 75.0f / 100 * 2.0f,
-                        1.0f, 39.0f / 492.0f,
-                        konanTextureId
-                )
+                if (showCopyright) {
+                    renderCenteredTexture(
+                            1.0f - 75.0f / 100 * 2.0f,
+                            1.0f, 39.0f / 492.0f,
+                            konanTextureId
+                    )
+                }
 
             }
         }
