@@ -128,6 +128,24 @@ fun stop(db: KSqlite, session: Session, json: KJsonObject) {
     stats(db, session, json)
 }
 
+fun show(db: KSqlite, session: Session, json: KJsonObject) {
+    if (!session.isAdmin(db)) {
+        error(json, session,"Unauthorized")
+        return
+    }
+    db.execute("UPDATE games SET status = 2 WHERE current = 'true'")
+    stats(db, session, json)
+}
+
+fun hide(db: KSqlite, session: Session, json: KJsonObject) {
+    if (!session.isAdmin(db)) {
+        error(json, session,"Unauthorized")
+        return
+    }
+    db.execute("UPDATE games SET status = 1 WHERE current = 'true'")
+    stats(db, session, json)
+}
+
 // End of the REST API.
 
 fun Session.isAdmin(db: KSqlite): Boolean {
@@ -154,6 +172,8 @@ fun makeJson(url: String, db: KSqlite, session: Session): String {
             url.startsWith("/json/pause") -> pause(db, session, it)
             url.startsWith("/json/resume") -> resume(db, session, it)
             url.startsWith("/json/stop") -> stop(db, session, it)
+            url.startsWith("/json/hide") -> hide(db, session, it)
+            url.startsWith("/json/show") -> show(db, session, it)
             else -> error(it, session,"Unknown command")
         }
         return it.toString()
