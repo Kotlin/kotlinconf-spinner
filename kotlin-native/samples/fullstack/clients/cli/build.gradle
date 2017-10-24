@@ -2,7 +2,6 @@ apply plugin: 'konan'
 
 konanArtifacts {
     program('CliClient') {
-        srcDir 'src'
         libraries {
             allLibrariesFrom common, json, kurl, sql, getopt
         }

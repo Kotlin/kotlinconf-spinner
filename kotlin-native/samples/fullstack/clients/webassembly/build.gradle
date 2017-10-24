@@ -6,7 +6,6 @@ def staticDir = file('../../static')
 
 konanArtifacts {
     program('view') {
-        srcFiles 'StatView.kt'
 
         libraries {
             useRepo '../../../../external/klib'

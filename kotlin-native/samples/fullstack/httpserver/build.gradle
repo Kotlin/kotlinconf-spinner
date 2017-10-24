@@ -2,13 +2,9 @@ apply plugin: 'konan'
 
 
 konanArtifacts {
-    interop('microhttpd') {
-        defFile 'microhttpd/microhttpd.def'
-    }
-
+    interop('microhttpd')
 
     program('HttpServer') {
-        srcDir 'src'
         enableOptimizations true
 
         libraries {

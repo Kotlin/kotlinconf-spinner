@@ -1,0 +1,41 @@
+apply plugin: 'konan'
+
+konan.targets = [ 'linux', 'macbook' ]
+
+konanArtifacts {
+    interop('freetype') {
+
+        target('macbook') {
+            includeDirs '/opt/local/include'
+        }
+
+        target('linux') {
+            includeDirs '/usr/include'
+        }
+    }
+
+    program('FontGenerator') {
+        srcFiles 'src/FontGenerator/kotlin/FontGenerator.kt'
+
+        libraries {
+            allLibrariesFrom common, getopt
+            artifact 'freetype'
+        }
+    }
+
+    program('BmpConvertor') {
+        srcFiles 'src/BmpConvertor/kotlin/BmpConvertor.kt'
+
+        libraries {
+            allLibrariesFrom common
+        }
+    }
+}
+
+task copyOutput(type: Copy) {
+    destinationDir = projectDir
+    from konanArtifacts.FontGenerator.getByTarget('host')
+    from konanArtifacts.BmpConvertor.getByTarget('host')
+}
+
+build.dependsOn copyOutput

@@ -60,7 +60,7 @@ fun parseOptions(description: List<OptionDescriptor>, args: Array<String>): List
         } else if (arg == "--") {
             afterOptions = true
         } else if (arg.startsWith('-')) {
-            val descriptor = optmap.get(arg.substring(1))
+            val descriptor = optmap[arg.substring(1)]
             if (descriptor != null) {
                 inited[descriptor] = true
                 if (descriptor.type.hasParameter) {
@@ -98,8 +98,8 @@ fun makeUsage(options: List<OptionDescriptor>): String {
     result.append("Usage:\n")
     options.forEach {
         result.append("    -${it.shortName}")
-        it.longName?.let { result.append(", -${it}") }
-        it.defaultValue?.let { result.append(" [${it}]") }
+        it.longName?.let { result.append(", -$it") }
+        it.defaultValue?.let { result.append(" [$it]") }
         result.append(" -> ${it.description}\n")
     }
     return result.toString()

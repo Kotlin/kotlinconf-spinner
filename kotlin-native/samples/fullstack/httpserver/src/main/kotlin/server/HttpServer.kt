@@ -5,11 +5,9 @@ import microhttpd.*
 import kommon.*
 import platform.posix.*
 
-import konan.initRuntimeIfNeeded
 import kotlin.system.exitProcess
 import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
-import kotlin.system.exitProcess
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
@@ -192,7 +190,7 @@ fun makeHtml(url: String, session: Session): String {
 """
 }
 
-val contentTypes = mapOf<String, String>(
+val contentTypes = mapOf(
         "js" to "application/javascript",
         "html" to "text/html",
         "wasm" to "application/javascript"
@@ -200,7 +198,7 @@ val contentTypes = mapOf<String, String>(
 
 fun makeStaticContent(url: String): Pair<String, ByteArray> {
     val file = url.split('/').last()
-    var fullName = "$serverRoot/static/$file"
+    val fullName = "$serverRoot/static/$file"
     val extension = file.split('.').last()
 
     val content = readFileData(fullName) ?: ByteArray(0)
@@ -264,7 +262,7 @@ fun makeSession(name: String, password: String, db: KSqlite): Session {
 
 fun initSession(http: HttpConnection, db: KSqlite): Session {
     var name = MHD_lookup_connection_value(http, MHD_GET_ARGUMENT_KIND, "name") ?. toKString() ?: "Unknown"
-    var password = MHD_lookup_connection_value(http, MHD_GET_ARGUMENT_KIND, "password") ?. toKString() ?: ""
+    val password = MHD_lookup_connection_value(http, MHD_GET_ARGUMENT_KIND, "password") ?. toKString() ?: ""
     val cookieC = MHD_lookup_connection_value(http, MHD_COOKIE_KIND, "cookie")
     return if (cookieC == null) {
         // No cookie set yet, authenticate?
@@ -300,13 +298,13 @@ fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?,
     db.execute("INSERT INTO connections (ip, timestamp) VALUES ('$ip', DateTime('now'))")
 }
 
-fun showUsage(message: String) {
+fun usage(message: String) {
     println(message)
     exitProcess(1)
 }
 
 fun additionalOptions(https: Boolean): Array<Any> {
-    if (!https) return emptyArray<Any>()
+    if (!https) return emptyArray()
 
     // Self-signed demo certificate, produced with
     // openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout my.key -out my.crt
@@ -382,7 +380,7 @@ fun main(args: Array<String>) {
         when (it.descriptor?.longName) {
             "port" -> port = it.intValue
             "daemon" -> isDaemon = true
-            "help" -> showUsage(makeUsage(cliOptions))
+            "help" -> usage(makeUsage(cliOptions))
             "admin" -> secret = it.stringValue
             "https" -> isHttps = true
         }
@@ -440,7 +438,7 @@ fun main(args: Array<String>) {
                     MHD_add_response_header(response, "Content-Type", contentType)
                     MHD_add_response_header(response, "Set-Cookie", "cookie=${session.cookie}; Expires=$expires")
                     val result = MHD_queue_response(connection, MHD_HTTP_OK, response)
-                    MHD_destroy_response(response);
+                    MHD_destroy_response(response)
                     result
                 }
             } catch (e: Throwable) {

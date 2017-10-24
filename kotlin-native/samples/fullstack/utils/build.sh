@@ -17,5 +17,5 @@ var=COMPILER_OPTS_${TARGET}
 COMPILER_OPTS="${!var}"
 
 cinterop -def src/c_interop/freetype.def -o freetype.klib -compilerOpts "$COMPILER_OPTS"
-konanc src/kotlin/FontGenerator.kt -o FontGenerator -r ../common -l freetype -l kommon -r ../getopt -l kliopt
-konanc src/kotlin/BmpConvertor.kt -o BmpConvertor -r ../common -l kommon
+konanc src/FontGenerator/kotlin -o FontGenerator -r ../common -l freetype -l kommon -r ../getopt -l kliopt
+konanc src/BmpConvertor/kotlin -o BmpConvertor -r ../common -l kommon

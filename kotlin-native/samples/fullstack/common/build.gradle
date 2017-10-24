@@ -4,26 +4,26 @@ konan.targets += ['android_arm32', 'android_arm64', 'iphone']
 
 konanArtifacts {
     library('kommon') {
-        srcFiles 'src/Kommon.kt'
+        srcDir 'src/main/kotlin'
 
         target('macbook') {
-            srcFiles 'src/KommonOsx.kt'
+            srcDir 'src/osx'
         }
 
         target('iphone') {
-            srcFiles 'src/KommonIOs.kt'
+            srcDir 'src/ios'
         }
 
         target('linux') {
-            srcFiles 'src/KommonLinux.kt'
+            srcDir 'src/linux'
         }
 
         target('android_arm32') {
-            srcFiles "src/KommonAndroid.kt"
+            srcDir "src/android"
         }
 
         target('android_arm64') {
-            srcFiles "src/KommonAndroid.kt"
+            srcDir "src/android"
         }
     }
 }

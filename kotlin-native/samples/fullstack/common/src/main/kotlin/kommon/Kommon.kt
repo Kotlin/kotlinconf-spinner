@@ -69,9 +69,7 @@ fun machineName() =
 fun usleep(microseconds: Int) = platform.posix.usleep(microseconds)
 
 class BMPHeader(val rawPtr: NativePtr) {
-    inline fun <reified T : CPointed> memberAt(offset: Long): T {
-        return interpretPointed<T>(this.rawPtr + offset)
-    }
+    inline fun <reified T : CPointed> memberAt(offset: Long): T = interpretPointed(this.rawPtr + offset)
 
     var magic: Short
         get() = memberAt<ShortVar>(0).value
@@ -110,23 +108,23 @@ class BMPHeader(val rawPtr: NativePtr) {
         set(value) { memberAt<IntVar>(30).value = value }
 
     var imageSize: Int
-        get() = memberAt<IntVar>(34).value.toInt()
+        get() = memberAt<IntVar>(34).value
         set(value) { memberAt<IntVar>(34).value = value }
 
     var redChannelMask: Int
-        get() = memberAt<IntVar>(54).value.toInt()
+        get() = memberAt<IntVar>(54).value
         set(value) { memberAt<IntVar>(54).value = value }
 
     var greenChannelMask: Int
-        get() = memberAt<IntVar>(58).value.toInt()
+        get() = memberAt<IntVar>(58).value
         set(value) { memberAt<IntVar>(58).value = value }
 
     var blueChannelMask: Int
-        get() = memberAt<IntVar>(62).value.toInt()
+        get() = memberAt<IntVar>(62).value
         set(value) { memberAt<IntVar>(62).value = value }
 
     var alphaChannelMask: Int
-        get() = memberAt<IntVar>(66).value.toInt()
+        get() = memberAt<IntVar>(66).value
         set(value) { memberAt<IntVar>(66).value = value }
 
     val data
