@@ -47,9 +47,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
         it.asyncFetch()
     }
 
-    private val soundPlayer = SoundPlayerImpl("swish.wav")
-
-    private val gameState = GameState(SceneState(), statsFetcher, soundPlayer)
+    private val gameState = GameState(SceneState(), statsFetcher)
     private val touchControl = TouchControl(gameState)
 
     private val renderer = Renderer(state.activity!!.pointed)
@@ -62,8 +60,6 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private var startTime = 0.0f
     private var startPoint = Vector2.Zero
     private var diagonal = 0.0f
-    private var hasSound = true
-    private var playSound = true
 
     fun initSensors() {
         val sensorManager = ASensorManager_getInstance()
@@ -124,16 +120,11 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     println("NativeActivityEventKind.START")
                     needRedraw = true
                     ASensorEventQueue_enableSensor(sensorQueue, sensor)
-                    if (hasSound)
-                        soundPlayer.initialize()
-                    soundPlayer.enable(playSound)
                 }
 
                 NativeActivityEventKind.STOP -> {
                     println("NativeActivityEventKind.STOP")
                     ASensorEventQueue_disableSensor(sensorQueue, sensor)
-                    if (hasSound)
-                        soundPlayer.deinit()
                 }
 
                 NativeActivityEventKind.PAUSE -> {

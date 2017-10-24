@@ -252,7 +252,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/../../gradlew -p $SRCROOT compileKonanApp";
+			shellScript = "ANDROID_HOME=/Users/jetbrains/Library/Android/sdk $SRCROOT/../../gradlew -p $SRCROOT -Pkonan.build=/Users/jetbrains/kotlin/kotlin-native compileKonanApp";
 		};
 		2CED25F51F75260600A6326D /* Replace Original Binary */ = {
 			isa = PBXShellScriptBuildPhase;

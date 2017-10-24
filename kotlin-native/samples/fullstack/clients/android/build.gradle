@@ -65,16 +65,44 @@ konanArtifacts {
         }
 
     }
+
+    program ('Kotlin3dLight') {
+        artifactName 'libkotlin3dlight'
+        srcFiles fileTree('src/light/kotlin')
+        srcFiles 'src/main/kotlin/Renderer.kt', 'src/main/kotlin/StatsFetcherImpl.kt'
+        srcFiles '../shared/src/main/kotlin/vectors.kt', '../shared/src/main/kotlin/states.kt'
+        srcFiles '../shared/src/main/kotlin/control.kt', '../shared/src/main/kotlin/rendering.kt'
+        srcFiles '../shared/src/main/kotlin/gl.kt'
+        enableOptimizations true
+        libraries {
+            allLibrariesFrom common, json, kurl
+        }
+
+        target('android_arm32') {
+            linkerOpts "-L$libcurlPath/lib/armeabi-v7a -lcurl " +
+                    "$janssonPath/arm32/lib/libjansson.a " +
+                    " -lz"
+        }
+
+        target('android_arm64') {
+            linkerOpts "-L$libcurlPath/lib/arm64-v8a -lcurl " +
+                    "$janssonPath/arm64/lib/libjansson.a " +
+                    "-lz"
+        }
+
+    }
 }
 
 task copyLibs(type: Copy) {
     dependsOn konanArtifacts.Kotlin3d
+    dependsOn konanArtifacts.Kotlin3dLight
     dependsOn konanArtifacts.Loader
     destinationDir projectDir
 
     platforms.each { _, platform ->
         into(platform.directory) {
             from konanArtifacts.Kotlin3d."$platform.konanTarget".artifact
+            from konanArtifacts.Kotlin3dLight."$platform.konanTarget".artifact
             from konanArtifacts.Loader."$platform.konanTarget".artifact
         }
     }
@@ -97,8 +125,8 @@ model {
 
         defaultConfig {
             applicationId = 'com.jetbrains.konan_activity'
-            minSdkVersion.apiLevel   18
-            targetSdkVersion.apiLevel  25
+            minSdkVersion.apiLevel   19
+            targetSdkVersion.apiLevel  21
         }
 
         ndk {
@@ -154,6 +182,15 @@ model {
                         }
                     }
             }
+            libkotlin3dlight {
+                binaries.withType(SharedLibraryBinary) {
+                    def name = targetPlatform.getName()
+                    def platform = platforms[name]
+                    if (platform != null) {
+                        sharedLibraryFile = file("$platform.directory/libkotlin3dlight.so")
+                    }
+                }
+            }
             libloader {
                 binaries.withType(SharedLibraryBinary) {
                     def name = targetPlatform.getName()
@@ -179,6 +216,7 @@ model {
             jniLibs {
                 dependencies {
                     library "libkotlin3d"
+                    library "libkotlin3dlight"
                     library "libloader"
                     library "libopenal"
                 }

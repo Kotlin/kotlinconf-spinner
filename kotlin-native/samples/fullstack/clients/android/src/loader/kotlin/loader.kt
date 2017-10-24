@@ -2,6 +2,7 @@ import platform.posix.*
 import platform.android.*
 import kotlinx.cinterop.*
 import kotlin.text.*
+import kotlin.system.exitProcess
 
 // Hackaround showing how one could use dynamic libs on most Android versions.
 // We explicitly preload "libopenal.so" and then load the actual activity.
@@ -30,12 +31,16 @@ fun loadKonanLibrary(name: String): COpaquePointer? {
 }
 
 fun main(args: Array<String>) {
-    println("Enter loader")
+    println("Entering loader...")
     loadKonanLibrary("openal")
-    val kotlin3d = loadKonanLibrary("kotlin3d")
+    var kotlin3d = loadKonanLibrary("kotlin3d")
     if (kotlin3d == null) {
-        println("Cannot load main lib...")
-        return
+        println("Cannot load main lib, trying light...")
+        kotlin3d = loadKonanLibrary("kotlin3dlight")
+        if (kotlin3d == null) {
+            println("Cannot load even light version, die!")
+            exitProcess(1)
+        }
     }
     val entry = dlsym(kotlin3d, "Konan_main")?.reinterpret<
             CFunction<(COpaquePointer?, COpaquePointer?, size_t) -> Unit>>()
@@ -46,6 +51,6 @@ fun main(args: Array<String>) {
         entry(state.activity, state.savedState, state.savedStateSize)
     } else {
         println("main entry point not found...")
-        return
+        exitProcess(2)
     }
 }
