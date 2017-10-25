@@ -8,7 +8,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:+"
+        classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.3.4"
         classpath 'com.android.tools.build:gradle-experimental:0.9.3'
     }
 }
