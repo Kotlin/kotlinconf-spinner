@@ -69,7 +69,7 @@ konanArtifacts {
     program ('Kotlin3dLight') {
         artifactName 'libkotlin3dlight'
         srcFiles fileTree('src/light/kotlin')
-        srcFiles 'src/main/kotlin/Renderer.kt', 'src/main/kotlin/StatsFetcherImpl.kt'
+        srcFiles 'src/main/kotlin/renderer.kt', 'src/main/kotlin/StatsFetcherImpl.kt'
         srcFiles '../shared/src/main/kotlin/vectors.kt', '../shared/src/main/kotlin/states.kt'
         srcFiles '../shared/src/main/kotlin/control.kt', '../shared/src/main/kotlin/rendering.kt'
         srcFiles '../shared/src/main/kotlin/gl.kt'

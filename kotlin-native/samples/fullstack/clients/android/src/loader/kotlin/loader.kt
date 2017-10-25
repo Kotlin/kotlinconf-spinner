@@ -12,7 +12,7 @@ val prefix by lazy {
         if (dladdr(staticCFunction { -> }, dlinfo.ptr) != 0 && dlinfo.dli_fname != null) {
             val dli_fname = dlinfo.dli_fname!!.toKString()
             if (dli_fname.indexOf('/') == -1)
-                "/data/data/com.jetbrains.konan_activity/lib"
+                "/data/data/com.jetbrains.konan_activity2/lib"
             else
                 dlinfo.dli_fname!!.toKString().substringBeforeLast('/')
         } else {
