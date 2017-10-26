@@ -627,7 +627,7 @@ class GameRenderer {
             renderCenteredTexture(
                     1.0f - (42.5f / 100 * 2.0f),
                     2.0f * 0.3f,
-                    57.0f / 342.0f,
+                    57.0f / 394.0f,
                     totalSpinsTextureId
             )
 
