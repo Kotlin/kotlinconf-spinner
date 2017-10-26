@@ -568,7 +568,7 @@ class GameRenderer {
         if (!gameOver) {
             if (sceneState.initialized) {
                 val scoreH = 0.06f
-                val spinsAspect = (87.0f / 36.0f) * screenAspect
+                val spinsAspect = (102.0f / 36.0f) * screenAspect
                 val scoreW = scoreH * digitAspect * 7
                 statsBarChartRenderer.texturedRectRenderer.renderScore(
                         -1.0f + (2.0f - scoreW) / 2, 1.0f - (8.0f / 100 * 2.0f),
