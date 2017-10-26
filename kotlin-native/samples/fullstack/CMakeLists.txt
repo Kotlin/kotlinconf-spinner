@@ -70,6 +70,7 @@ konanc_library(
 konanc_executable(
         NAME HttpServer
         SOURCES httpserver/src/main/kotlin
+        TEST_SOURCES httpserver/src/test/kotlin
         LIBRARIES microhttpd; kjson; sql; kommon; kliopt
 )
 
