@@ -566,17 +566,19 @@ class GameRenderer {
         val margin = 9.06667f / 100 * 2.0f
 
         if (!gameOver) {
-            val scoreH = 0.06f
-            val spinsAspect = (87.0f / 36.0f) * screenAspect
-            val scoreW = scoreH * digitAspect * 7
-            statsBarChartRenderer.texturedRectRenderer.renderScore(
-                    -1.0f + (2.0f - scoreW) / 2, 1.0f - (8.0f / 100 * 2.0f),
-                    scoreW,
-                    myContribution,
-                    5.5f * 12 / 18,
-                    digitAspect, 0.01f,
-                    1, spinsTextureId, spinsAspect, 0.6f, 0.32f, 0.02f
-            )
+            if (sceneState.initialized) {
+                val scoreH = 0.06f
+                val spinsAspect = (87.0f / 36.0f) * screenAspect
+                val scoreW = scoreH * digitAspect * 7
+                statsBarChartRenderer.texturedRectRenderer.renderScore(
+                        -1.0f + (2.0f - scoreW) / 2, 1.0f - (8.0f / 100 * 2.0f),
+                        scoreW,
+                        myContribution,
+                        5.5f * 12 / 18,
+                        digitAspect, 0.01f,
+                        1, spinsTextureId, spinsAspect, 0.6f, 0.32f, 0.02f
+                )
+            }
         } else {
             if (stats!!.winner) {
                 renderCenteredTexture(
@@ -650,27 +652,29 @@ class GameRenderer {
                 Vector3(1.0f, 1.0f, 1.0f)
         )
 
-        if (screenWidth <= screenHeight) {
-            // Portrait orientation. Draw chart below the square:
-            statsBarChartRenderer.render(
-                    -1.0f + margin, -1.0f,
-                    2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
-                    myTeam,
-                    counts,
-                    digitAspect,
-                    screenAspect
-            )
-        } else {
-            // Landscape orientation. Draw chart to the right of the square:
-            val width = 2 * (screenWidth - squareSize) / screenWidth
-            statsBarChartRenderer.render(
-                    1.0f - width, -1.0f,
-                    width, 2.0f,
-                    myTeam,
-                    counts,
-                    digitAspect,
-                    screenAspect
-            )
+        if (sceneState.initialized) {
+            if (screenWidth <= screenHeight) {
+                // Portrait orientation. Draw chart below the square:
+                statsBarChartRenderer.render(
+                        -1.0f + margin, -1.0f,
+                        2.0f - margin * 2, (2.0f - 62.0f / 100 * 2.0f),
+                        myTeam,
+                        counts,
+                        digitAspect,
+                        screenAspect
+                )
+            } else {
+                // Landscape orientation. Draw chart to the right of the square:
+                val width = 2 * (screenWidth - squareSize) / screenWidth
+                statsBarChartRenderer.render(
+                        1.0f - width, -1.0f,
+                        width, 2.0f,
+                        myTeam,
+                        counts,
+                        digitAspect,
+                        screenAspect
+                )
+            }
         }
 
         if (!sceneState.initialized) {
