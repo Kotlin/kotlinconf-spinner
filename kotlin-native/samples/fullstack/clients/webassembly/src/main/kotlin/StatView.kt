@@ -38,13 +38,13 @@ object Model {
     }
 }
 
-object Layout {
+open class Layout(val rect: DOMRect)  {
     val lowerAxisLegend = 0.1
-    val fieldHeight = 1.0 - lowerAxisLegend
+    val fieldPartHeight = 1.0 - lowerAxisLegend
 
     val teamNumber = 0.10
     val result = 0.20
-    val fieldWidth = 1.0 - teamNumber - result
+    val fieldPartWidth = 1.0 - teamNumber - result
 
     val teamBackground = 0.05
 
@@ -53,11 +53,7 @@ object Layout {
     val resultPad = 50
 
     val teamRect = 50
-}
 
-class View(canvas: Canvas) {
-    val context = canvas.getContext("2d");
-    val rect = canvas.getBoundingClientRect();
     val rectLeft = rect.getInt("left")
     val rectTop = rect.getInt("top")
     val rectRight = rect.getInt("right")
@@ -65,78 +61,75 @@ class View(canvas: Canvas) {
     val rectWidth = rectRight - rectLeft
     val rectHeight = rectBottom - rectTop
 
-    val fieldWidth: Int = (rectWidth.toFloat() * Layout.fieldWidth).toInt()
-    val fieldHeight: Int = (rectHeight.toFloat() * Layout.fieldHeight).toInt()
+    val fieldWidth: Int = (rectWidth.toFloat() * fieldPartWidth).toInt()
+    val fieldHeight: Int = (rectHeight.toFloat() * fieldPartHeight).toInt()
 
-    val teamWidth = (rectWidth.toFloat() * Layout.teamNumber).toInt()
+    val teamWidth = (rectWidth.toFloat() * teamNumber).toInt()
     val teamOffsetX = fieldWidth
     val teamHeight = fieldHeight
 
-    val resultWidth = (rectWidth.toFloat() * Layout.result).toInt()
+    val resultWidth = (rectWidth.toFloat() * result).toInt()
     val resultOffsetX = fieldWidth + teamWidth
     val resultHeight = fieldHeight
 
     val legendWidth = fieldWidth
-    val legendHeight = (rectWidth.toFloat() * Layout.lowerAxisLegend)
+    val legendHeight = (rectWidth.toFloat() * lowerAxisLegend)
     val legendOffsetY = fieldHeight
+}
 
-    fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) {
-        context.beginPath()
-        context.lineWidth = 2; // In pixels.
-        context.setter("strokeStyle", style)
-        context.setter("fillStyle", style)
+class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
+    val context = canvas.getContext("2d");
 
-        context.moveTo(x1, fieldHeight - y11)
-        context.lineTo(x1, fieldHeight - y12)
-        context.lineTo(x2, fieldHeight - y22)
-        context.lineTo(x2, fieldHeight - y21)
-        context.lineTo(x1, fieldHeight - y11)
+    fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) = with(context) {
+        beginPath()
+        lineWidth = 2; // In pixels.
+        setter("strokeStyle", style)
+        setter("fillStyle", style)
 
-        context.fill()
+        moveTo(x1, fieldHeight - y11)
+        lineTo(x1, fieldHeight - y12)
+        lineTo(x2, fieldHeight - y22)
+        lineTo(x2, fieldHeight - y21)
+        lineTo(x1, fieldHeight - y11)
 
-        context.closePath()
-        context.stroke()
+        fill()
+
+        closePath()
+        stroke()
     }
 
-    fun showValue(index: Int, value: Int, y: Int, color: String) {
+    fun showValue(index: Int, value: Int, y: Int, color: String) = with(context) {
 
         val textCellHeight = teamHeight / Model.tupleSize
         val textBaseline = index * textCellHeight + textCellHeight / 2
 
         // The team number rectangle.
-        context.fillStyle = Style.teamNumberColor
-        context.fillRect(teamOffsetX + Layout.teamPad,  teamHeight - textBaseline - Layout.teamRect/2, Layout.teamRect, Layout.teamRect) 
+        fillStyle = Style.teamNumberColor
+        fillRect(teamOffsetX + teamPad,  teamHeight - textBaseline - teamRect/2, teamRect, teamRect) 
 
         // The team number in the rectangle.
-        context.setter("font", "20px monospace")
-        context.setter("textAlign", "center")
-        context.setter("textBaseline", "middle")
-        context.fillStyle = Style.fontColor
-        context.fillText("${index + 1}", teamOffsetX + Layout.teamPad + Layout.teamRect/2,  teamHeight - textBaseline, teamWidth) 
+        setter("font", "20px monospace")
+        setter("textAlign", "center")
+        setter("textBaseline", "middle")
+        fillStyle = Style.fontColor
+        fillText("${index + 1}", teamOffsetX + teamPad + teamRect/2,  teamHeight - textBaseline, teamWidth) 
 
         // The score.
-        context.setter("textAlign", "right")
-        context.fillStyle = Style.fontColor
-        context.fillText("$value", resultOffsetX + Layout.resultPad,  resultHeight - textBaseline,  resultWidth) 
+        setter("textAlign", "right")
+        fillStyle = Style.fontColor
+        fillText("$value", resultOffsetX + resultPad,  resultHeight - textBaseline,  resultWidth) 
 
-/*
-        context.beginPath()
-        context.setter("strokeStyle", color)
-        context.moveTo(fieldWidth, teamHeight - y)
-        context.lineTo(teamOffsetX + Layout.teamPad, teamHeight - textBaseline - Layout.teamRect/2)
-        context.stroke()
-*/
     }
 
-    fun showLegend() {
-        context.setter("font", "20px monospace")
-        context.setter("textAlign", "left")
-        context.setter("textBaseline", "top")
-        context.fillStyle = Style.fontColor
+    fun showLegend() = with(context){
+        setter("font", "20px monospace")
+        setter("textAlign", "left")
+        setter("textBaseline", "top")
+        fillStyle = Style.fontColor
         
-        context.fillText("-10 sec", Layout.legendPad, legendOffsetY + Layout.legendPad, legendWidth) 
-        context.setter("textAlign", "right")
-        context.fillText("now", legendWidth - Layout.legendPad, legendOffsetY + Layout.legendPad, legendWidth) 
+        fillText("-10 sec", legendPad, legendOffsetY + legendPad, legendWidth) 
+        setter("textAlign", "right")
+        fillText("now", legendWidth - legendPad, legendOffsetY + legendPad, legendWidth) 
     }
 
     fun scaleX(x: Int): Int {
