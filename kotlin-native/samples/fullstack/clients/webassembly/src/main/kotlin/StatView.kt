@@ -2,9 +2,16 @@ import html5.minimal.*
 import kotlinx.wasm.jsinterop.*
 import konan.internal.ExportForCppRuntime
 
+object Style {
+    val backgroundColor = "#16103f"
+    val teamNumberColor = "#38335b"
+    val fontColor = "#ffffff"
+    val styles = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff")
+}
+
 object Model {
     val tupleSize = 5
-    val styles = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff")
+    val styles = Style.styles
 
     val backLogSize = 100
     private val backLog = IntArray(backLogSize * tupleSize, {0})
@@ -31,6 +38,22 @@ object Model {
     }
 }
 
+object Layout {
+    val lowerAxisLegend = 0.1
+    val fieldHeight = 1.0 - lowerAxisLegend
+
+    val teamNumber = 0.10
+    val result = 0.20
+    val fieldWidth = 1.0 - teamNumber - result
+
+    val teamBackground = 0.05
+
+    val legendPad = 50
+    val teamPad = 50
+    val resultPad = 50
+
+    val teamRect = 50
+}
 
 class View(canvas: Canvas) {
     val context = canvas.getContext("2d");
@@ -42,8 +65,20 @@ class View(canvas: Canvas) {
     val rectWidth = rectRight - rectLeft
     val rectHeight = rectBottom - rectTop
 
-    val fieldWidth = rectWidth * 4 / 5
-    val fieldHeight = rectHeight
+    val fieldWidth: Int = (rectWidth.toFloat() * Layout.fieldWidth).toInt()
+    val fieldHeight: Int = (rectHeight.toFloat() * Layout.fieldHeight).toInt()
+
+    val teamWidth = (rectWidth.toFloat() * Layout.teamNumber).toInt()
+    val teamOffsetX = fieldWidth
+    val teamHeight = fieldHeight
+
+    val resultWidth = (rectWidth.toFloat() * Layout.result).toInt()
+    val resultOffsetX = fieldWidth + teamWidth
+    val resultHeight = fieldHeight
+
+    val legendWidth = fieldWidth
+    val legendHeight = (rectWidth.toFloat() * Layout.lowerAxisLegend)
+    val legendOffsetY = fieldHeight
 
     fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) {
         context.beginPath()
@@ -63,12 +98,45 @@ class View(canvas: Canvas) {
         context.stroke()
     }
 
-    fun showValue(value: Int, y: Int, color: String) {
-        context.fillStyle = color;
-        context.setter("font", "30px Roboto Mono")
-        //TODO : Right align the numbers.
-        //context.fillText("$value", fieldWidth + 10,  y, rectWidth - fieldWidth - 20) 
-        context.fillText("$value", fieldWidth + 10,  rectHeight - y - 10, rectWidth) 
+    fun showValue(index: Int, value: Int, y: Int, color: String) {
+
+        val textCellHeight = teamHeight / Model.tupleSize
+        val textBaseline = index * textCellHeight + textCellHeight / 2
+
+        // The team number rectangle.
+        context.fillStyle = Style.teamNumberColor
+        context.fillRect(teamOffsetX + Layout.teamPad,  teamHeight - textBaseline - Layout.teamRect/2, Layout.teamRect, Layout.teamRect) 
+
+        // The team number in the rectangle.
+        context.setter("font", "20px monospace")
+        context.setter("textAlign", "center")
+        context.setter("textBaseline", "middle")
+        context.fillStyle = Style.fontColor
+        context.fillText("${index + 1}", teamOffsetX + Layout.teamPad + Layout.teamRect/2,  teamHeight - textBaseline, teamWidth) 
+
+        // The score.
+        context.setter("textAlign", "right")
+        context.fillStyle = Style.fontColor
+        context.fillText("$value", resultOffsetX + Layout.resultPad,  resultHeight - textBaseline,  resultWidth) 
+
+/*
+        context.beginPath()
+        context.setter("strokeStyle", color)
+        context.moveTo(fieldWidth, teamHeight - y)
+        context.lineTo(teamOffsetX + Layout.teamPad, teamHeight - textBaseline - Layout.teamRect/2)
+        context.stroke()
+*/
+    }
+
+    fun showLegend() {
+        context.setter("font", "20px monospace")
+        context.setter("textAlign", "left")
+        context.setter("textBaseline", "top")
+        context.fillStyle = Style.fontColor
+        
+        context.fillText("-10 sec", Layout.legendPad, legendOffsetY + Layout.legendPad, legendWidth) 
+        context.setter("textAlign", "right")
+        context.fillText("now", legendWidth - Layout.legendPad, legendOffsetY + Layout.legendPad, legendWidth) 
     }
 
     fun scaleX(x: Int): Int {
@@ -80,7 +148,7 @@ class View(canvas: Canvas) {
     }
 
     fun clean() {
-        context.fillStyle = "#16103F"
+        context.fillStyle = Style.backgroundColor
         context.fillRect(0, 0, rectWidth, rectHeight)
     }
 
@@ -124,8 +192,10 @@ class View(canvas: Canvas) {
             val value = Model.colors((Model.current + Model.backLogSize - 1) % Model.backLogSize, i)
 
             val y = scaleY(i.toFloat() / (Model.tupleSize).toFloat())
-            showValue(value, y, style)
+            showValue(i, value, y, style)
         }
+
+        showLegend()
     }
 }
 

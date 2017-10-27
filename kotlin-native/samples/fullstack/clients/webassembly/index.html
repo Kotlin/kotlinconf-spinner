@@ -2,12 +2,27 @@
 <head>
 <meta charset="utf-8">
 
+<style type="text/css">
+html,body { background:#38335b; height:100%; margin:0; padding:0; overflow:hidden }
+canvas { position:absolute; top:0; left:0 }
+</style>
+
 <script src="view.wasm.js" wasm="view.wasm"> </script>
 
 </head>
 <body>
-<canvas id="myCanvas" width="640" height="480" style="border:1px solid #16103F;">
+<canvas id="myCanvas">
+Your browser doesn't eem to upport the canvas tag.
 </canvas>
+
+
+<script>
+var canvs = document.getElementById("myCanvas");
+canvs.width = document.body.offsetWidth;
+canvs.height = document.body.offsetHeight;
+</script>
+
+
 </body>
 </html>
 
