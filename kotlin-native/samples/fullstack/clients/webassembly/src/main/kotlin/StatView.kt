@@ -2,11 +2,16 @@ import html5.minimal.*
 import kotlinx.wasm.jsinterop.*
 import konan.internal.ExportForCppRuntime
 
+object Style {
+    val backgroundColor = "#16103f"
+    val teamNumberColor = "#38335b"
+    val fontColor = "#ffffff"
+    val styles = arrayOf("#ff7616", "#f72e2e", "#7a6aea", "#4bb8f6", "#ffffff")
+}
+
 object Model {
     val tupleSize = 5
-    // Matching OpenGL demo colors:
-    //val colors = arrayOf(Vector3(0.0f, 0.8f, 0.8f), Vector3(0.8f, 0.0f, 0.8f), Vector3(0.8f, 0.0f, 0.0f), Vector3(0.0f, 0.8f, 0.0f), Vector3(0.0f, 0.0f, 0.8f))
-    val styles = arrayOf("#00cdcd", "#cd00cd", "#cd0000", "#00cd00", "#0000cd")
+    val styles = Style.styles
 
     val backLogSize = 100
     private val backLog = IntArray(backLogSize * tupleSize, {0})
@@ -33,10 +38,22 @@ object Model {
     }
 }
 
+open class Layout(val rect: DOMRect)  {
+    val lowerAxisLegend = 0.1
+    val fieldPartHeight = 1.0 - lowerAxisLegend
 
-class View(canvas: Canvas) {
-    val context = canvas.getContext("2d");
-    val rect = canvas.getBoundingClientRect();
+    val teamNumber = 0.10
+    val result = 0.20
+    val fieldPartWidth = 1.0 - teamNumber - result
+
+    val teamBackground = 0.05
+
+    val legendPad = 50
+    val teamPad = 50
+    val resultPad = 50
+
+    val teamRect = 50
+
     val rectLeft = rect.getInt("left")
     val rectTop = rect.getInt("top")
     val rectRight = rect.getInt("right")
@@ -44,34 +61,87 @@ class View(canvas: Canvas) {
     val rectWidth = rectRight - rectLeft
     val rectHeight = rectBottom - rectTop
 
-    fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) {
-        context.beginPath()
-        context.lineWidth = 2; // In pixels.
-        context.setter("strokeStyle", style)
-        context.setter("fillStyle", style)
+    val fieldWidth: Int = (rectWidth.toFloat() * fieldPartWidth).toInt()
+    val fieldHeight: Int = (rectHeight.toFloat() * fieldPartHeight).toInt()
 
-        context.moveTo(x1, rectHeight - y11)
-        context.lineTo(x1, rectHeight - y12)
-        context.lineTo(x2, rectHeight - y22)
-        context.lineTo(x2, rectHeight - y21)
-        context.lineTo(x1, rectHeight - y11)
+    val teamWidth = (rectWidth.toFloat() * teamNumber).toInt()
+    val teamOffsetX = fieldWidth
+    val teamHeight = fieldHeight
 
-        context.fill()
+    val resultWidth = (rectWidth.toFloat() * result).toInt()
+    val resultOffsetX = fieldWidth + teamWidth
+    val resultHeight = fieldHeight
 
-        context.closePath()
-        context.stroke()
+    val legendWidth = fieldWidth
+    val legendHeight = (rectWidth.toFloat() * lowerAxisLegend)
+    val legendOffsetY = fieldHeight
+}
+
+class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
+    val context = canvas.getContext("2d");
+
+    fun poly(x1: Int, y11: Int, y12: Int, x2: Int, y21: Int, y22: Int, style: String) = with(context) {
+        beginPath()
+        lineWidth = 2; // In pixels.
+        setter("strokeStyle", style)
+        setter("fillStyle", style)
+
+        moveTo(x1, fieldHeight - y11)
+        lineTo(x1, fieldHeight - y12)
+        lineTo(x2, fieldHeight - y22)
+        lineTo(x2, fieldHeight - y21)
+        lineTo(x1, fieldHeight - y11)
+
+        fill()
+
+        closePath()
+        stroke()
+    }
+
+    fun showValue(index: Int, value: Int, y: Int, color: String) = with(context) {
+
+        val textCellHeight = teamHeight / Model.tupleSize
+        val textBaseline = index * textCellHeight + textCellHeight / 2
+
+        // The team number rectangle.
+        fillStyle = Style.teamNumberColor
+        fillRect(teamOffsetX + teamPad,  teamHeight - textBaseline - teamRect/2, teamRect, teamRect) 
+
+        // The team number in the rectangle.
+        setter("font", "20px monospace")
+        setter("textAlign", "center")
+        setter("textBaseline", "middle")
+        fillStyle = Style.fontColor
+        fillText("${index + 1}", teamOffsetX + teamPad + teamRect/2,  teamHeight - textBaseline, teamWidth) 
+
+        // The score.
+        setter("textAlign", "right")
+        fillStyle = Style.fontColor
+        fillText("$value", resultOffsetX + resultPad,  resultHeight - textBaseline,  resultWidth) 
+
+    }
+
+    fun showLegend() = with(context){
+        setter("font", "20px monospace")
+        setter("textAlign", "left")
+        setter("textBaseline", "top")
+        fillStyle = Style.fontColor
+        
+        fillText("-10 sec", legendPad, legendOffsetY + legendPad, legendWidth) 
+        setter("textAlign", "right")
+        fillText("now", legendWidth - legendPad, legendOffsetY + legendPad, legendWidth) 
     }
 
     fun scaleX(x: Int): Int {
-        return x * rectWidth / (Model.backLogSize - 2) 
+        return x * fieldWidth / (Model.backLogSize - 2) 
     }
 
     fun scaleY(y: Float): Int {
-        return (y * rectHeight).toInt()
+        return (y * fieldHeight).toInt()
     }
 
     fun clean() {
-        context.fillStyle = "#222222"
+        context.fillStyle = Style.backgroundColor
         context.fillRect(0, 0, rectWidth, rectHeight)
     }
 
@@ -110,6 +180,15 @@ class View(canvas: Canvas) {
                 newHeight += newValue
             }
         }
+        for (i in 0 until Model.tupleSize) {
+            val style = Model.styles[i]
+            val value = Model.colors((Model.current + Model.backLogSize - 1) % Model.backLogSize, i)
+
+            val y = scaleY(i.toFloat() / (Model.tupleSize).toFloat())
+            showValue(i, value, y, style)
+        }
+
+        showLegend()
     }
 }
 
