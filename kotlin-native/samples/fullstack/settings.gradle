@@ -8,8 +8,11 @@ if (konanBuildPath != null) {
     }
 }
 
+def disableAndroid = gradle.startParameter.projectProperties['disable.android']
 
-include ':clients:android'
+if (disableAndroid == null || disableAndroid != "true") {
+    include ':clients:android'
+}
 include ':clients:cli'
 include ':clients:ios'
 include ':clients:webassembly'
