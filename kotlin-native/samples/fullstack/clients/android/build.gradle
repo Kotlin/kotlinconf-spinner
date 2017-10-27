@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.3.4"
-        classpath 'com.android.tools.build:gradle-experimental:0.9.3'
+        classpath "com.android.tools.build:gradle:2.3.3"
     }
 }
 
@@ -19,13 +19,15 @@ allprojects {
     }
 }
 
+def outDir = file('out')
+def libsDir = file("$outDir/libs")
 def platforms = [
-        "armeabi-v7a": [konanTarget: "android_arm32", directory: "out/arm32"],
-        "arm64-v8a"  : [konanTarget: "android_arm64", directory: "out/arm64"]
+        "armeabi-v7a": [konanTarget: "android_arm32"],
+        "arm64-v8a"  : [konanTarget: "android_arm64"]
 ]
 
 apply plugin: "konan"
-apply plugin: "com.android.model.application"
+apply plugin: 'com.android.application'
 
 konan.targets = ['android_arm32', 'android_arm64']
 
@@ -97,138 +99,81 @@ task copyLibs(type: Copy) {
     dependsOn konanArtifacts.Kotlin3d
     dependsOn konanArtifacts.Kotlin3dLight
     dependsOn konanArtifacts.Loader
-    destinationDir projectDir
+    destinationDir libsDir
 
-    platforms.each { _, platform ->
-        into(platform.directory) {
+    platforms.each { name, platform ->
+        into(name) {
             from konanArtifacts.Kotlin3d."$platform.konanTarget".artifact
             from konanArtifacts.Kotlin3dLight."$platform.konanTarget".artifact
             from konanArtifacts.Loader."$platform.konanTarget".artifact
+            from file("$openalPath/lib/$name/libopenal.so")
         }
     }
 }
 
-clean {
-    doLast {
-        delete 'out'
-    }
+task deleteOut(type: Delete) {
+    delete outDir
 }
+
+clean.dependsOn deleteOut
+
 
 tasks.matching { it.name == 'preBuild' }.all {
     it.dependsOn copyLibs
 }
 
-model {
-    android {
-        compileSdkVersion = 25
-        buildToolsVersion = '25.0.2'
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
-        defaultConfig {
-            applicationId = 'com.jetbrains.konan_activity2'
-            minSdkVersion.apiLevel   19
-            targetSdkVersion.apiLevel 21
-        }
+    defaultConfig {
+        applicationId 'com.jetbrains.konan_activity2'
+        minSdkVersion    19
+        targetSdkVersion 21
 
         ndk {
-            moduleName = "kotlin3d"
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
+    }
 
-        productFlavors {
-            create("arm") {
-                ndk {
-                    abiFilters.addAll("armeabi-v7a", "arm64-v8a")
-                }
+    signingConfigs {
+        release {
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
+                storeFile = file(RELEASE_STORE_FILE)
+                storePassword = RELEASE_STORE_PASSWORD
+                keyAlias = RELEASE_KEY_ALIAS
+                keyPassword = RELEASE_KEY_PASSWORD
             }
         }
+    }
 
-        buildTypes {
-            debug {
-               debuggable = true
-               ndk {
+    buildTypes {
+        debug {
+            debuggable = true
+            ndk {
                  debuggable = true
-               }
             }
-            release {
-                // Add RELEASE_STORE_FILE RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS
-                // and RELEASE_KEY_PASSWORD to ~/.gradle/gradle.properties
-                // to sign release build. Keystore could be created from
-                // Android Studio.
-                if (project.hasProperty("RELEASE_STORE_FILE")) {
-                   signingConfig = $("android.signingConfigs.release")
-                }
+        }
+        release {
+            // Add RELEASE_STORE_FILE RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS
+            // and RELEASE_KEY_PASSWORD to ~/.gradle/gradle.properties
+            // to sign release build. Keystore could be created from
+            // Android Studio.
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
+               signingConfig = signingConfigs.release
             }
         }
     }
 
-    android.signingConfigs {
-      create("release") {
-        if (project.hasProperty("RELEASE_STORE_FILE")) {
-            storeFile file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
-        }
-      }
-    }
-
-    repositories {
-        libs(PrebuiltLibraries) {
-            libkotlin3d {
-                    binaries.withType(SharedLibraryBinary) {
-                        def name = targetPlatform.getName()
-                        def platform = platforms[name]
-                        if (platform != null) {
-                            sharedLibraryFile = file("$platform.directory/libkotlin3d.so")
-                        }
-                    }
-            }
-            libkotlin3dlight {
-                binaries.withType(SharedLibraryBinary) {
-                    def name = targetPlatform.getName()
-                    def platform = platforms[name]
-                    if (platform != null) {
-                        sharedLibraryFile = file("$platform.directory/libkotlin3dlight.so")
-                    }
-                }
-            }
-            libloader {
-                binaries.withType(SharedLibraryBinary) {
-                    def name = targetPlatform.getName()
-                    def platform = platforms[name]
-                    if (platform != null) {
-                        sharedLibraryFile = file("$platform.directory/libloader.so")
-                    }
-                }
-            }
-            libopenal {
-                    binaries.withType(SharedLibraryBinary) {
-                        def name = targetPlatform.getName()
-                        def platform = platforms[name]
-                        if (platform != null) {
-                            sharedLibraryFile = file("$openalPath/lib/$name/libopenal.so")
-                        }
-                    }
-            }
-       }
-    }
-    android.sources {
+    sourceSets {
         main {
-            jniLibs {
-                dependencies {
-                    library "libkotlin3d"
-                    library "libkotlin3dlight"
-                    library "libloader"
-                    library "libopenal"
-                }
-            }
+            jniLibs.srcDir libsDir
         }
     }
 }
 
 task buildApk(type: Copy) {
-    dependsOn "assembleDebug"
-    destinationDir projectDir
-    from ('build/outputs/apk') {
-        into 'out'
-    }
+    dependsOn "assembleDebug", "assembleRelease"
+    destinationDir outDir
+    from 'build/outputs/apk'
 }
