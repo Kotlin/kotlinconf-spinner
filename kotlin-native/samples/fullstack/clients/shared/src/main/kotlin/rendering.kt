@@ -28,7 +28,8 @@ const val teamPlaceTextureId = 15
 const val totalSpinsTextureId = 16
 const val youContributedTextureId = 17
 const val winnerTextureId = 18
-const val numberOfTextures = 19
+const val spinnerRepoTextureId = 19
+const val numberOfTextures = 20
 
 val textures = Array<GLuint>(numberOfTextures) { 0 }
 
@@ -497,6 +498,7 @@ class GameRenderer {
             loadTextureFromBmpResource("total_spins.bmp", totalSpinsTextureId)
             loadTextureFromBmpResource("you_contributed.bmp", youContributedTextureId)
             loadTextureFromBmpResource("winner.bmp", winnerTextureId)
+            loadTextureFromBmpResource("spinner_repo.bmp", spinnerRepoTextureId)
             for (d in 0..9)
                 loadTextureFromBmpResource("$d.bmp", d)
         }
@@ -690,9 +692,14 @@ class GameRenderer {
 
                 if (showCopyright) {
                     renderCenteredTexture(
-                            1.0f - 75.0f / 100 * 2.0f,
+                            1.0f - 80.0f / 100 * 2.0f,
                             1.0f, 39.0f / 492.0f,
                             konanTextureId
+                    )
+                    renderCenteredTexture(
+                            1.0f - 85.0f / 100 * 2.0f,
+                            2.0f - margin * 2, 43.0f / 860.0f,
+                            spinnerRepoTextureId
                     )
                 }
 

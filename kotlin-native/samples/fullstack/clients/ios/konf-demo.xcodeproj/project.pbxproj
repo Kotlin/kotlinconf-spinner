@@ -36,6 +36,7 @@
 		2CF5BF3D1F9F58DB00F1A06D /* total_spins.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF381F9F58DB00F1A06D /* total_spins.bmp */; };
 		2CF5BF3E1F9F58DB00F1A06D /* winner.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF391F9F58DB00F1A06D /* winner.bmp */; };
 		2CF5BF3F1F9F58DB00F1A06D /* you_contributed.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF3A1F9F58DB00F1A06D /* you_contributed.bmp */; };
+		2CF5BF411FA357E200F1A06D /* spinner_repo.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF401FA357E200F1A06D /* spinner_repo.bmp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +73,7 @@
 		2CF5BF381F9F58DB00F1A06D /* total_spins.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = total_spins.bmp; path = ../../android/src/main/assets/total_spins.bmp; sourceTree = "<group>"; };
 		2CF5BF391F9F58DB00F1A06D /* winner.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = winner.bmp; path = ../../android/src/main/assets/winner.bmp; sourceTree = "<group>"; };
 		2CF5BF3A1F9F58DB00F1A06D /* you_contributed.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = you_contributed.bmp; path = ../../android/src/main/assets/you_contributed.bmp; sourceTree = "<group>"; };
+		2CF5BF401FA357E200F1A06D /* spinner_repo.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spinner_repo.bmp; path = ../../android/src/main/assets/spinner_repo.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 		2CED25DC1F75246200A6326D /* konf-demo */ = {
 			isa = PBXGroup;
 			children = (
+				2CF5BF401FA357E200F1A06D /* spinner_repo.bmp */,
 				2CF5BF361F9F58DB00F1A06D /* game_over.bmp */,
 				2CF5BF371F9F58DB00F1A06D /* team_place.bmp */,
 				2CF5BF381F9F58DB00F1A06D /* total_spins.bmp */,
@@ -234,6 +237,7 @@
 				2C7B38071F8FB96300743D7C /* 7.bmp in Resources */,
 				2CF5BF351F9E4FB900F1A06D /* konan.bmp in Resources */,
 				2CF5BF3C1F9F58DB00F1A06D /* team_place.bmp in Resources */,
+				2CF5BF411FA357E200F1A06D /* spinner_repo.bmp in Resources */,
 				2CF5BF3D1F9F58DB00F1A06D /* total_spins.bmp in Resources */,
 				2C7B38031F8FB96300743D7C /* 3.bmp in Resources */,
 				2CF5BF3B1F9F58DB00F1A06D /* game_over.bmp in Resources */,
