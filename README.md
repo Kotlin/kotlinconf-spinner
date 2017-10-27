@@ -6,7 +6,7 @@ Simple spinner-like game intended to demonstrate capabilities of Kotlin/Native s
 
 ## How to play
 
-*   Download and install the mobile application for [Android](https://goo.gl/BsA73T) or [iOS](https://not.yet.here)
+*   Download and install the mobile application for [Android](https://play.google.com/store/apps/details?id=com.jetbrains.konan_activity2) or [iOS](https://itunes.apple.com/us/app/kotlinconf-spinner/id1291282375?mt=8)
 *   The system will automatically assign you to a random team. Each team has a unique colour
 *   Spin the Kotlin logo using your fingers, or alternatively shake your phone
 *   Each two full rotations (i.e. 720 degrees) will increment your team's score
