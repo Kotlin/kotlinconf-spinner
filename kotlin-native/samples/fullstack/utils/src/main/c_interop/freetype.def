@@ -2,5 +2,6 @@ package = freetype2
 headers = freetype.h sys/stat.h
 compilerOpts = -DFT_FREETYPE_H
 compilerOpts.osx = -I/opt/local/include/freetype2/freetype -I/opt/local/include/freetype2
-compilerOpts.linux = -I/usr/include/freetype2/freetype
+compilerOpts.linux = -I/usr/include/freetype2/freetype -I/usr/include/freetype2
 linkerOpts.osx = -L/opt/local/lib -lfreetype
+linkerOpts.linux = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lfreetype
