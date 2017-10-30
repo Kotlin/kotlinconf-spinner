@@ -186,7 +186,6 @@ class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
         }
         for (i in 0 until Model.tupleSize) {
             val value = Model.colors((Model.current + Model.backLogSize - 1) % Model.backLogSize, i)
-
             showValue(i, value, Model.styles[i])
         }
 
