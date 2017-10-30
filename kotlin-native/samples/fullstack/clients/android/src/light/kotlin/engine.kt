@@ -58,7 +58,9 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     private var lastUpdateTime = 0.0
     private var needRedraw = true
     private var startTime = 0.0f
+    private var prevTime = 0.0f
     private var startPoint = Vector2.Zero
+    private var prevPoint = Vector2.Zero
     private var diagonal = 0.0f
 
     fun initSensors() {
@@ -203,6 +205,8 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
                     startTime = getEventTime(event.value)
                     touchControl.down()
                     startPoint = getEventPoint(event.value, 0)
+                    prevTime = startTime
+                    prevPoint = startPoint
                 }
 
                 AMOTION_EVENT_ACTION_UP -> {
@@ -213,8 +217,14 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
 
                 AMOTION_EVENT_ACTION_MOVE -> {
                     val numberOfPointers = AMotionEvent_getPointerCount(event.value).toInt()
-                    for (i in 0 until numberOfPointers)
-                        touchControl.move(getEventPoint(event.value, i) - startPoint)
+                    val curPoint = getEventPoint(event.value, numberOfPointers - 1)
+                    val curTime = getEventTime(event.value)
+
+                    if ((curPoint - prevPoint).length / (curTime - prevTime + 1e-9f) < 7) {
+                        touchControl.move(curPoint - startPoint)
+                        prevPoint = curPoint
+                        prevTime = curTime
+                    }
                 }
             }
         }
