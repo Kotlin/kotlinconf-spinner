@@ -267,3 +267,24 @@ function(konanc_test)
             COMMAND ${CMAKE_COMMAND} -E copy ${KONANC_${KONANC_NAME}_EXECUTABLE_PATH}_TEMP.kexe ${CMAKE_CURRENT_BINARY_DIR}/${KONANC_NAME}.kexe)
 
 endfunction()
+
+function(konanc_library_search LIB_NAME INCLUDE_FILE)
+    #TODO REMOVE ME(!)
+    if (UNIX AND NOT APPLE)
+        enable_language(C)
+    endif()
+    string(TOUPPER ${LIB_NAME} UPPER_LIB_NAME)
+
+    find_library(${UPPER_LIB_NAME}_LIBRARY ${LIB_NAME})
+    if (NOT ${UPPER_LIB_NAME}_LIBRARY)
+        message(WARNING "Library ${LIB_NAME} not found")
+    endif()
+
+    find_file(${UPPER_LIB_NAME}_INCLUDE_FILE ${INCLUDE_FILE})
+    get_filename_component(${UPPER_LIB_NAME}_INCLUDE_DIR ${${UPPER_LIB_NAME}_INCLUDE_FILE} DIRECTORY)
+
+    get_filename_component(${UPPER_LIB_NAME}_LIBRARY_DIR ${${UPPER_LIB_NAME}_LIBRARY} DIRECTORY)
+    set(${UPPER_LIB_NAME}_LIBRARY_DIR ${${UPPER_LIB_NAME}_LIBRARY_DIR} PARENT_SCOPE)
+    set(${UPPER_LIB_NAME}_LIBRARY ${${UPPER_LIB_NAME}_LIBRARY} PARENT_SCOPE)
+    set(${UPPER_LIB_NAME}_INCLUDE_DIR ${${UPPER_LIB_NAME}_INCLUDE_DIR} PARENT_SCOPE)
+endfunction()
