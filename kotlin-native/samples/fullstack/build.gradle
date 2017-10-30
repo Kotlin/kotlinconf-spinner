@@ -22,12 +22,15 @@ ext.janssonPath = file('../../external/jansson/android')
 ext.openalPath  = file('../../external/openal/android')
 
 
-task build {
-    subprojects {
-        dependsOn "$it.path:build"
-    }
+task buildAll {
+    dependsOn ':httpserver:build'
+    dependsOn ':clients:android:buildApk'
+    dependsOn ':clients:ios:build'
+    dependsOn ':clients:cli:build'
+    dependsOn ':clients:webassembly:build'
+    dependsOn ':utils:build'
 }
 
 task buildServer {
-    dependsOn 'httpserver:build'
+    dependsOn ':httpserver:build'
 }
