@@ -194,12 +194,8 @@ class View(canvas: Canvas): Layout(canvas.getBoundingClientRect()) {
     }
 }
 
-val html5 = Html5()
-val document = html5.document
-val canvas = document.getElementById("myCanvas").asCanvas;
-
-fun loop() {
-    html5.fetch("/json/stats") .then { args: ArrayList<JsValue> ->
+fun loop(canvas: Canvas) {
+    fetch("/json/stats") .then { args: ArrayList<JsValue> ->
         val response = Response(args[0])
         response.json()
     } .then { args: ArrayList<JsValue> ->
@@ -221,8 +217,10 @@ fun loop() {
 }
 
 fun main(args: Array<String>) {
-    html5.setInterval(100) {
-        loop()
+
+    val canvas = document.getElementById("myCanvas").asCanvas;
+    setInterval(100) {
+        loop(canvas)
     }
 }
 
