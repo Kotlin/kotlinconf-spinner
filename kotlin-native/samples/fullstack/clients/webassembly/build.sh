@@ -2,6 +2,7 @@
 
 case "$OSTYPE" in
   darwin*)  ;;
+  linux*)   ;;
   *)        echo "Cannot compile WASM32 on $OSTYPE" && exit 0;;
 esac
 
@@ -13,7 +14,7 @@ mkdir -p $STATIC_DIR
 
 konanc src/main/kotlin/StatView.kt \
     -r $DIR/../../../../external/klib \
-    -l canvas -l jsinterop \
+    -l dom \
     -target wasm32 -o $DIR/../../static/view
 
 cp ./index.html $STATIC_DIR
