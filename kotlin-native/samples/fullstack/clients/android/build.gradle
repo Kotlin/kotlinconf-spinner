@@ -3,13 +3,14 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
+        google()
         maven {
             url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies"
         }
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.3.4"
-        classpath "com.android.tools.build:gradle:2.3.3"
+        classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.6"
+        classpath "com.android.tools.build:gradle:3.0.1"
     }
 }
 
@@ -124,7 +125,6 @@ tasks.matching { it.name == 'preBuild' }.all {
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId 'com.jetbrains.konan_activity2'

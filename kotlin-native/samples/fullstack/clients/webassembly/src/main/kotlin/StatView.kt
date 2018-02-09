@@ -1,6 +1,5 @@
-import html5.minimal.*
+import kotlinx.interop.wasm.dom.*
 import kotlinx.wasm.jsinterop.*
-import konan.internal.ExportForCppRuntime
 
 object Style {
     val backgroundColor = "#16103f"

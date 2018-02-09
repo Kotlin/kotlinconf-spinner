@@ -9,8 +9,7 @@ konanArtifacts {
 
         libraries {
             useRepo '../../../../external/klib'
-            klib 'canvas'
-            klib 'jsinterop'
+            klib 'dom'
         }
 
         target('wasm32') {

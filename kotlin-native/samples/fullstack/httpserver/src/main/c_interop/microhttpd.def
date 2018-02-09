@@ -1,9 +1,9 @@
 package = microhttpd
 headers = microhttpd.h
 headerFilter = microhttpd.h
-compilerOpts.osx = -I /opt/local/include
+compilerOpts.osx = -I /opt/local/include -I/usr/local/include
 compilerOpts.linux = -I /usr/include
-linkerOpts.osx = -L/opt/local/lib -lmicrohttpd
+linkerOpts.osx = -L/opt/local/lib -L/usr/local/lib -lmicrohttpd
 linkerOpts.linux = -L /usr/lib -L/usr/lib/x86_64-linux-gnu -lmicrohttpd
 depends = posix
 excludedFunctions = MHD_get_reason_phrase_for

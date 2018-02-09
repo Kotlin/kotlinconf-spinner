@@ -39,7 +39,7 @@ const val LOOPER_ID_INPUT = 2
 
 const val LOOPER_ID_SENSOR = 3
 
-fun <T : CPointed> CPointer<*>?.dereferenceAs(): T = this!!.reinterpret<T>().pointed
+inline fun <reified T : CPointed> CPointer<*>?.dereferenceAs(): T = this!!.reinterpret<T>().pointed
 
 class Engine(val arena: NativePlacement, val state: NativeActivityState) {
 
