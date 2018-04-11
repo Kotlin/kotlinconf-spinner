@@ -51,7 +51,7 @@ class StatsFetcherImpl : StatsFetcher {
                 requestInProgress = false // Only main thread accesses the fetcher, so it's safe to clear the flag here.
 
                 val response = task.response
-                if (response == null || response.reinterpret<NSHTTPURLResponse>().statusCode.toInt() != 200) {
+                if (response == null || (response as NSHTTPURLResponse).statusCode.toInt() != 200) {
                     return
                 }
 
@@ -75,16 +75,13 @@ class StatsFetcherImpl : StatsFetcher {
                 delegateQueue = NSOperationQueue.mainQueue()
         )
 
-        session.dataTaskWithURL(NSURL(URLString = url)).resume()
+        session.dataTaskWithURL(NSURL(string = url)).resume()
 
         return true
     }
 
     override fun getMostRecentFetched(): Stats? = this.mostRecentFetched
 }
-
-private fun NSDictionary.intValueForKey(key: String): Int? =
-        this.valueForKey(key)?.let { it.reinterpret<NSNumber>().integerValue().toInt() }
 
 private fun parseJsonResponse(data: NSData): Stats? {
     val jsonObject = memScoped {
@@ -97,25 +94,25 @@ private fun parseJsonResponse(data: NSData): Stats? {
         result!!
     }
 
-    val dict = jsonObject.reinterpret<NSDictionary>()
+    val map = jsonObject as Map<Any?, *>
 
-    val myTeamIndex = dict.intValueForKey("color")!! - 1
-    val myTeam = Team.values()[myTeamIndex]
+    val color: Number by map
+    val contribution: Number by map
+    val status: Number by map
+    val winner: Number by map
+    val colors: List<*> by map
 
-    val myConribution = dict.intValueForKey("contribution")!!
-    val status = dict.intValueForKey("status")!!
-    val winner = dict.intValueForKey("winner")!!
+    val myTeam = Team.values()[color.toInt() - 1]
 
-    val colors = dict.valueForKey("colors")!!.reinterpret<NSArray>()
     val counts = IntArray(Team.count)
-    assert(colors.count == counts.size.toLong())
-    for (i in 0 until colors.count) {
-        val element = colors.objectAtIndex(i)!!.reinterpret<NSDictionary>()
-        val counter = element.valueForKey("counter")!!.reinterpret<NSNumber>().integerValue().toInt()
-        counts[i.toInt()] = counter
+    assert(colors.size == counts.size)
+
+    for (i in 0 until colors.size) {
+        val counter: Number by colors[i] as Map<Any?, *>
+        counts[i] = counter.toInt()
     }
 
-    return Stats(counts, myTeam, myConribution, status, winner != 0)
+    return Stats(counts, myTeam, contribution.toInt(), status.toInt(), winner.toInt() != 0)
 }
 
 fun Stats.reportToGameCenter() {
@@ -125,9 +122,7 @@ fun Stats.reportToGameCenter() {
     gkScore.value = this.myContribution.signExtend()
     gkScore.context = 0
 
-    val gkScoreArray = NSArray.arrayWithObject(gkScore)
-
-    GKScore.reportScores(gkScoreArray, withCompletionHandler = null)
+    GKScore.reportScores(listOf(gkScore), withCompletionHandler = null)
 }
 
 // TODO: consider not using logError function on Android.
