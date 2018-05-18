@@ -15,7 +15,7 @@ if (disableAndroid == null || disableAndroid != "true") {
 }
 include ':clients:cli'
 include ':clients:ios'
-include ':clients:webassembly'
+//include ':clients:webassembly'
 include ':common'
 include ':getopt'
 include ':httpserver'

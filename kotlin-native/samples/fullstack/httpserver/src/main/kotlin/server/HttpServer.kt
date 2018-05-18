@@ -206,7 +206,7 @@ fun makeStaticContent(url: String): Pair<String, ByteArray> {
     return (contentTypes.get(extension) ?: "text/html") to content
 }
 
-fun String.asData() : ByteArray = toUtf8Array(this, 0, this.length)
+fun String.asData() : ByteArray = toUtf8()
 
 fun makeResponse(db: KSqlite, url: String, session: Session): Pair<String, ByteArray> {
     if (url.startsWith("/json"))

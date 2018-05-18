@@ -51,7 +51,7 @@ class StatsFetcherImpl : StatsFetcher {
                 requestInProgress = false // Only main thread accesses the fetcher, so it's safe to clear the flag here.
 
                 val response = task.response
-                if (response == null || response.reinterpret<NSHTTPURLResponse>().statusCode.toInt() != 200) {
+                if (response == null || (response as NSHTTPURLResponse).statusCode.toInt() != 200) {
                     return
                 }
 
@@ -75,7 +75,7 @@ class StatsFetcherImpl : StatsFetcher {
                 delegateQueue = NSOperationQueue.mainQueue()
         )
 
-        session.dataTaskWithURL(NSURL(URLString = url)).resume()
+        session.dataTaskWithURL(NSURL(string = url)).resume()
 
         return true
     }
@@ -83,36 +83,26 @@ class StatsFetcherImpl : StatsFetcher {
     override fun getMostRecentFetched(): Stats? = this.mostRecentFetched
 }
 
-private fun NSDictionary.intValueForKey(key: String): Int? =
-        this.valueForKey(key)?.let { it.reinterpret<NSNumber>().integerValue().toInt() }
+private fun Map<String,*>.intKey(key: String): Int {
+  val value = this[key]!!
+  return (value as Number).toInt()
+}
 
 private fun parseJsonResponse(data: NSData): Stats? {
-    val jsonObject = memScoped {
-        val errorVar = alloc<ObjCObjectVar<NSError?>>()
-        val result = NSJSONSerialization.JSONObjectWithData(data, 0, errorVar.ptr)
-        val error = errorVar.value
-        if (error != null) {
-            throw Error("JSON parsing error: $error")
-        }
-        result!!
-    }
+    val dict = (NSJSONSerialization.JSONObjectWithData(data, 0, null) as? Map<String, *>)
+       ?: throw Error("JSON parsing error")
 
-    val dict = jsonObject.reinterpret<NSDictionary>()
-
-    val myTeamIndex = dict.intValueForKey("color")!! - 1
+    val myTeamIndex = dict.intKey("color") - 1
     val myTeam = Team.values()[myTeamIndex]
 
-    val myConribution = dict.intValueForKey("contribution")!!
-    val status = dict.intValueForKey("status")!!
-    val winner = dict.intValueForKey("winner")!!
-
-    val colors = dict.valueForKey("colors")!!.reinterpret<NSArray>()
+    val myConribution = dict.intKey("contribution")
+    val status = dict.intKey("status")
+    val winner = dict.intKey("winner")
+    val colors = dict["colors"] as List<*>
     val counts = IntArray(Team.count)
-    assert(colors.count == counts.size.toLong())
-    for (i in 0 until colors.count) {
-        val element = colors.objectAtIndex(i)!!.reinterpret<NSDictionary>()
-        val counter = element.valueForKey("counter")!!.reinterpret<NSNumber>().integerValue().toInt()
-        counts[i.toInt()] = counter
+    for (i in 0 until colors.size) {
+        val element = colors[i] as Map<String,*>
+        counts[i] = element.intKey("counter")
     }
 
     return Stats(counts, myTeam, myConribution, status, winner != 0)

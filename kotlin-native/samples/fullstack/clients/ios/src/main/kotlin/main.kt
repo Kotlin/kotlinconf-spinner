@@ -34,10 +34,10 @@ fun main(args: Array<String>) {
     }
 }
 
-class AppDelegate : UIResponder(), UIApplicationDelegateProtocol {
+class AppDelegate : UIResponder, UIApplicationDelegateProtocol {
     companion object : UIResponderMeta(), UIApplicationDelegateProtocolMeta {}
 
-    override fun init() = initBy(AppDelegate())
+    @OverrideInit constructor() : super()
 
     private var _window: UIWindow? = null
     override fun window() = _window
@@ -47,8 +47,8 @@ class AppDelegate : UIResponder(), UIApplicationDelegateProtocol {
 @ExportObjCClass
 class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol {
 
-    constructor(aDecoder: NSCoder) : super(aDecoder)
-    override fun initWithCoder(aDecoder: NSCoder) = initBy(ViewController(aDecoder))
+    @OverrideInit
+    constructor(coder: NSCoder) : super(coder)
 
     private lateinit var context: EAGLContext
     private lateinit var motionManager: CMMotionManager
@@ -79,7 +79,7 @@ class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol
 
         this.context = EAGLContext(kEAGLRenderingAPIOpenGLES3)
 
-        val view = this.view.reinterpret<GLKView>()
+        val view = this.view as GLKView
         view.context = this.context
         view.drawableDepthFormat = GLKViewDrawableDepthFormat24
         view.drawableMultisample = GLKViewDrawableMultisample4X

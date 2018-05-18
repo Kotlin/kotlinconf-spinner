@@ -8,10 +8,7 @@ class KUrlError(message: String) : Error(message)
 
 typealias HttpHandler = (String) -> Unit
 
-private fun CPointer<ByteVar>.toKString(length: Int): String {
-    val bytes = this.readBytes(length)
-    return kotlin.text.fromUtf8Array(bytes, 0, bytes.size)
-}
+private fun CPointer<ByteVar>.toKString(length: Int) = this.readBytes(length).stringFromUtf8()
 
 class KUrl(val cookies: String? = null) {
     var curl = curl_easy_init()
