@@ -5,7 +5,7 @@ import platform.posix.*
 import kommon.machineName
 import kurl.*
 import kjson.*
-import konan.worker.*
+import kotlin.native.concurrent.*
 
 class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
     private val server = "http://kotlin-demo.kotlinconf.com:8080"
@@ -13,7 +13,7 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
 
     private fun cookiesFileName() = "${nativeActivity.internalDataPath!!.toKString()}/cookies.txt"
 
-    private val worker = startWorker()
+    private val worker = Worker.start()
     private var future: Future<Any>? = null
     private var mostRecentlyFetched: Stats? = null
 
@@ -65,7 +65,7 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
 
     private fun asyncRequest(url: String): Boolean {
         if (future?.state == FutureState.SCHEDULED) return false
-        future = worker.schedule(TransferMode.CHECKED, { WorkerArgument("$url", cookiesFileName()) }) {
+        future = worker.execute(TransferMode.SAFE, { WorkerArgument("$url", cookiesFileName()) }) {
             val kurl = KUrl(it.cookiesFileName)
             val url = it.url
             try {

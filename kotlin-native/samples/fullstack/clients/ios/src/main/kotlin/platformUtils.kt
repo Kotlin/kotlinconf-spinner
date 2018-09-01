@@ -113,7 +113,7 @@ fun Stats.reportToGameCenter() {
 
     val gkScore = GKScore("main")
     gkScore.value = this.myContribution.signExtend()
-    gkScore.context = 0
+    gkScore.context = 0u
 
     val gkScoreArray = NSArray.arrayWithObject(gkScore)
 

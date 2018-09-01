@@ -31,7 +31,7 @@ const val winnerTextureId = 18
 const val spinnerRepoTextureId = 19
 const val numberOfTextures = 20
 
-val textures = Array<GLuint>(numberOfTextures) { 0 }
+val textures = Array<GLuint>(numberOfTextures) { 0u }
 
 private class RectRenderer {
     private val program = object : GlShaderProgram(
@@ -512,7 +512,7 @@ class GameRenderer {
      */
     fun render(sceneState: SceneState, screenWidth: Float, screenHeight: Float) {
         glClearColor(backgroundColor.x, backgroundColor.y, backgroundColor.z, 1.0f)
-        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        glClear((GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT).convert())
 
         // Note: all rectangles being drawn below are specified in normalized device coordinates,
         // i.e. the bottom-left corner of the screen is `(-1, -1)` and the top-right is `(1, 1)`.

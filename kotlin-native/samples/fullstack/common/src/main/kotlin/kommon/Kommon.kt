@@ -3,7 +3,7 @@ package kommon
 import platform.posix.*
 import kotlinx.cinterop.*
 
-fun allocMemory(size: Int) = calloc(1, size.signExtend())
+fun allocMemory(size: Int) = calloc(1, size.convert())
 fun freeMemory(ptr: COpaquePointer) = free(ptr)
 
 fun random() = platform.posix.random()
@@ -20,7 +20,7 @@ fun readFileData(path: String): ByteArray? {
         var position = 0
         while (position < size) {
             val toRead = minOf(size - position, 4096)
-            val read = fread(result.refTo(position), 1, toRead.signExtend(), file).toInt()
+            val read = fread(result.refTo(position), 1, toRead.convert(), file).toInt()
             if (read <= 0) break
             position += read
         }
@@ -36,7 +36,7 @@ fun writeToFileData(path: String, data: ByteArray, append: Boolean = false) {
         var position = 0
         while (position < data.size) {
             val toWrite = minOf(data.size - position, 4096)
-            val written = fwrite(data.refTo(position), 1, toWrite.signExtend(), file).toInt()
+            val written = fwrite(data.refTo(position), 1, toWrite.convert(), file).toInt()
             if (written <= 0) break
             position += written
         }
@@ -66,7 +66,7 @@ fun machineName() =
             }
         }
 
-fun usleep(microseconds: Int) = platform.posix.usleep(microseconds)
+fun usleep(microseconds: Int) = platform.posix.usleep(microseconds.convert())
 
 class BMPHeader(val rawPtr: NativePtr) {
     inline fun <reified T : CPointed> memberAt(offset: Long): T = interpretPointed(this.rawPtr + offset)
@@ -111,21 +111,21 @@ class BMPHeader(val rawPtr: NativePtr) {
         get() = memberAt<IntVar>(34).value
         set(value) { memberAt<IntVar>(34).value = value }
 
-    var redChannelMask: Int
-        get() = memberAt<IntVar>(54).value
-        set(value) { memberAt<IntVar>(54).value = value }
+    var redChannelMask: UInt
+        get() = memberAt<UIntVar>(54).value
+        set(value) { memberAt<UIntVar>(54).value = value }
 
-    var greenChannelMask: Int
-        get() = memberAt<IntVar>(58).value
-        set(value) { memberAt<IntVar>(58).value = value }
+    var greenChannelMask: UInt
+        get() = memberAt<UIntVar>(58).value
+        set(value) { memberAt<UIntVar>(58).value = value }
 
-    var blueChannelMask: Int
-        get() = memberAt<IntVar>(62).value
-        set(value) { memberAt<IntVar>(62).value = value }
+    var blueChannelMask: UInt
+        get() = memberAt<UIntVar>(62).value
+        set(value) { memberAt<UIntVar>(62).value = value }
 
-    var alphaChannelMask: Int
-        get() = memberAt<IntVar>(66).value
-        set(value) { memberAt<IntVar>(66).value = value }
+    var alphaChannelMask: UInt
+        get() = memberAt<UIntVar>(66).value
+        set(value) { memberAt<UIntVar>(66).value = value }
 
     val data
         get() = interpretCPointer<ByteVar>(rawPtr + 14 + headerSize.toLong()) as CArrayPointer<ByteVar>

@@ -20,10 +20,9 @@ import platform.posix.*
 import kommon.machineName
 import kurl.*
 import kjson.*
-import konan.worker.*
 
 fun logError(message: String) {
-    __android_log_write(ANDROID_LOG_ERROR, "KonanActivity", message)
+    __android_log_write(ANDROID_LOG_ERROR.convert(), "KonanActivity", message)
 }
 
 fun logInfo(message: String) = println(message)
@@ -69,7 +68,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             sensorQueue = ASensorManager_createEventQueue(
                     sensorManager, state.looper, LOOPER_ID_SENSOR, null /* no callback */, null /* no data */)
         }
-        sensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER)
+        sensor = ASensorManager_getDefaultSensor(sensorManager, ASENSOR_TYPE_ACCELEROMETER.convert())
         if (sensor != null) {
             println("Accelerometer found")
             ASensorEventQueue_setEventRate(sensorQueue, sensor, 100000)
@@ -110,7 +109,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
 
     private fun processSysEvent(fd: IntVar): Boolean = memScoped {
         val eventPointer = alloc<COpaquePointerVar>()
-        val readBytes = read(fd.value, eventPointer.ptr, pointerSize.narrow()).toLong()
+        val readBytes = read(fd.value, eventPointer.ptr, pointerSize.convert()).toLong()
         if (readBytes != pointerSize) {
             logError("Failure reading event, $readBytes read: ${getUnixError()}")
             return true
@@ -186,7 +185,7 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
     }
 
     private fun getEventPoint(event: CPointer<AInputEvent>?, i: Int) =
-            Vector2(AMotionEvent_getRawX(event, i.signExtend<size_t>()) / diagonal, -AMotionEvent_getRawY(event, i.signExtend<size_t>()) / diagonal)
+            Vector2(AMotionEvent_getRawX(event, i.convert()) / diagonal, -AMotionEvent_getRawY(event, i.convert()) / diagonal)
 
     private fun getEventTime(event: CPointer<AInputEvent>?) =
             AMotionEvent_getEventTime(event) / 1_000_000_000.0f
@@ -197,9 +196,9 @@ class Engine(val arena: NativePlacement, val state: NativeActivityState) {
             println("Failure reading input event")
             return
         }
-        val eventType = AInputEvent_getType(event.value)
+        val eventType = AInputEvent_getType(event.value).toUInt()
         if (eventType == AINPUT_EVENT_TYPE_MOTION) {
-            val action = AKeyEvent_getAction(event.value) and AMOTION_EVENT_ACTION_MASK
+            val action = AKeyEvent_getAction(event.value).toUInt() and AMOTION_EVENT_ACTION_MASK
             when (action) {
                 AMOTION_EVENT_ACTION_DOWN -> {
                     startTime = getEventTime(event.value)

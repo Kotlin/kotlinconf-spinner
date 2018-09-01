@@ -6,7 +6,6 @@ import kommon.*
 import platform.posix.*
 
 import kotlin.system.exitProcess
-import kotlin.text.toUtf8Array
 import kotlinx.cinterop.*
 
 typealias HttpConnection = CPointer<MHD_Connection>?
@@ -405,10 +404,10 @@ fun main(args: Array<String>) {
     }
 
     // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG
-    val options = MHD_USE_POLL_INTERNALLY or (if (isHttps) MHD_USE_SSL else 0)
-    val daemon = MHD_start_daemon(options, port.toShort(), staticCFunction {
+    val options = MHD_USE_POLL_INTERNALLY or (if (isHttps) MHD_USE_SSL else 0u)
+    val daemon = MHD_start_daemon(options, port.toUShort(), staticCFunction {
             cls, addr, addrlen ->
-            konan.initRuntimeIfNeeded()
+            kotlin.native.initRuntimeIfNeeded()
             val db = KSqlite(cls)
             logConnection(db, addr, addrlen)
             MHD_YES
@@ -416,7 +415,7 @@ fun main(args: Array<String>) {
             cls, connection, urlC, methodC, _, _, _, _ ->
             // This handler could (and will) be invoked in another per-connection
             // thread, so reinit runtime.
-            konan.initRuntimeIfNeeded()
+            kotlin.native.initRuntimeIfNeeded()
             // Do this, as otherwise exception may be not caught.
             // TODO: is it correct?
             try {
@@ -431,7 +430,7 @@ fun main(args: Array<String>) {
                 val (contentType, responseArray) = makeResponse(db, url, session)
                 return@staticCFunction memScoped {
                     val response = MHD_create_response_from_buffer(
-                            responseArray.size.signExtend(),
+                            responseArray.size.convert(),
                             responseArray.refTo(0),
                             MHD_ResponseMemoryMode.MHD_RESPMEM_MUST_COPY)
                     val expires = "Tue, 8 Sep 2018 21:43:04 GMT"

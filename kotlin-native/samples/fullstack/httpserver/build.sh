@@ -3,7 +3,7 @@
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )
 PATH=$KONAN_HOME/bin:$PATH
 
-konanc -opt src/main/kotlin \
+konanc -g src/main/kotlin \
                      -r $DIR/../common \
                      -r $DIR/../sql \
                      -r $DIR/../json \

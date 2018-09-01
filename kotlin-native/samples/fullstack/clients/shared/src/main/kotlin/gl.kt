@@ -31,14 +31,14 @@ open class GlShaderProgram(vertexShaderSource: String, fragmentShaderSource: Str
     val program = glCreateProgram()
 
     init {
-        glAttachShader(program, compileGlShader(GL_VERTEX_SHADER, vertexShaderSource))
-        glAttachShader(program, compileGlShader(GL_FRAGMENT_SHADER, fragmentShaderSource))
+        glAttachShader(program, compileGlShader(GL_VERTEX_SHADER.convert(), vertexShaderSource))
+        glAttachShader(program, compileGlShader(GL_FRAGMENT_SHADER.convert(), fragmentShaderSource))
         glLinkProgram(program)
         checkGlError()
     }
 
     open inner class Attribute(name: String) {
-        val location = glGetAttribLocation(this@GlShaderProgram.program, name)
+        val location = glGetAttribLocation(this@GlShaderProgram.program, name).toUInt()
         private val buffer = createGlBuffer()
 
         protected fun assign(dim: Int, values: FloatArray) {
@@ -51,7 +51,7 @@ open class GlShaderProgram(vertexShaderSource: String, fragmentShaderSource: Str
             )
 
             glEnableVertexAttribArray(this.location)
-            glVertexAttribPointer(this.location, dim, GL_FLOAT, GL_FALSE.narrow(), 0, null)
+            glVertexAttribPointer(this.location, dim, GL_FLOAT, GL_FALSE.convert(), 0, null)
         }
     }
 
@@ -85,7 +85,7 @@ open class GlShaderProgram(vertexShaderSource: String, fragmentShaderSource: Str
 
     inner class Matrix4Uniform(name: String) : Uniform(name) {
         fun assign(value: Matrix4) =
-                glUniformMatrix4fv(this.location, 1, GL_FALSE.narrow(), value.flatten().refTo(0))
+                glUniformMatrix4fv(this.location, 1, GL_FALSE.convert(), value.flatten().refTo(0))
     }
 
     fun activate() {
@@ -98,7 +98,7 @@ private fun compileGlShader(type: GLenum, source: String) = memScoped {
     val shader = glCreateShader(type)
     checkGlError()
 
-    if (shader == 0) throw Error("Failed to create a shader")
+    if (shader == 0u) throw Error("Failed to create a shader")
 
     glShaderSource(shader, 1, cValuesOf(source.cstr.getPointer(memScope)), null)
     glCompileShader(shader)
@@ -124,7 +124,7 @@ private fun createGlBuffer() = memScoped {
 }
 
 fun checkGlError() {
-    val error = glGetError()
+    val error = glGetError().toInt()
     if (error != 0) {
         val errorString = when (error) {
             GL_INVALID_ENUM -> "GL_INVALID_ENUM"

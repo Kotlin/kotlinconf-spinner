@@ -1,10 +1,10 @@
 import kommon.*
 import kotlinx.cinterop.*
 
-fun extractChannelShift(mask: Int): Int {
+fun extractChannelShift(mask: UInt): Int {
     var shift = 0
     var x = mask
-    while ((x and 1) == 0) {
+    while ((x and 1) == 0u) {
         ++shift
         x = x shr 1
     }
@@ -32,10 +32,10 @@ fun convertBmp(fileName: String) {
             val greenShift = extractChannelShift(bmp.greenChannelMask)
             val blueShift = extractChannelShift(bmp.blueChannelMask)
             val alphaShift = extractChannelShift(bmp.alphaChannelMask)
-            bmp.redChannelMask = 0x0000_00ff
-            bmp.greenChannelMask = 0x0000_ff00
-            bmp.blueChannelMask = 0x00ff_0000
-            bmp.alphaChannelMask = 0xff00_0000.toInt()
+            bmp.redChannelMask = 0x0000_00ffu
+            bmp.greenChannelMask = 0x0000_ff00u
+            bmp.blueChannelMask = 0x00ff_0000u
+            bmp.alphaChannelMask = 0xff00_0000u
             for (i in 0 until numberOfInts) {
                 val x = int32Data[i]
                 int32Data[i] = (((x shr redShift) and 0xff) shl 0) or (((x shr greenShift) and 0xff) shl 8) or

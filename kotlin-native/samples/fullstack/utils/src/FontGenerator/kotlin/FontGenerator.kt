@@ -4,7 +4,7 @@ import kommon.*
 import kliopt.*
 import platform.posix.mkdir
 
-fun alignUp4(x: Int) = (x + 3) and 3.inv()
+fun alignUp4(x: Int): Int = (x + 3) and 3.inv()
 
 fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
     val bpp = 32
@@ -14,33 +14,33 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
 
     val headerSize = 14 /* sizeof(BITMAPFILEHEADER) */ + 124 /* sizeof(BITMAPV5HEADER) */
     val bmpHeaderData = ByteArray(headerSize)
-    val bmpWidth = alignUp4(bitmap.width * bpp / 8)
-    val bmpDataSize = bitmap.rows * bmpWidth
+    val bmpWidth = alignUp4(bitmap.width.toInt() * bpp / 8)
+    val bmpDataSize = bitmap.rows.toInt() * bmpWidth
 
     bmpHeaderData.usePinned {
         pinned ->
         val bmpHeader = BMPHeader(pinned.addressOf(0).rawValue)
         bmpHeader.magic = 0x4d42
-        bmpHeader.fileSize = bmpHeaderData.size + bmpDataSize
+        bmpHeader.fileSize = bmpHeaderData.size.toInt() + bmpDataSize.toInt()
         bmpHeader.headerSize = headerSize - 14 /* sizeof(BITMAPFILEHEADER) */
         bmpHeader.dataOffset = bmpHeaderData.size
         bmpHeader.compressionMethod = 3
-        bmpHeader.width = bitmap.width
-        bmpHeader.height = bitmap.rows
+        bmpHeader.width = bitmap.width.convert()
+        bmpHeader.height = bitmap.rows.convert()
         bmpHeader.colorPlanes = 1
         bmpHeader.bits = bpp.toShort()
-        bmpHeader.redChannelMask   = 0x0000_00ff
-        bmpHeader.greenChannelMask = 0x0000_ff00
-        bmpHeader.blueChannelMask  = 0x00ff_0000
-        bmpHeader.alphaChannelMask = 0xff00_0000.toInt()
+        bmpHeader.redChannelMask   = 0x0000_00ffu
+        bmpHeader.greenChannelMask = 0x0000_ff00u
+        bmpHeader.blueChannelMask  = 0x00ff_0000u
+        bmpHeader.alphaChannelMask = 0xff00_0000u
     }
     writeToFileData(path, bmpHeaderData)
     val bmpData = ByteArray(bmpDataSize)
-    for (x in 0 until bitmap.width) {
-        for (y in 0 until bitmap.rows) {
-            val srcIndex = y * bitmap.width + x
-            val color = (bitmap.buffer + srcIndex)!!.pointed.value
-            val dstIndex = bmpWidth * (bitmap.rows - 1 - y) + x * bpp / 8
+    for (x in 0 until bitmap.width.toInt()) {
+        for (y in 0 until bitmap.rows.toInt()) {
+            val srcIndex = y * bitmap.width.toInt() + x
+            val color = (bitmap.buffer + srcIndex)!!.pointed.value.toByte()
+            val dstIndex = bmpWidth * (bitmap.rows.toInt() - 1 - y) + x * bpp / 8
             bmpData[dstIndex]     = color // Alpha channel.
             bmpData[dstIndex + 1] = color // Red.
             bmpData[dstIndex + 2] = color // Green.
@@ -54,7 +54,7 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
 fun main(args: Array<String>) {
 
     var fontName = ""
-    var fontSize = 70
+    var fontSize = 70u
     var charsToRender = ""
     var directory = ""
     parseOptions(listOf(
@@ -65,7 +65,7 @@ fun main(args: Array<String>) {
     ), args).forEach {
         when (it.descriptor?.longName) {
             "font" -> fontName = it.stringValue
-            "size" -> fontSize = it.intValue
+            "size" -> fontSize = it.intValue.toUInt()
             "chars" -> charsToRender = it.stringValue
             "directory" -> directory = it.stringValue
         }
@@ -84,7 +84,7 @@ fun main(args: Array<String>) {
         }
         FT_Set_Pixel_Sizes(ftFace.value, fontSize, fontSize)
         for (ch in charsToRender) {
-            if (FT_Load_Char(ftFace.value, ch.toLong(), FT_LOAD_RENDER.narrow()) != 0) {
+            if (FT_Load_Char(ftFace.value, ch.toLong().convert(), FT_LOAD_RENDER.convert()) != 0) {
                 throw Error("Could not load character $ch")
             }
             val glyph = ftFace.value!!.pointed.glyph

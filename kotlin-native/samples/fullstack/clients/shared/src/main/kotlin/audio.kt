@@ -20,7 +20,7 @@ import platform.OpenAL.*
 
 private fun CPointer<ByteVar>.toKString(length: Int): String {
     val bytes = this.readBytes(length)
-    return kotlin.text.fromUtf8Array(bytes, 0, bytes.size)
+    return bytes.stringFromUtf8()
 }
 
 class SoundPlayerImpl(val resourceName: String): SoundPlayer {
@@ -59,7 +59,7 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
                 return@usePinned
             }
             rawWAV = ByteArray(header.dataSize)
-            memcpy(rawWAV.refTo(0), header.rawData, rawWAV.size.signExtend())
+            memcpy(rawWAV.refTo(0), header.rawData, rawWAV.size.convert())
             samplesPerSec = header.samplesPerSec
 
             format = when (header.bitsPerSample) {
@@ -92,36 +92,34 @@ class SoundPlayerImpl(val resourceName: String): SoundPlayer {
             return
         }
         alcMakeContextCurrent(context)
-        alGenBuffers(1, buffer!!.ptr)
+        alGenBuffers(1, buffer.ptr)
         pinnedBuffer = rawWAV.pin()
-        alBufferData(buffer!!.value, format, pinnedBuffer!!.addressOf(0), rawWAV.size, samplesPerSec)
-        alGenSources(1, source!!.ptr)
+        alBufferData(buffer.value, format, pinnedBuffer!!.addressOf(0), rawWAV.size, samplesPerSec)
+        alGenSources(1, source.ptr)
 
-        alSourceQueueBuffers(source!!.value, 1, buffer!!.ptr)
+        alSourceQueueBuffers(source.value, 1, buffer.ptr)
     }
 
     override fun play() {
         if (!enabled) return
         stop()
-        alSourcePlay(source!!.value)
+        alSourcePlay(source.value)
     }
 
     fun stop() {
-        alSourceStop(source!!.value)
+        alSourceStop(source.value)
     }
 
     fun deinit() {
         println("Deitializing Open AL...")
 
         stop()
-        if (source != null) {
-            // Let playback finish.
-            memScoped {
-                val state = alloc<ALintVar>()
-                do {
-                    alGetSourcei(source.value, AL_SOURCE_STATE, state.ptr)
-                } while (state.value == AL_PLAYING)
-            }
+        // Let playback finish.
+        memScoped {
+            val state = alloc<ALintVar>()
+            do {
+                alGetSourcei(source.value, AL_SOURCE_STATE, state.ptr)
+            } while (state.value == AL_PLAYING)
         }
 
         alDeleteSources(1, source.ptr)

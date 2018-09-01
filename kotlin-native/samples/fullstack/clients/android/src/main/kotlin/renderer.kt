@@ -21,7 +21,6 @@ import platform.gles2.*
 import platform.gles3.*
 import kurl.*
 import kjson.*
-import konan.worker.*
 
 class Renderer(val nativeActivity: ANativeActivity) {
 
@@ -42,7 +41,7 @@ class Renderer(val nativeActivity: ANativeActivity) {
                 logError("eglGetDisplay() returned error ${eglGetError()}")
                 return false
             }
-            if (eglInitialize(display, null, null) == 0) {
+            if (eglInitialize(display, null, null) == 0u) {
                 logError("eglInitialize() returned error ${eglGetError()}")
                 return false
             }
@@ -57,13 +56,13 @@ class Renderer(val nativeActivity: ANativeActivity) {
                     EGL_NONE
             )
             val numConfigs = alloc<EGLintVar>()
-            if (eglChooseConfig(display, attribs, null, 0, numConfigs.ptr) == 0) {
+            if (eglChooseConfig(display, attribs, null, 0, numConfigs.ptr) == 0u) {
                 logError("eglChooseConfig()#1 returned error ${eglGetError()}")
                 destroy()
                 return false
             }
             val supportedConfigs = allocArray<EGLConfigVar>(numConfigs.value)
-            if (eglChooseConfig(display, attribs, supportedConfigs, numConfigs.value, numConfigs.ptr) == 0) {
+            if (eglChooseConfig(display, attribs, supportedConfigs, numConfigs.value, numConfigs.ptr) == 0u) {
                 logError("eglChooseConfig()#2 returned error ${eglGetError()}")
                 destroy()
                 return false
@@ -75,11 +74,11 @@ class Renderer(val nativeActivity: ANativeActivity) {
                 val b = alloc<EGLintVar>()
                 val d = alloc<EGLintVar>()
                 val z = alloc<EGLintVar>()
-                if (eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RED_SIZE, r.ptr) != 0 &&
-                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_GREEN_SIZE, g.ptr) != 0 &&
-                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_BLUE_SIZE, b.ptr) != 0 &&
-                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_DEPTH_SIZE, d.ptr) != 0 &&
-                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RENDERABLE_TYPE, z.ptr) != 0 &&
+                if (eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RED_SIZE, r.ptr) != 0u &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_GREEN_SIZE, g.ptr) != 0u &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_BLUE_SIZE, b.ptr) != 0u &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_DEPTH_SIZE, d.ptr) != 0u &&
+                    eglGetConfigAttrib(display, supportedConfigs[configIndex], EGL_RENDERABLE_TYPE, z.ptr) != 0u &&
                     r.value == 8 && g.value == 8 && b.value == 8 && d.value >= 24 && (z.value and EGL_OPENGL_ES2_BIT) != 0) {
                     break
                 }
@@ -106,7 +105,7 @@ class Renderer(val nativeActivity: ANativeActivity) {
                 return false
             }
 
-            if (eglMakeCurrent(display, surface, surface, context) == 0) {
+            if (eglMakeCurrent(display, surface, surface, context) == 0u) {
                 logError("eglMakeCurrent() returned error ${eglGetError()}")
                 destroy()
                 return false
@@ -114,8 +113,8 @@ class Renderer(val nativeActivity: ANativeActivity) {
 
             val width = alloc<EGLintVar>()
             val height = alloc<EGLintVar>()
-            if (eglQuerySurface(display, surface, EGL_WIDTH, width.ptr) == 0
-                    || eglQuerySurface(display, surface, EGL_HEIGHT, height.ptr) == 0) {
+            if (eglQuerySurface(display, surface, EGL_WIDTH, width.ptr) == 0u
+                    || eglQuerySurface(display, surface, EGL_HEIGHT, height.ptr) == 0u) {
                 logError("eglQuerySurface() returned error ${eglGetError()}")
                 destroy()
                 return false
@@ -132,7 +131,7 @@ class Renderer(val nativeActivity: ANativeActivity) {
 
     fun draw(sceneState: SceneState) {
         gameRenderer.render(sceneState, screen.x, screen.y)
-        if (eglSwapBuffers(display, surface) == 0) {
+        if (eglSwapBuffers(display, surface) == 0u) {
             logError("eglSwapBuffers() returned error ${eglGetError()}")
             destroy()
         }

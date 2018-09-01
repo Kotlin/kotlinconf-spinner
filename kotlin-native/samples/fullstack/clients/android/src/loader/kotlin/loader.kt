@@ -23,7 +23,7 @@ val prefix by lazy {
 
 fun loadKonanLibrary(name: String): COpaquePointer? {
     println("Loading $name...")
-    val handle = dlopen("$prefix/lib$name.so", RTLD_NOW or RTLD_GLOBAL)
+    val handle = dlopen("$prefix/lib$name.so", (RTLD_NOW or RTLD_GLOBAL).convert())
     if (handle == null) {
         println("cannot load $name from $prefix: ${dlerror()!!.toKString()}")
     }

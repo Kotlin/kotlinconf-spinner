@@ -3,10 +3,11 @@ subprojects {
         repositories {
             mavenCentral()
             maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
+            maven { url "http://dl.bintray.com/kotlin/kotlin-eap" }
         }
 
         dependencies {
-            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.7"
+            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.9-rc1-3632"
         }
     }
 }
