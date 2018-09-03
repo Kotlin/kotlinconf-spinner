@@ -9,10 +9,15 @@ if (konanBuildPath != null) {
 }
 
 def disableAndroid = gradle.startParameter.projectProperties['disable.android']
-
 if (disableAndroid == null || disableAndroid != "true") {
-    include ':clients:android'
+
+    if (System.getenv("ANDROID_HOME") != null || new File(rootProject.projectDir, "local.properties").isFile()) {
+        include ':clients:android'
+    } else {
+        println "WARN. Android SDK may not be configured, excluding Android project..."
+    }
 }
+
 include ':clients:cli'
 include ':clients:ios'
 //include ':clients:webassembly'
