@@ -183,7 +183,7 @@ class ViewController : GLKViewController, GKGameCenterControllerDelegateProtocol
     // Game Center integration:
 
     private fun setupGameCenterAuthentication() {
-        GKLocalPlayer.localPlayer().authenticateHandler = { viewController, error ->
+        GKLocalPlayer.localPlayer().authenticateHandler = { viewController, _ ->
             val localPlayer = GKLocalPlayer.localPlayer()
             if (viewController != null) {
                 this.gameCenterAuthenticateViewController = viewController

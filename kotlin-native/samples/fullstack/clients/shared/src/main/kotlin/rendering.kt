@@ -370,7 +370,7 @@ private fun TexturedRectRenderer.renderScore(x: Float, y: Float, w: Float, score
         )
         cx += labelWidth + labelMargin
     }
-    digits.forEachIndexed { i, d ->
+    digits.forEachIndexed { _, d ->
         render(
                 x + cx, y,
                 digitWidth, digitHeight,
