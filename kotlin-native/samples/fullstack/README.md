@@ -1,3 +1,6 @@
+Use JDK1.8, for Android compatibility, i.e.:
+    export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_161.jdk/Contents/Home
+
 To use microhttpd  (HTTP server) install it, i.e.:
 
     port install libmicrohttpd
