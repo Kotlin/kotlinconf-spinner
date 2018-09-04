@@ -1,16 +1,20 @@
 apply plugin: 'konan'
 
-konan.targets += ['android_arm32', 'android_arm64', 'iphone']
+konan.targets += ['android_arm32', 'android_arm64', 'ios_arm64', "ios_x64"]
 
 konanArtifacts {
     library('kommon') {
         srcDir 'src/main/kotlin'
 
-        target('macbook') {
+        target('macos_x64') {
             srcDir 'src/osx'
         }
 
-        target('iphone') {
+        target('ios_x64') {
+            srcDir 'src/ios'
+        }
+
+        target('ios_arm64') {
             srcDir 'src/ios'
         }
 
