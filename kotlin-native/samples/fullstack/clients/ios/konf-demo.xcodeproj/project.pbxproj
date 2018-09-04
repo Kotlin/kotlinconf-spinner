@@ -3,11 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2C61AD611F9892E30094D197 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C61AD601F9892E30094D197 /* GameKit.framework */; };
 		2C7B37E11F8E65B800743D7C /* swish.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E01F8E65B700743D7C /* swish.wav */; };
 		2C7B38001F8FB96300743D7C /* 5.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F61F8FB96200743D7C /* 5.bmp */; };
 		2C7B38011F8FB96300743D7C /* 8.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F71F8FB96200743D7C /* 8.bmp */; };
@@ -19,14 +18,9 @@
 		2C7B38071F8FB96300743D7C /* 7.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FD1F8FB96200743D7C /* 7.bmp */; };
 		2C7B38081F8FB96300743D7C /* 0.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FE1F8FB96200743D7C /* 0.bmp */; };
 		2C7B38091F8FB96300743D7C /* 4.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37FF1F8FB96200743D7C /* 4.bmp */; };
-		2CED25DF1F75246200A6326D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25DE1F75246200A6326D /* AppDelegate.m */; };
-		2CED25E21F75246200A6326D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25E11F75246200A6326D /* ViewController.m */; };
 		2CED25E51F75246200A6326D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25E31F75246200A6326D /* Main.storyboard */; };
 		2CED25E71F75246200A6326D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25E61F75246200A6326D /* Assets.xcassets */; };
 		2CED25EA1F75246200A6326D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2CED25E81F75246200A6326D /* LaunchScreen.storyboard */; };
-		2CED25ED1F75246200A6326D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CED25EC1F75246200A6326D /* main.m */; };
-		2CED25F81F75449700A6326D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CED25F71F75449700A6326D /* OpenGLES.framework */; };
-		2CED25FA1F7544A200A6326D /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CED25F91F7544A100A6326D /* GLKit.framework */; };
 		2CF5BF2B1F963C1500F1A06D /* spinner_game_text.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */; };
 		2CF5BF311F965CC600F1A06D /* mesh_pattern.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */; };
 		2CF5BF331F98C66C00F1A06D /* spins.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2CF5BF321F98C66C00F1A06D /* spins.bmp */; };
@@ -40,7 +34,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2C61AD601F9892E30094D197 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		2C7B37E01F8E65B700743D7C /* swish.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = swish.wav; path = ../../android/src/main/assets/swish.wav; sourceTree = "<group>"; };
 		2C7B37F61F8FB96200743D7C /* 5.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 5.bmp; path = ../../../utils/ios/5.bmp; sourceTree = "<group>"; };
 		2C7B37F71F8FB96200743D7C /* 8.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 8.bmp; path = ../../../utils/ios/8.bmp; sourceTree = "<group>"; };
@@ -53,17 +46,10 @@
 		2C7B37FE1F8FB96200743D7C /* 0.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 0.bmp; path = ../../../utils/ios/0.bmp; sourceTree = "<group>"; };
 		2C7B37FF1F8FB96200743D7C /* 4.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 4.bmp; path = ../../../utils/ios/4.bmp; sourceTree = "<group>"; };
 		2CED25DA1F75246200A6326D /* konf-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "konf-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2CED25DD1F75246200A6326D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		2CED25DE1F75246200A6326D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		2CED25E01F75246200A6326D /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		2CED25E11F75246200A6326D /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		2CED25E41F75246200A6326D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+	2CED25E41F75246200A6326D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2CED25E61F75246200A6326D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2CED25E91F75246200A6326D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2CED25EB1F75246200A6326D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2CED25EC1F75246200A6326D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		2CED25F71F75449700A6326D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
-		2CED25F91F7544A100A6326D /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		2CF5BF2A1F963C1500F1A06D /* spinner_game_text.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spinner_game_text.bmp; path = ../../android/src/main/assets/spinner_game_text.bmp; sourceTree = "<group>"; };
 		2CF5BF301F965CC600F1A06D /* mesh_pattern.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = mesh_pattern.bmp; path = ../../android/src/main/assets/mesh_pattern.bmp; sourceTree = "<group>"; };
 		2CF5BF321F98C66C00F1A06D /* spins.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spins.bmp; path = ../../android/src/main/assets/spins.bmp; sourceTree = "<group>"; };
@@ -76,26 +62,12 @@
 		2CF5BF401FA357E200F1A06D /* spinner_repo.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = spinner_repo.bmp; path = ../../android/src/main/assets/spinner_repo.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFrameworksBuildPhase section */
-		2CED25D71F75246200A6326D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2C61AD611F9892E30094D197 /* GameKit.framework in Frameworks */,
-				2CED25FA1F7544A200A6326D /* GLKit.framework in Frameworks */,
-				2CED25F81F75449700A6326D /* OpenGLES.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
-
 /* Begin PBXGroup section */
 		2CED25D11F75246200A6326D = {
 			isa = PBXGroup;
 			children = (
 				2CED25DC1F75246200A6326D /* konf-demo */,
 				2CED25DB1F75246200A6326D /* Products */,
-				2CED25F61F75449700A6326D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -131,27 +103,12 @@
 				2C7B37F71F8FB96200743D7C /* 8.bmp */,
 				2C7B37FA1F8FB96200743D7C /* 9.bmp */,
 				2C7B37E01F8E65B700743D7C /* swish.wav */,
-				2CED25DD1F75246200A6326D /* AppDelegate.h */,
-				2CED25DE1F75246200A6326D /* AppDelegate.m */,
-				2CED25E01F75246200A6326D /* ViewController.h */,
-				2CED25E11F75246200A6326D /* ViewController.m */,
 				2CED25E31F75246200A6326D /* Main.storyboard */,
 				2CED25E61F75246200A6326D /* Assets.xcassets */,
 				2CED25E81F75246200A6326D /* LaunchScreen.storyboard */,
 				2CED25EB1F75246200A6326D /* Info.plist */,
-				2CED25EC1F75246200A6326D /* main.m */,
 			);
 			path = "konf-demo";
-			sourceTree = "<group>";
-		};
-		2CED25F61F75449700A6326D /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				2C61AD601F9892E30094D197 /* GameKit.framework */,
-				2CED25F91F7544A100A6326D /* GLKit.framework */,
-				2CED25F71F75449700A6326D /* OpenGLES.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,11 +118,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2CED25F01F75246200A6326D /* Build configuration list for PBXNativeTarget "konf-demo" */;
 			buildPhases = (
-				2CED25F31F7525D100A6326D /* Remove Original Binary */,
-				2CED25D61F75246200A6326D /* Sources */,
-				2CED25D71F75246200A6326D /* Frameworks */,
 				2CED25F41F7525EA00A6326D /* Compile Kotlin Sources */,
-				2CED25F51F75260600A6326D /* Replace Original Binary */,
 				2CED25D81F75246200A6326D /* Resources */,
 			);
 			buildRules = (
@@ -183,7 +136,7 @@
 		2CED25D21F75246200A6326D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = JetBrains;
 				TargetAttributes = {
 					2CED25D91F75246200A6326D = {
@@ -198,7 +151,7 @@
 				};
 			};
 			buildConfigurationList = 2CED25D51F75246200A6326D /* Build configuration list for PBXProject "konf-demo" */;
-			compatibilityVersion = "Xcode 8.0";
+			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -250,20 +203,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2CED25F31F7525D100A6326D /* Remove Original Binary */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Remove Original Binary";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "rm -f \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"";
-		};
 		2CED25F41F7525EA00A6326D /* Compile Kotlin Sources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -276,36 +215,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "$SRCROOT/../../gradlew -p $SRCROOT compileKonanApp -Pdisable.android=true";
-		};
-		2CED25F51F75260600A6326D /* Replace Original Binary */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Replace Original Binary";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cp \"$SRCROOT/build/konan/bin/ios_arm64/app.kexe\" \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"";
+			shellScript = "$SRCROOT/../../gradlew -p $SRCROOT packForXCode -Pdisable.android=true";
 		};
 /* End PBXShellScriptBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
-		2CED25D61F75246200A6326D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2CED25E21F75246200A6326D /* ViewController.m in Sources */,
-				2CED25ED1F75246200A6326D /* main.m in Sources */,
-				2CED25DF1F75246200A6326D /* AppDelegate.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
 		2CED25E31F75246200A6326D /* Main.storyboard */ = {
@@ -341,6 +253,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -348,6 +261,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -396,6 +310,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -403,6 +318,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -440,7 +356,10 @@
 				DEVELOPMENT_TEAM = 2ZEFAR8TH3;
 				INFOPLIST_FILE = "konf-demo/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.jetbrains.kotlin.native-demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -458,7 +377,10 @@
 				DEVELOPMENT_TEAM = 2ZEFAR8TH3;
 				INFOPLIST_FILE = "konf-demo/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.jetbrains.kotlin.native-demo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
