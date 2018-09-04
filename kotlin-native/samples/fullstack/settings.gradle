@@ -28,3 +28,6 @@ include ':json'
 include ':kurl'
 include ':sql'
 include ':utils'
+
+
+enableFeaturePreview('GRADLE_METADATA')
