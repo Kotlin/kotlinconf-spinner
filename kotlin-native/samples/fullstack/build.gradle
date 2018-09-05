@@ -7,7 +7,7 @@ subprojects {
         }
 
         dependencies {
-            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.9-rc1-3632"
+            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:0.9"
         }
     }
 }
