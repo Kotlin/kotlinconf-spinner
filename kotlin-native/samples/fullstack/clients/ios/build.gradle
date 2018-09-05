@@ -39,25 +39,34 @@ task packForXCode() {
     final def compileTask
     if (sdkName.startsWith("iphonesimulator")) {
         compileTask = tasks.compileKonanAppIos_x64
+    } else if (sdkName.startsWith("iphoneos")) {
+        compileTask = tasks.compileKonanAppIos_arm64
     } else {
+        if (sdkName)
+        println "unknown SDK: $sdkName"
         compileTask = null
     }
 
+    outputs.upToDateWhen { false }
+
     if (compileTask == null) {
-        doLast { throw new Error("Please run the task from XCode")}
+        doLast { throw new Error("Please run the task from XCode") }
     } else {
         dependsOn compileTask
 
-        final File compiledProgram = compileTask.artifact
-        final File destination = new File("$targetBuildDir/$executablePath")
+        doLast {
+            final File compiledProgram = compileTask.artifact
+            final File destination = new File(targetBuildDir, executablePath)
 
-        delete(destination)
-        destination.parentFile?.mkdirs()
+            delete(destination)
+            destination.parentFile?.mkdirs()
 
-        //probably the ugliest way to copy files with Groovy
-        destination.bytes = compiledProgram.bytes
+            //probably the ugliest way to copy files with Groovy
+            destination.bytes = compiledProgram.bytes
+            destination.setExecutable(true, true)
 
-        println "Source file: $compiledProgram"
-        println "Destination file: $destination"
+            println "Source file: $compiledProgram"
+            println "Destination file: $destination"
+        }
     }
 }
