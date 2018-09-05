@@ -17,9 +17,9 @@ ext.kurl   = project('kurl')
 ext.sql    = project('sql')
 ext.getopt = project('getopt')
 
-ext.libcurlPath = file('../../external/curl/android')
-ext.janssonPath = file('../../external/jansson/android')
-ext.openalPath  = file('../../external/openal/android')
+ext.libcurlPath = file('external/curl/android')
+ext.janssonPath = file('external/jansson/android')
+ext.openalPath  = file('external/openal/android')
 
 
 task buildAll {
