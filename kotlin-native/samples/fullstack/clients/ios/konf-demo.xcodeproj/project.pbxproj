@@ -46,7 +46,7 @@
 		2C7B37FE1F8FB96200743D7C /* 0.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 0.bmp; path = ../../../utils/ios/0.bmp; sourceTree = "<group>"; };
 		2C7B37FF1F8FB96200743D7C /* 4.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 4.bmp; path = ../../../utils/ios/4.bmp; sourceTree = "<group>"; };
 		2CED25DA1F75246200A6326D /* konf-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "konf-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-	2CED25E41F75246200A6326D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		2CED25E41F75246200A6326D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		2CED25E61F75246200A6326D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2CED25E91F75246200A6326D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2CED25EB1F75246200A6326D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
