@@ -1,5 +1,5 @@
-kotlin-native/samples/fullstack/clients/android/out
-kotlin-native/samples/fullstack/static
+clients/android/out
+static
 .DS_Store
 build
 .gradle
@@ -13,3 +13,7 @@ build
 *.klib-build
 cmake-build-*
 *.log
+local.properties
+.idea/
+build
+gradle/
