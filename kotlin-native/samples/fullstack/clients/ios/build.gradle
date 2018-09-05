@@ -42,8 +42,7 @@ task packForXCode() {
     } else if (sdkName.startsWith("iphoneos")) {
         compileTask = tasks.compileKonanAppIos_arm64
     } else {
-        if (sdkName)
-        println "unknown SDK: $sdkName"
+        if (sdkName != "") println "unknown SDK: $sdkName"
         compileTask = null
     }
 
