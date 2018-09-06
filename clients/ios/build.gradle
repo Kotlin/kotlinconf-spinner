@@ -97,7 +97,6 @@ task installSimulator(type: Exec, dependsOn: [buildXcode]) {
     workingDir project.rootDir
     executable "sh"
     def appFolder = new File(xcode_derivedDataPath, "/Build/Products/Debug-iphonesimulator/${xcode_app_name}.app")
-    println("xcrun simctl install booted '${appFolder.absolutePath}'")
     args "-c", "xcrun simctl install booted '${appFolder.absolutePath}'"
 }
 
