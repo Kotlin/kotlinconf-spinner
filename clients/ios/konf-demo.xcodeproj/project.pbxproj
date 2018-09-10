@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2698009B21463CD400663043 /* src in Resources */ = {isa = PBXBuildFile; fileRef = 2698009A21463CD400663043 /* src */; };
+		2698009D21463D0D00663043 /* shared in Resources */ = {isa = PBXBuildFile; fileRef = 2698009C21463D0D00663043 /* shared */; };
+		2698009F21463D2D00663043 /* build.gradle in Resources */ = {isa = PBXBuildFile; fileRef = 2698009E21463D2D00663043 /* build.gradle */; };
 		2C7B37E11F8E65B800743D7C /* swish.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37E01F8E65B700743D7C /* swish.wav */; };
 		2C7B38001F8FB96300743D7C /* 5.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F61F8FB96200743D7C /* 5.bmp */; };
 		2C7B38011F8FB96300743D7C /* 8.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 2C7B37F71F8FB96200743D7C /* 8.bmp */; };
@@ -34,6 +37,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2698009A21463CD400663043 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; path = src; sourceTree = SOURCE_ROOT; };
+		2698009C21463D0D00663043 /* shared */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shared; path = ../../shared; sourceTree = "<group>"; };
+		2698009E21463D2D00663043 /* build.gradle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = build.gradle; sourceTree = SOURCE_ROOT; };
 		2C7B37E01F8E65B700743D7C /* swish.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = swish.wav; path = ../../android/src/main/assets/swish.wav; sourceTree = "<group>"; };
 		2C7B37F61F8FB96200743D7C /* 5.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 5.bmp; path = ../../../utils/ios/5.bmp; sourceTree = "<group>"; };
 		2C7B37F71F8FB96200743D7C /* 8.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = 8.bmp; path = ../../../utils/ios/8.bmp; sourceTree = "<group>"; };
@@ -63,9 +69,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		2698009921463C9B00663043 /* kotlin */ = {
+			isa = PBXGroup;
+			children = (
+				2698009E21463D2D00663043 /* build.gradle */,
+				2698009C21463D0D00663043 /* shared */,
+				2698009A21463CD400663043 /* src */,
+			);
+			name = kotlin;
+			path = "New Group";
+			sourceTree = "<group>";
+		};
 		2CED25D11F75246200A6326D = {
 			isa = PBXGroup;
 			children = (
+				2698009921463C9B00663043 /* kotlin */,
 				2CED25DC1F75246200A6326D /* konf-demo */,
 				2CED25DB1F75246200A6326D /* Products */,
 			);
@@ -186,6 +204,8 @@
 				2C7B37E11F8E65B800743D7C /* swish.wav in Resources */,
 				2CF5BF3F1F9F58DB00F1A06D /* you_contributed.bmp in Resources */,
 				2C7B38001F8FB96300743D7C /* 5.bmp in Resources */,
+				2698009F21463D2D00663043 /* build.gradle in Resources */,
+				2698009D21463D0D00663043 /* shared in Resources */,
 				2CED25E71F75246200A6326D /* Assets.xcassets in Resources */,
 				2C7B38071F8FB96300743D7C /* 7.bmp in Resources */,
 				2CF5BF351F9E4FB900F1A06D /* konan.bmp in Resources */,
@@ -197,6 +217,7 @@
 				2C7B38011F8FB96300743D7C /* 8.bmp in Resources */,
 				2CF5BF2B1F963C1500F1A06D /* spinner_game_text.bmp in Resources */,
 				2CED25E51F75246200A6326D /* Main.storyboard in Resources */,
+				2698009B21463CD400663043 /* src in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
