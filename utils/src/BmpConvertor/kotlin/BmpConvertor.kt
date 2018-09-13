@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 fun extractChannelShift(mask: UInt): Int {
     var shift = 0
     var x = mask
-    while ((x and 1) == 0u) {
+    while ((x and 1u) == 0u) {
         ++shift
         x = x shr 1
     }
