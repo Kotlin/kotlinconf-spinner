@@ -13,7 +13,7 @@ STATIC_DIR=$DIR/../../static/
 mkdir -p $STATIC_DIR
 
 konanc src/main/kotlin/StatView.kt \
-    -r $DIR/../../../../external/klib \
+    -r $DIR/../../external/klib \
     -l dom \
     -target wasm32 -o $DIR/../../static/view
 

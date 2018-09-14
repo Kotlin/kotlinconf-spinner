@@ -6,9 +6,11 @@ if [ ! -d $KONAN_HOME ]; then
 fi
 
 for l in common getopt json sql kurl httpserver ; do
+  echo "Building $l..."
   (cd $l && ./make_klib.sh)
 done
 
 for e in httpserver clients/cli clients/webassembly ; do
+  echo "Building $e..."
   (cd $e && ./build.sh)
 done 

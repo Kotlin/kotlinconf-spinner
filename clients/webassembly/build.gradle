@@ -8,7 +8,7 @@ konanArtifacts {
     program('view') {
 
         libraries {
-            useRepo '../../../../external/klib'
+            useRepo '../../external/klib'
             klib 'dom'
         }
 
