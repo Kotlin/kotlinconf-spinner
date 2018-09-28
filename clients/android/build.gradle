@@ -171,6 +171,11 @@ android {
             jniLibs.srcDir libsDir
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
 }
 
 task buildApk(type: Copy) {
