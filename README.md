@@ -17,7 +17,7 @@ The entire application is implemented using [Kotlin/Native](https://github.com/J
 
 ### Server-Side
 
-[Server side](https://github.com/JetBrains/kotlinconf-spinner/blob/master/kotlin-native/samples/fullstack/httpserver/src/main/kotlin/server/HttpServer.kt) runs on a linux server and is implemented using:
+[Server side](httpserver/src/main/kotlin/server/HttpServer.kt) runs on a linux server and is implemented using:
 
 *   [microHTTPD](https://www.gnu.org/software/libmicrohttpd/) HTTP server library
 *   [SQLite](https://www.sqlite.org/) for the database, storing score
@@ -27,7 +27,7 @@ The entire application is implemented using [Kotlin/Native](https://github.com/J
 
 #### Android 
 
-[Client side](https://github.com/JetBrains/kotlinconf-spinner/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt) for Android is implemented in pure Kotlin/Native, as a Native Activity using:
+[Client side](clients/android/src/main/kotlin/engine.kt) for Android is implemented in pure Kotlin/Native, as a Native Activity using:
 *   [GLES version 3](https://developer.android.com/guide/topics/graphics/opengl.html) interop for 3D rendering
 *   [NDK input handling](https://developer.android.com/ndk/reference/group___input.html) for input processing
 *   [Open AL](https://www.openal.org/) interop for sound playback
@@ -36,7 +36,7 @@ The entire application is implemented using [Kotlin/Native](https://github.com/J
 
 #### iOS
 
-[Client side](https://github.com/JetBrains/kotlinconf-spinner/blob/master/kotlin-native/samples/fullstack/clients/ios) for iOS is implemented in pure Kotlin/Native using:
+[Client side](clients/android/src/main/ios) for iOS is implemented in pure Kotlin/Native using:
 *   [GLES version 3 framework](https://developer.apple.com/documentation/opengles) for 3D rendering
 *   [UIKit framework](https://developer.apple.com/documentation/uikit) for windows and views
 *   [CoreMotion framework](https://developer.apple.com/documentation/coremotion) for sensors access
@@ -44,11 +44,11 @@ The entire application is implemented using [Kotlin/Native](https://github.com/J
 
 ### Implementation details
 
-*   Most graphical code, sound playback and user input reaction is [shared](https://github.com/JetBrains/kotlinconf-spinner/tree/master/kotlin-native/samples/fullstack/clients/shared/src/main/kotlin) between Android and iOS
-*   Server interaction on Android is [asynchronous](https://github.com/JetBrains/kotlinconf-spinner/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/StatsFetcherImpl.kt#L66) from the UI thread, using [workers](https://github.com/JetBrains/kotlin-native/tree/master/samples/workers)
+*   Most graphical code, sound playback and user input reaction is [shared](clients/shared/src/main/kotlin) between Android and iOS
+*   Server interaction on Android is [asynchronous](clients/android/src/main/kotlin/StatsFetcherImpl.kt#L66) from the UI thread, using [workers](https://github.com/JetBrains/kotlin-native/tree/master/samples/workers)
 *   HTTP server works in multithreaded mode, state sharing between sessions performed via SQLite DB access
-*   Android app is split into separate [loader](https://github.com/JetBrains/kotlinconf-spinner/blob/master/kotlin-native/samples/fullstack/clients/android/src/loader/kotlin/loader.kt) and application code, so that dynamic library (libopenal.so) included with application can be used on older Androids
-*   [WebAssembly frontend](https://github.com/JetBrains/kotlinconf-spinner/tree/master/kotlin-native/samples/fullstack/clients/webassembly) can fetch and render stats in the browser
+*   Android app is split into separate [loader](clients/android/src/loader/kotlin/loader.kt) and application code, so that dynamic library (libopenal.so) included with application can be used on older Androids
+*   [WebAssembly frontend](clients/webassembly) can fetch and render stats in the browser
 
 ### Project Sources
 
