@@ -36,7 +36,7 @@ The entire application is implemented using [Kotlin/Native](https://github.com/J
 
 #### iOS
 
-[Client side](clients/android/src/main/ios) for iOS is implemented in pure Kotlin/Native using:
+[Client side](clients/ios/src/main/kotlin) for iOS is implemented in pure Kotlin/Native using:
 *   [GLES version 3 framework](https://developer.apple.com/documentation/opengles) for 3D rendering
 *   [UIKit framework](https://developer.apple.com/documentation/uikit) for windows and views
 *   [CoreMotion framework](https://developer.apple.com/documentation/coremotion) for sensors access
