@@ -6,7 +6,7 @@ subprojects {
         }
 
         dependencies {
-            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:1.3.20-eap-100"
+            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:1.3.21"
         }
     }
 }
