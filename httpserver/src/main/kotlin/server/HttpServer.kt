@@ -363,6 +363,59 @@ ea9gMds/F3MMoSAzy9NnAA==
     return arrayOf(MHD_OPTION_HTTPS_MEM_KEY, keyPem, MHD_OPTION_HTTPS_MEM_CERT, certPem)
 }
 
+const val certPem = """-----BEGIN CERTIFICATE-----
+MIID4zCCAsugAwIBAgIJAKHE86g9UIUqMA0GCSqGSIb3DQEBCwUAMIGHMQswCQYD
+VQQGEwJDWjEOMAwGA1UECAwFUHJhaGExDjAMBgNVBAcMBVByYWhhMRIwEAYDVQQK
+DAlKZXRCcmFpbnMxFzAVBgNVBAMMDk5pa29sYXkgSWdvdHRpMSswKQYJKoZIhvcN
+AQkBFhxuaWtvbGF5Lmlnb3R0aUBqZXRicmFpbnMuY29tMB4XDTE3MTAwMjE0NDcx
+N1oXDTE4MTAwMjE0NDcxN1owgYcxCzAJBgNVBAYTAkNaMQ4wDAYDVQQIDAVQcmFo
+YTEOMAwGA1UEBwwFUHJhaGExEjAQBgNVBAoMCUpldEJyYWluczEXMBUGA1UEAwwO
+Tmlrb2xheSBJZ290dGkxKzApBgkqhkiG9w0BCQEWHG5pa29sYXkuaWdvdHRpQGpl
+dGJyYWlucy5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCpsm1W
+SEDW/+8U9/BBRpTCLlDA7Wc8o5ut9vfJx1usCkGHUYI2NPUlQI8AAfjcfagbi3ug
+UPEpuEK7vR5y4IlN26ur1t+wzvYyhIDN1W9y0gUO+MRWIkFi+kPlPPLQfmN05VmA
+s9P9NlHWM3rJ6ywC255mqWqUmcsUn8zVWpW8FJ5rVd8PNS9jdoV3jKiTgcP/s9g3
+pjtMN2uPabK3p5gANzowsJbMPPzXxgh8VF/0mC3MycPy86h+qof+FiftTKJe7zXH
+x1m7q0pQfz1U+REwzsu9+6NfrRD4GeKNBxEZWVghsAOZ8PUuyl7coPfBFCZx9Hdx
+R7MzbGVV8LWzYXk9AgMBAAGjUDBOMB0GA1UdDgQWBBSdJpTXPAopb97CuKDzTpkt
+1brKITAfBgNVHSMEGDAWgBSdJpTXPAopb97CuKDzTpkt1brKITAMBgNVHRMEBTAD
+AQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCWGa9rPCdX/w5Hnz8Uc4sxkWvptxeq+n/L
+AlptoYMq1TRFDeKdpf09JVnGq+fUblTBxRRLBKYRJFXisU8uOfsUWgJvhWyY+CFC
+xHuYllkIZTLmBnh6P42OVf2oWxg78grghG4U6rltj6m/uatLOnYd54WmbTRlClsw
+wW+pzsP5gHCv9mZO/x5RFeD0/7y/Afi5Sx3VfMny/s/Ao5W/1av5Vg/T5WGdd7lg
+rppp/xPgDFGDPgf8qDX+t09Y8d2ZRfzANpRth7in2DIYH+TqPhTARBbmzqO2KIc3
+iVYpVdn0P+E6JlprLWv1tyLr/clsleOYroi8iuYoTzF2Ox1Nxlgk
+-----END CERTIFICATE-----"""
+
+const val keyPem = """-----BEGIN PRIVATE KEY-----
+MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCpsm1WSEDW/+8U
+9/BBRpTCLlDA7Wc8o5ut9vfJx1usCkGHUYI2NPUlQI8AAfjcfagbi3ugUPEpuEK7
+vR5y4IlN26ur1t+wzvYyhIDN1W9y0gUO+MRWIkFi+kPlPPLQfmN05VmAs9P9NlHW
+M3rJ6ywC255mqWqUmcsUn8zVWpW8FJ5rVd8PNS9jdoV3jKiTgcP/s9g3pjtMN2uP
+abK3p5gANzowsJbMPPzXxgh8VF/0mC3MycPy86h+qof+FiftTKJe7zXHx1m7q0pQ
+fz1U+REwzsu9+6NfrRD4GeKNBxEZWVghsAOZ8PUuyl7coPfBFCZx9HdxR7MzbGVV
+8LWzYXk9AgMBAAECggEALGov5dJZbixkZgeS0XLown4e0rAQQjXMLFckeaJ9IuU4
+S3OQ8iEgPJTOGMFrYkJdOoBiZg5pYHMCvGJ+UrDkHwWsw/gkagFxPL2jfLwtRE8l
+1cpUkPq8RGyeUqSGJP2/iDvzFhV7GZ4bA0ZMEAdGaKUUq2gSJjyug4JjuT/RSv1p
+KuxElOAoz7SIvIFVw4hmdcKaYac+5X78fL9qaxP1xjUrMNFY7MokLs2XKx3HCzOm
+SETAhb7qcK12XfBfuGvl8Op8hsZzJUBGsVaQH51wYbjalOwLL4ttA6QdDI403v0l
+j+N5gQZwsbiigydq67Awn/MLGRcxyIALhBlH66ilgQKBgQDf3dEuMfrCJEAHgFAZ
+aFLLUBhPGamQozVKetHGj4BWW1QCGA6R3OS9KVBmyouiI7SIXyYDjNN5YJSvr5qm
+1HCa96O1qE5sh4WaduBi56PtXHz7AYDrRmgOEdbz1tMfuSYiaCIkWBXi23rX2ktX
+1RniXbok76/alskvKiVPLVwAHQKBgQDCDhnxfDFm75XiBOBhqnUKxaZtqspRbjFO
+Sm11tWh6jHjQ/3ohQnVSdRQCyGFyVAFtpEcadfvih/I/1PTBi05np4YK7ozaGtQ3
+AxtYty+AGuyEq13Wr2akj4iD30V1N0bbcit0Pbj1VvKDryGkO79W3ewpdjsyW4Jz
+u4VBSaxToQKBgEjUeD4oImVQt8f49ZYee3kLeK0bMzAL+MVfSanoe58cnSsFOpA3
+pe7oZvDaCi1Yol4PXmWfRhlh012Iqq6FxJCV6huqQsFKIawL6poitBD/muVqKs/g
+GvAg26Z+iDb03DQrXpgmVBB2yPM6YHKVsJMVXP6xP6vEjHUcqACnSBv9AoGAUpON
+lqUyoIrzTOqmUOkoRR02ZRR4Y45wjNA/JAe+HegIwWb1oZGWOzB3A3ghf3Uf5ngx
+iaELPqp6+46zWGjfRFyVPbGlXmpsQ7yetnG9VNYgL5R8qg6Zrw0lGni4JdkP3fIH
+a7+YJU6KhF7SAgEqutxU0o/tQNCQAo+ZdN7U5gECgYAN2wpwTjVp0p9r5Elnqcri
+cioskLvaPSrMesm/xvTH0kf7PjegqiMxjsyjAH03r7biUzUbhPyIok8X/IRBUtT9
+gCMLSqH5IpwUytOovPcPCZITEEEg88jExQosCVN1OH52Bn0fIxSzB4Cr2ctEC5Eb
+ea9gMds/F3MMoSAzy9NnAA==
+-----END PRIVATE KEY-----"""
+
 fun main(args: Array<String>) {
     val cliOptions = listOf(
             OptionDescriptor(OptionType.INT, "p", "port", "Port to use", "8080"),
@@ -403,9 +456,24 @@ fun main(args: Array<String>) {
         dbMain.execute("REPLACE INTO auth (user, secret) VALUES ('root', '$secret')")
     }
 
-    // Was MHD_USE_INTERNAL_POLLING_THREAD or MHD_USE_AUTO or MHD_USE_ERROR_LOG
-    val options = MHD_USE_POLL_INTERNALLY or (if (isHttps) MHD_USE_SSL else 0u)
-    val daemon = MHD_start_daemon(options, port.toUShort(), staticCFunction {
+    fun startDaemon(options: UInt, port: UShort, acceptCallback: MHD_AcceptPolicyCallback?, acceptCallbackArg: CValuesRef<*>?,
+                    accessCallback: MHD_AccessHandlerCallback?, accessCallbackArg: CValuesRef<*>?, https: Boolean) =
+       if (https)
+           MHD_start_daemon(options or MHD_USE_SSL, port,
+                   acceptCallback, acceptCallbackArg,
+                   accessCallback, accessCallbackArg,
+                   MHD_OPTION_CONNECTION_TIMEOUT, 120,
+                   MHD_OPTION_HTTPS_MEM_KEY, keyPem,
+                   MHD_OPTION_HTTPS_MEM_CERT, certPem,
+                   MHD_OPTION_END)
+        else
+           MHD_start_daemon(options, port,
+                   acceptCallback, acceptCallbackArg,
+                   accessCallback, accessCallbackArg,
+                   MHD_OPTION_CONNECTION_TIMEOUT, 120,
+                   MHD_OPTION_END)
+
+    val daemon = startDaemon(MHD_USE_POLL_INTERNALLY, port.toUShort(), staticCFunction {
             cls, addr, addrlen ->
             kotlin.native.initRuntimeIfNeeded()
             val db = KSqlite(cls)
@@ -445,10 +513,7 @@ fun main(args: Array<String>) {
                 return@staticCFunction MHD_NO
             }
 
-    }, dbMain.cpointer,
-    MHD_OPTION_CONNECTION_TIMEOUT, 120,
-    *additionalOptions(isHttps),
-    MHD_OPTION_END)
+    }, dbMain.cpointer, isHttps)
 
     if (daemon == null) {
         println("Cannot start daemon")
