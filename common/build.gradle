@@ -6,8 +6,9 @@ konanArtifacts {
     library('kommon') {
         srcDir 'src/main/kotlin'
 
-        target('macos_x64') {
-            srcDir 'src/osx'
+        target('host') {
+            if (isMacos) srcDir 'src/osx'
+            if (isLinux) srcDir 'src/linux'
         }
 
         target('ios_x64') {
@@ -16,10 +17,6 @@ konanArtifacts {
 
         target('ios_arm64') {
             srcDir 'src/ios'
-        }
-
-        target('linux') {
-            srcDir 'src/linux'
         }
 
         target('android_arm32') {
