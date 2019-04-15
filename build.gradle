@@ -6,7 +6,7 @@ subprojects {
         }
 
         dependencies {
-            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:1.3.21"
+            classpath "org.jetbrains.kotlin:kotlin-native-gradle-plugin:1.3.30"
         }
     }
 }
@@ -20,6 +20,10 @@ ext.getopt = project('getopt')
 ext.libcurlPath = file('external/curl/android')
 ext.janssonPath = file('external/jansson/android')
 ext.openalPath  = file('external/openal/android')
+
+def hostOs = System.getProperty("os.name")
+ext.isMacos = (hostOs == "Mac OS X")
+ext.isLinux = (hostOs == "Linux")
 
 
 task buildAll {

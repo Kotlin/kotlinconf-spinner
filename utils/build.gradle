@@ -1,16 +1,12 @@
 apply plugin: 'konan'
 
-konan.targets = [ 'linux', 'macos_x64' ]
 
 konanArtifacts {
     interop('freetype') {
 
-        target('macos_x64') {
-            includeDirs '/opt/local/include'
-        }
-
-        target('linux') {
-            includeDirs '/usr/include'
+        target('host') {
+            if (isMacos) includeDirs '/opt/local/include'
+            if (isLinux) includeDirs '/usr/include'
         }
     }
 
