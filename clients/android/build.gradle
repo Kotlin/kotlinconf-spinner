@@ -57,15 +57,15 @@ konanArtifacts {
         }
 
         target('android_arm32') {
-            linkerOpts "-L$libcurlPath/lib/armeabi-v7a -lcurl " +
-                    "$janssonPath/arm32/lib/libjansson.a " +
-                    "-L$openalPath/lib/armeabi-v7a -lopenal -lz"
+            linkerOpts "-L$libcurlPath/lib/armeabi-v7a", "-lcurl",
+                    "$janssonPath/arm32/lib/libjansson.a",
+                    "-L$openalPath/lib/armeabi-v7a", "-lopenal", "-lz"
         }
 
         target('android_arm64') {
-            linkerOpts "-L$libcurlPath/lib/arm64-v8a -lcurl " +
-                    "$janssonPath/arm64/lib/libjansson.a " +
-                    "-L$openalPath/lib/arm64-v8a -lopenal -lz"
+            linkerOpts "-L$libcurlPath/lib/arm64-v8a", "-lcurl",
+                    "$janssonPath/arm64/lib/libjansson.a",
+                    "-L$openalPath/lib/arm64-v8a", "-lopenal", "-lz"
         }
 
     }
@@ -83,14 +83,14 @@ konanArtifacts {
         }
 
         target('android_arm32') {
-            linkerOpts "-L$libcurlPath/lib/armeabi-v7a -lcurl " +
-                    "$janssonPath/arm32/lib/libjansson.a " +
-                    " -lz"
+            linkerOpts "-L$libcurlPath/lib/armeabi-v7a", "-lcurl",
+                    "$janssonPath/arm32/lib/libjansson.a",
+                    "-lz"
         }
 
         target('android_arm64') {
-            linkerOpts "-L$libcurlPath/lib/arm64-v8a -lcurl " +
-                    "$janssonPath/arm64/lib/libjansson.a " +
+            linkerOpts "-L$libcurlPath/lib/arm64-v8a", "-lcurl",
+                    "$janssonPath/arm64/lib/libjansson.a",
                     "-lz"
         }
 
