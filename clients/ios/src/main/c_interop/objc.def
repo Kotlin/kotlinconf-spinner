@@ -1,5 +1,0 @@
-headers = Foundation/Foundation.h UIKit/UIKit.h GLKit/GLKit.h OpenGLES/ES3/gl.h math.h
-# OpenGLES/ES1/glext.h
-headerFilter = Foundation/** UIKit/** GLKit/** OpenGLES/** math.h
-language = Objective-C
-linkerOpts = -framework Foundation -framework UIKit -framework GLKit -framework OpenGLES
