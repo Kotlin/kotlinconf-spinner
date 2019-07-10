@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#TODO: Update shell-scripts too.
+
 PATH=$KONAN_HOME/bin:$PATH
 
 if [ x$TARGET == x ]; then

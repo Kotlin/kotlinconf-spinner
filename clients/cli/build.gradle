@@ -1,9 +1,0 @@
-apply plugin: 'konan'
-
-konanArtifacts {
-    program('CliClient') {
-        libraries {
-            allLibrariesFrom common, json, kurl, sql, getopt
-        }
-    }
-}
