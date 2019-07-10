@@ -1,5 +1,0 @@
-apply plugin: 'konan'
-
-konanArtifacts {
-    library('kliopt')
-}

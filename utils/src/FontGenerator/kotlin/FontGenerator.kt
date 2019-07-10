@@ -51,6 +51,7 @@ fun saveGlyphTo(glyph: FT_GlyphSlot, path: String) {
     writeToFileData(path, bmpData, true)
 }
 
+@kotlin.ExperimentalUnsignedTypes
 fun main(args: Array<String>) {
 
     var fontName = ""
@@ -71,7 +72,7 @@ fun main(args: Array<String>) {
         }
     }
 
-    mkdir(directory, 493 /* 0755 */ )
+    mkdir(directory, 493U /* 0755 */ )
 
     memScoped {
         val ftLibrary = alloc<FT_LibraryVar>()
