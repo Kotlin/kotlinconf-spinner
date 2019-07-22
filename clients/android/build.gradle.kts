@@ -16,6 +16,17 @@ val openalPath: File by rootProject.extra
 
 // Configure K/N executables.
 kotlin {
+    // TODO: Remove it:
+    val macos = macosX64("macos") {
+        binaries.executable(listOf(DEBUG))
+        compilations["main"].defaultSourceSet.dependencies {
+            implementation(project(":common"))
+            implementation(project(":json"))
+            implementation(project(":kurl"))
+        }
+    }
+
+
     // Declare targets.
     val android32 = androidNativeArm32("android32")
     val android64 = androidNativeArm64("android64")

@@ -63,6 +63,7 @@ class KUrl(val cookies: String? = null) {
             curl_easy_perform(curl)
         } finally {
             stables.forEach {
+                println("TTT: Dispose: ${it.get()}")
                 it.dispose()
             }
         }
