@@ -70,11 +70,11 @@ class StatsFetcherImpl(val nativeActivity: ANativeActivity): StatsFetcher {
             val url = it.url
             try {
                 withUrl(kurl) {
-                    var result: Any? = null
+                    var result: String? = null
                     it.fetch(url) {
-                        result = KJsonObject(it)
+                        result = it
                     }
-                    result!!
+                    KJsonObject(result!!)
                 }
             } catch (error: KUrlError) {
                 "Network problem: $error"
