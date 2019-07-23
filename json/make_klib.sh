@@ -16,8 +16,8 @@ COMPILER_OPTS_osx="-I/opt/local/include"
 var=COMPILER_OPTS_${TARGET}
 COMPILER_OPTS="${!var}"
 
-cinterop -def src/main/c_interop/jansson.def -o jansson.klib -compilerOpts "$COMPILER_OPTS"
-konanc -p library src/main/kotlin -o kjson.klib \
+cinterop -def src/nativeInterop/cinterop/jansson.def -o jansson.klib -compilerOpts "$COMPILER_OPTS"
+konanc -p library src/nativeMain/kotlin -o kjson.klib \
      -r ../common \
      -l jansson \
      -l kommon

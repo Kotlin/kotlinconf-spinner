@@ -2,5 +2,5 @@
 
 PATH=$KONAN_HOME/bin:$PATH
 
-cinterop -def src/main/c_interop/sqlite3.def -o sqlite3.klib
-konanc -p library src/main/kotlin -l sqlite3 -o ksqlite
+cinterop -def src/nativeInterop/cinterop/sqlite3.def -o sqlite3.klib
+konanc -p library src/hostMain/kotlin -l sqlite3 -o ksqlite
