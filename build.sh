@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -d $KONAN_HOME ]; then
+if [ -z $KONAN_HOME ] || [ ! -d $KONAN_HOME ]; then
   echo "Set KONAN_HOME to Kotlin/Native redist"
   exit 1
 fi

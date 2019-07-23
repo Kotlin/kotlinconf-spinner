@@ -8,5 +8,5 @@ case "$OSTYPE" in
   *)        echo "unknown: $OSTYPE" && exit 1;;
 esac
 
-konanc -p library src/main/kotlin src/$TARGET/kotlin  -o kommon.klib
+konanc -p library src/nativeMain/kotlin src/${TARGET}Main/kotlin  -o kommon.klib
 
