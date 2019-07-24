@@ -28,8 +28,11 @@ val janssonPath by extra(file("external/jansson/android"))
 val openalPath  by extra(file("external/openal/android"))
 
 val buildAll by tasks.creating {
+    if (project.findProject(":clients:android") != null) {
+        dependsOn(":clients:android:buildApk")
+    }
+
     dependsOn(":httpserver:assemble")
-    dependsOn(":clients:android:buildApk")
     dependsOn(":clients:ios:assemble")
     dependsOn(":clients:cli:assemble")
     dependsOn(":clients:webassembly:assemble")
