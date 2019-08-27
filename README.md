@@ -27,6 +27,8 @@ The entire application is implemented using [Kotlin/Native](https://github.com/J
 
 #### Android 
 
+You need to have ANDROID_HOME set to your Android SDK location.
+
 [Client side](https://github.com/JetBrains/kotlinconf-spinner/blob/master/kotlin-native/samples/fullstack/clients/android/src/main/kotlin/engine.kt) for Android is implemented in pure Kotlin/Native, as a Native Activity using:
 *   [GLES version 3](https://developer.android.com/guide/topics/graphics/opengl.html) interop for 3D rendering
 *   [NDK input handling](https://developer.android.com/ndk/reference/group___input.html) for input processing
