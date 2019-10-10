@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.3.41" apply false
+    kotlin("multiplatform") version "1.3.50" apply false
     id("com.android.application") version "3.3.0" apply false
 }
 
@@ -35,7 +35,7 @@ val buildAll by tasks.creating {
     dependsOn(":httpserver:assemble")
     dependsOn(":clients:ios:assemble")
     dependsOn(":clients:cli:assemble")
-    dependsOn(":clients:webassembly:assemble")
+//    dependsOn(":clients:webassembly:assemble")
     dependsOn(":utils:assemble")
 }
 

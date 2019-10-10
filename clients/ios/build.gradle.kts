@@ -101,7 +101,7 @@ val buildXcode by tasks.creating(Exec::class.java) {
             -scheme $xcodeAppName \
             -project . \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone X,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 11,OS=latest' \
             -derivedDataPath '$xcodeDerivedDataPath'
         """.trimIndent()
     )
