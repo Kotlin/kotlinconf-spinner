@@ -46,43 +46,43 @@ class ServerTest {
             assertJsonCustom({ action(it); it }, check)
 
     inline fun assertStats(db: KSqlite, session: Session, check: (KJsonObject) -> Unit) =
-            assertJson({ stats(db, session, it) }, check)
+            assertJson({ Spinner.stats(db, session, it) }, check)
 
     @Test
     fun clickTest() = withSqlite(DB_PATH) { db ->
-        val admin = makeSession("root", "root", db)
+        val admin = makeSession("root", "root", db, null)
         val json = KJsonObject()
-        start(db, admin, json)
+        Spinner.start(db, admin, json)
 
-        val alice = makeSession("Alice",  "pass", db)
+        val alice = makeSession("Alice",  "pass", db, null)
         var bob: Session
         do {
-            bob = makeSession("Bob", "pass", db)
+            bob = makeSession("Bob", "pass", db, null)
         } while(bob.color == alice.color)
 
-        assertColorHasCountAfterAction(alice.color, 1) { click(db, alice, it) }
-        assertColorHasCountAfterAction(alice.color, 2) { click(db, alice, it) }
-        assertColorHasCountAfterAction(bob.color, 1) { click(db, bob, it) }
+        assertColorHasCountAfterAction(alice.color, 1) { Spinner.click(db, alice, it) }
+        assertColorHasCountAfterAction(alice.color, 2) { Spinner.click(db, alice, it) }
+        assertColorHasCountAfterAction(bob.color, 1) { Spinner.click(db, bob, it) }
 
-        assertColorHasCountAfterAction(alice.color, 2) { stats(db, bob, it) }
-        assertColorHasCountAfterAction(bob.color, 1) { stats(db, alice, it) }
+        assertColorHasCountAfterAction(alice.color, 2) { Spinner.stats(db, bob, it) }
+        assertColorHasCountAfterAction(bob.color, 1) { Spinner.stats(db, alice, it) }
     }
 
     @Test
     fun startStopTest() = withSqlite(DB_PATH) { db ->
         val admin = makeTestSession("root", "root", db, 1)
-        withJson { start(db, admin, it) }
-        withJson { click(db, admin, it) }
+        withJson { Spinner.start(db, admin, it) }
+        withJson { Spinner.click(db, admin, it) }
         assertStats(db, admin) {
             assertEquals(1, it.getInt("status"))
         }
-        withJson { stop(db, admin, it) }
+        withJson { Spinner.stop(db, admin, it) }
         assertStats(db, admin) {
             assertEquals(0, it.getInt("status"))
             assertEquals(1, it.getInt("winner"))
             assertEquals(1, it.getInt("contribution"))
         }
-        withJson { start(db, admin, it) }
+        withJson { Spinner.start(db, admin, it) }
         assertStats(db, admin) {
             assertEquals(0, it.getInt("contribution"))
         }
@@ -91,18 +91,18 @@ class ServerTest {
     @Test
     fun pauseResumeTest() = withSqlite(DB_PATH) { db ->
         val admin = makeTestSession("root", "root", db, 1)
-        withJson { start(db, admin, it) }
-        withJson { click(db, admin, it) }
+        withJson { Spinner.start(db, admin, it) }
+        withJson { Spinner.click(db, admin, it) }
         assertStats(db, admin) {
             assertEquals(1, it.getInt("status"))
         }
-        withJson { pause(db, admin, it) }
+        withJson { Spinner.pause(db, admin, it) }
         assertStats(db, admin) {
             assertEquals(0, it.getInt("status"))
             assertEquals(1, it.getInt("winner"))
             assertEquals(1, it.getInt("contribution"))
         }
-        withJson { resume(db, admin, it) }
+        withJson { Spinner.resume(db, admin, it) }
         assertStats(db, admin) {
             assertEquals(1, it.getInt("contribution"))
         }
@@ -115,13 +115,13 @@ class ServerTest {
         val bob = makeTestSession("Bob", "pass", db, 2)
 
         withJson {
-            start(db, admin, it)
-            click(db, admin, it)
-            click(db, admin, it)
-            click(db, alice, it)
-            click(db, bob, it)
-            click(db, bob, it)
-            stop(db, admin, it)
+            Spinner.start(db, admin, it)
+            Spinner.click(db, admin, it)
+            Spinner.click(db, admin, it)
+            Spinner.click(db, alice, it)
+            Spinner.click(db, bob, it)
+            Spinner.click(db, bob, it)
+            Spinner.stop(db, admin, it)
         }
         assertStats(db, admin) {
             assertEquals(2, it.getInt("contribution"))

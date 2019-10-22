@@ -38,7 +38,7 @@ if (disableAndroid == null || disableAndroid.toLowerCase() != "true") {
 
 include(":clients:cli")
 include(":clients:ios")
-include(":clients:webassembly")
+//include(":clients:webassembly")
 include(":clients:shared")
 include(":clients:audio")
 include(":common")

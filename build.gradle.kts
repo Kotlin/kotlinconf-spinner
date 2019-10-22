@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.3.41" apply false
+    kotlin("multiplatform") version "1.3.60-eap-23" apply false
     id("com.android.application") version "3.3.0" apply false
 }
 

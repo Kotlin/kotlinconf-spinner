@@ -10,140 +10,13 @@ import kotlinx.cinterop.*
 
 typealias HttpConnection = CPointer<MHD_Connection>?
 
-val MAX_COLORS = 5
-val serverRoot = "./"
+const val MAX_COLORS = 5
+const val serverRoot = "./"
 
-data class Session(val color: Int, val name: String, val cookie: String, val password: String)
+data class Session(
+        val color: Int, val name: String, val cookie: String, val password: String, val http: HttpConnection = null)
 
 // REST API goes here.
-
-fun stats(db: KSqlite, session: Session, json: KJsonObject) {
-    val colors = KJsonArray()
-    db.execute("SELECT counter, color FROM colors") {
-        _, data ->
-        val record = KJsonObject()
-        record.setInt("counter", data[0].toInt())
-        record.setInt("color", data[1].toInt())
-        colors.appendObject(record)
-        0
-    }
-    db.execute("SELECT startTime, status FROM games WHERE current = 'true'") {
-        _, data ->
-        json.setString("startTime", data[0])
-        json.setInt("status", data[1].toInt())
-        0
-    }
-    json.setArray("colors", colors)
-    json.setInt("color", session.color)
-    db.execute("SELECT counter, winner FROM sessions WHERE cookie='${db.escape(session.cookie)}'") { _, data ->
-        json.setInt("contribution", data[0].toInt())
-        json.setInt("winner", data[1].toInt())
-        0
-    }
-}
-
-fun click(db: KSqlite, session: Session, json: KJsonObject) {
-    var running = false
-    db.execute("SELECT status FROM games WHERE current = 'true'") {
-        _, data ->
-        // Check if game is currently in progress.
-        running = (data[0].toInt() == 1)
-        0
-    }
-    if (running) {
-        db.execute("UPDATE colors SET counter = counter + 1 WHERE color=${session.color}")
-        db.execute("UPDATE sessions SET counter = counter + 1 WHERE cookie='${db.escape(session.cookie)}'")
-    }
-    stats(db, session, json)
-}
-
-// Admin API.
-fun start(db: KSqlite, session: Session, json: KJsonObject) {
-    if (!session.isAdmin(db)) {
-        error(json, session,"Unauthorized")
-        return
-    }
-    db.execute("UPDATE games SET current = 'false' WHERE current = 'true'")
-    db.execute("INSERT INTO games (current, status, startTime) VALUES ('true', 1, DateTime('now'))")
-    db.execute("UPDATE colors SET counter = 0")
-    db.execute("UPDATE sessions SET counter = 0, winner = 0")
-    stats(db, session, json)
-}
-
-fun resume(db: KSqlite, session: Session, json: KJsonObject) {
-    if (!session.isAdmin(db)) {
-        error(json, session,"Unauthorized")
-        return
-    }
-    db.execute("UPDATE games SET status = 1, winner=NULL WHERE current = 'true'")
-    db.execute("UPDATE sessions SET winner = 0")
-    stats(db, session, json)
-}
-
-fun setWinner(db: KSqlite, endGame: Boolean) {
-    var winner = -1
-    db.execute("SELECT color FROM colors ORDER BY counter DESC LIMIT 1") {
-        _, data ->
-        winner = data[0].toInt()
-        0
-    }
-
-    println("Winner team is $winner!!!!!")
-    db.execute("UPDATE games SET status = 0, winner=$winner WHERE current = 'true'")
-    if (endGame) {
-        db.execute("UPDATE games SET endTime = DateTime('now') WHERE current = 'true'")
-    }
-
-    // Now update top 10 contributors.
-    val winners = mutableListOf<String>()
-    db.execute("SELECT cookie FROM sessions WHERE color=$winner ORDER BY counter DESC LIMIT 10") {
-        _, data ->
-        winners += data[0]
-        0
-    }
-    println("Winners are ${winners.joinToString(", ")}")
-    winners.forEach {
-        db.execute("UPDATE sessions SET winner = 1 WHERE cookie='$it'")
-    }
-}
-
-fun pause(db: KSqlite, session: Session, json: KJsonObject) {
-    if (!session.isAdmin(db)) {
-        error(json, session,"Unauthorized")
-        return
-    }
-    setWinner(db, false)
-    stats(db, session, json)
-}
-
-fun stop(db: KSqlite, session: Session, json: KJsonObject) {
-    if (!session.isAdmin(db)) {
-        error(json, session,"Unauthorized")
-        return
-    }
-    setWinner(db, true)
-    stats(db, session, json)
-}
-
-fun show(db: KSqlite, session: Session, json: KJsonObject) {
-    if (!session.isAdmin(db)) {
-        error(json, session,"Unauthorized")
-        return
-    }
-    db.execute("UPDATE games SET status = 2 WHERE current = 'true'")
-    stats(db, session, json)
-}
-
-fun hide(db: KSqlite, session: Session, json: KJsonObject) {
-    if (!session.isAdmin(db)) {
-        error(json, session,"Unauthorized")
-        return
-    }
-    db.execute("UPDATE games SET status = 1 WHERE current = 'true'")
-    stats(db, session, json)
-}
-
-// End of the REST API.
 
 fun Session.isAdmin(db: KSqlite): Boolean {
     var admin = false
@@ -160,17 +33,34 @@ fun error(json: KJsonObject, session: Session, message: String) {
     json.setInt("color", session.color)
 }
 
+fun success(json: KJsonObject, session: Session, message: String) {
+    json.setString("error", message)
+    json.setInt("color", session.color)
+}
+
 fun makeJson(url: String, db: KSqlite, session: Session): String {
     withJson(KJsonObject()) {
         when {
-            url.startsWith("/json/click") -> click(db, session, it)
-            url.startsWith("/json/stats") -> stats(db, session, it)
-            url.startsWith("/json/start") -> start(db, session, it)
-            url.startsWith("/json/pause") -> pause(db, session, it)
-            url.startsWith("/json/resume") -> resume(db, session, it)
-            url.startsWith("/json/stop") -> stop(db, session, it)
-            url.startsWith("/json/hide") -> hide(db, session, it)
-            url.startsWith("/json/show") -> show(db, session, it)
+            // Spinner API.
+            url.startsWith("/json/click") -> Spinner.click(db, session, it)
+            url.startsWith("/json/stats") -> Spinner.stats(db, session, it)
+            url.startsWith("/json/start") -> Spinner.start(db, session, it)
+            url.startsWith("/json/pause") -> Spinner.pause(db, session, it)
+            url.startsWith("/json/resume") -> Spinner.resume(db, session, it)
+            url.startsWith("/json/stop") -> Spinner.stop(db, session, it)
+            url.startsWith("/json/hide") -> Spinner.hide(db, session, it)
+            url.startsWith("/json/show") -> Spinner.show(db, session, it)
+            // Finder API.
+            url.startsWith("/finder/start") -> Finder.start(db, session, it)
+            url.startsWith("/finder/stop") -> Finder.stop(db, session, it)
+            url.startsWith("/finder/addBeacon") -> Finder.addBeacon(db, session, it)
+            url.startsWith("/finder/addQuestion") -> Finder.addQuestion(db, session, it)
+            url.startsWith("/finder/status") -> Finder.status(db, session, it)
+            url.startsWith("/finder/register") -> Finder.register(db, session, it)
+            url.startsWith("/finder/proximity") -> Finder.proximity(db, session, it)
+            url.startsWith("/finder/config") -> Finder.config(db, session, it)
+
+            // Catch all.
             else -> error(it, session,"Unknown command")
         }
         return it.toString()
@@ -205,10 +95,10 @@ fun makeStaticContent(url: String): Pair<String, ByteArray> {
     return (contentTypes.get(extension) ?: "text/html") to content
 }
 
-fun String.asData() : ByteArray = toUtf8()
+fun String.asData() : ByteArray = encodeToByteArray()
 
 fun makeResponse(db: KSqlite, url: String, session: Session): Pair<String, ByteArray> {
-    if (url.startsWith("/json"))
+    if (url.startsWith("/json/") || url.startsWith("/finder/"))
         return "application/json" to makeJson(url, db, session).asData()
 
     if (url.startsWith("/static"))
@@ -219,17 +109,13 @@ fun makeResponse(db: KSqlite, url: String, session: Session): Pair<String, ByteA
 
 // `rowid` column is always there in sqlite, so no need to create explicit
 // primary key.
-val createDbCommand = """
+val createDbCommand = ("""
     CREATE TABLE IF NOT EXISTS sessions(
         name VARCHAR(255),
         color INT NOT NULL,
         cookie VARCHAR(64) NOT NULL PRIMARY KEY,
         winner INT,
         counter INTEGER NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS colors(
-        color INTEGER PRIMARY KEY AUTOINCREMENT,
-        counter INTEGER
     );
     CREATE TABLE IF NOT EXISTS connections(
         ip VARCHAR(64),
@@ -239,19 +125,11 @@ val createDbCommand = """
         user VARCHAR(64) NOT NULL PRIMARY KEY,
         secret VARCHAR(64)
     );
-    CREATE TABLE IF NOT EXISTS games(
-        current BOOLEAN NOT NULL,
-        status INTEGER NOT NULL,
-        winner INTEGER,
-        startTime DATE,
-        endTime DATE
-    );
-"""
+""".trimIndent() + "\n" + Spinner.dbCreateCommand + "\n" +  Finder.dbCreateCommand)
 
 fun rnd() = kommon.random()
 
-fun makeSession(name: String, password: String, db: KSqlite): Session {
-    println("Making session")
+fun makeSession(name: String, password: String, db: KSqlite, http: HttpConnection?): Session {
     val freshBakery = "${rnd().toString(16)}${rnd().toString(16)}${rnd().toString(16)}"
     val color = (rnd() % MAX_COLORS + 1).toInt()
     db.execute(
@@ -266,7 +144,7 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
     return if (cookieC == null) {
         // No cookie set yet, authenticate?
         println("no cookie found, creating one for $name!")
-        makeSession(name, password, db)
+        makeSession(name, password, db, http)
     } else {
         val cookie = cookieC.toKString()
         var color = -1
@@ -284,9 +162,9 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
         if (color == -1) {
             // There's cookie, but we do not remember it.
             println("We cannot remember the cookie, how come? Cookie is $cookie.")
-            makeSession(name, password, db)
+            makeSession(name, password, db, http)
         } else
-            Session(color, name, cookie, password)
+            Session(color, name, cookie, password, http)
     }
 }
 
@@ -294,7 +172,7 @@ fun logConnection(db: KSqlite, sockaddr: CPointer<sockaddr>?,
                   socklen: platform.posix.socklen_t) {
     val ip = kommon.sockaddrAsString(sockaddr, socklen)
     println("connection from $ip")
-    db.execute("INSERT INTO connections (ip, timestamp) VALUES ('$ip', DateTime('now'))")
+    //db.execute("INSERT INTO connections (ip, timestamp) VALUES ('$ip', DateTime('now'))")
 }
 
 fun usage(message: String) {
