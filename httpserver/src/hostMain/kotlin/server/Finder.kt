@@ -28,6 +28,7 @@ object Finder {
             );
             CREATE TABLE IF NOT EXISTS ${dbNameQuestions} (
                 question TEXT,
+                hint TEXT,
                 valid INTEGER
             );
             CREATE TABLE IF NOT EXISTS ${dbNameBeacons} (
@@ -96,7 +97,8 @@ object Finder {
         val questionParam =
                 MHD_lookup_connection_value(session.http, MHD_GET_ARGUMENT_KIND, "question") ?. toKString() ?: ""
         if (questionParam.isNotEmpty()) {
-            db.execute("INSERT INTO $dbNameQuestions (question, valid) VALUES ('${db.escape(questionParam)}', 1)")
+            val questionHint = questionParam.split("|||").map { db.escape(it)}
+            db.execute("INSERT INTO $dbNameQuestions (question, hint, valid) VALUES ('${questionHint[0]}', '${questionHint[1]}', 1)")
             success(json)
         }
     }
@@ -125,9 +127,10 @@ object Finder {
     fun config(db: KSqlite, session: Session, json: KJsonObject) {
         val config = KJsonArray()
         var questions = 0
-        db.execute("SELECT question FROM $dbNameQuestions WHERE valid = 1") { _, data ->
+        db.execute("SELECT question, hint FROM $dbNameQuestions WHERE valid = 1") { _, data ->
             val record = KJsonObject()
             record.setString("question", data[0])
+            record.setString("hint", data[1])
             config.appendObject(record)
             questions++
             0
@@ -148,34 +151,57 @@ object Finder {
             val set = data.joinToString(separator = ", ") { "'${db.escape(it.name)}'" }
             val strengths = data.associate { it.name to it.signal }
             val discovered = mutableSetOf<Pair<Int, Int>>()
+            val near = mutableSetOf<Pair<Int, Int>>()
             db.execute("SELECT code, name, threshold from ${dbNameBeacons} WHERE name IN ($set)") {
                 _, data ->
                 val code = data[0].toInt()
                 val name = data[1]
                 val threshold = data[2].toInt()
                 strengths[name]?.let { strength ->
-                    if (strength > threshold)
+                    if (strength >= threshold) {
                         discovered.add(code to strength)
+                    } else {
+                        val diff = (threshold - strength).toDouble()
+                        near.add(code to (100.0 - diff).toInt())
+                    }
                 }
                 0
             }
-            val results = KJsonArray().apply {
-                discovered.forEach {
-                    appendInt(it.first)
-                }
-            }
             // Record discovery in DB.
-            // TODO: avoid storing, if already discovered in this game by this user.
             var gameId = 0
             db.execute("SELECT game FROM $dbNameGames WHERE current = 'true'") { _, data ->
                 gameId = data[0].toInt()
                 0
             }
-            discovered.forEach {
+            // Avoid storing, if already discovered in this game by this user.
+            val alreadyDiscovered = mutableSetOf<Int>()
+            db.execute("SELECT code FROM $dbNameResults WHERE game=$gameId AND cookie='${session.cookie}'") {
+                _, data ->
+                alreadyDiscovered += data[0].toInt()
+                0
+            }
+            discovered.filterNot { it.first in alreadyDiscovered }.forEach {
                 db.execute("INSERT INTO $dbNameResults (cookie, code, signal, game, timestamp) VALUES " +
                         "('${session.cookie}', ${it.first}, ${it.second}, $gameId, DateTime('now'))")
             }
-            json.setArray("discovered", results)
+            val discoveredJson = KJsonArray().apply {
+                discovered.forEach {
+                    appendInt(it.first)
+                }
+                alreadyDiscovered.forEach {
+                    appendInt(it)
+                }
+            }
+            val nearJson = KJsonArray().apply {
+                near.filterNot{it.first in alreadyDiscovered}.forEach {
+                    appendObject(KJsonObject().also { obj ->
+                        obj.setInt("code", it.first)
+                        obj.setInt("strength", it.second)
+                    })
+                }
+            }
+            json.setArray("discovered", discoveredJson)
+            json.setArray("near", nearJson)
         }
         success(json)
     }
