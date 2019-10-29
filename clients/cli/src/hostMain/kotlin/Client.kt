@@ -54,11 +54,12 @@ fun main(args: Array<String>) {
         }
     }
     val machine = machineName()
-    println("Connecting to $server as $name from $machine")
     val kurl = KUrl("cookies.txt")
     val url = "$server/$service/$command"
     val urlParams = mutableMapOf("name" to name, "client" to "cli", "machine" to machine, "password" to password)
     if (parameterName.isNotEmpty()) urlParams[parameterName] = parameterValue
+    println("Connecting to $url as $name from $machine")
+    println("passing parameters: $urlParams")
     withUrl(kurl) { it.fetch(url, urlParams) {
         content -> withJson(content) {
                 println("Got $it")

@@ -12,6 +12,7 @@ object Finder {
     const val dbNameQuestions = "finderQuestions"
     const val dbNameBeacons = "finderBeacons"
     const val dbNameResults = "finderResults"
+    const val dbNameWinners = "finderWinners"
 
     val dbCreateCommand = """
             CREATE TABLE IF NOT EXISTS ${dbNameGames} (
@@ -19,14 +20,18 @@ object Finder {
                 current BOOLEAN NOT NULL,
                 status INTEGER NOT NULL,
                 startTime DATE,
-                endTime DATE
+                endTime DATE,
+                winnerCount INTEGER,
+                winnerMessage TEXT,
+                loserMessage TEXT
             );
             CREATE TABLE IF NOT EXISTS ${dbNameUsers} (
-                cookie VARCHAR(64) NOT NULL PRIMARY KEY,
+                cookie VARCHAR(64) NOT NULL NULL PRIMARY KEY,
                 name VARCHAR(255),
                 timestamp DATE
             );
             CREATE TABLE IF NOT EXISTS ${dbNameQuestions} (
+                code INTEGER,
                 question TEXT,
                 hint TEXT,
                 valid INTEGER
@@ -41,9 +46,15 @@ object Finder {
             CREATE TABLE IF NOT EXISTS ${dbNameResults} (
                 cookie VARCHAR(64) NOT NULL,
                 code INTEGER,
-                signal INT,
+                signal INTEGER,
                 game INTEGER,
                 timestamp DATE
+            );
+            CREATE TABLE IF NOT EXISTS ${dbNameWinners} (
+                cookie VARCHAR(64) NOT NULL NULL PRIMARY KEY,
+                timestamp DATE,
+                game INTEGER,
+                place INTEGER
             );
     """.trimIndent()
 
@@ -56,8 +67,14 @@ object Finder {
             error(json, session, "Unauthorized")
             return
         }
-        db.execute("UPDATE $dbNameGames SET current = 'false' WHERE current = 'true'")
-        db.execute("INSERT INTO $dbNameGames (current, status, startTime) VALUES ('true', 1, DateTime('now'))")
+        val gameParam =
+                MHD_lookup_connection_value(session.http, MHD_GET_ARGUMENT_KIND, "start") ?. toKString() ?: ""
+        val game = gameParam.split("|||").map { db.escape(it)}
+        if (game.size != 3) throw Error("Invalid game config: ${game.size} fields: $gameParam")
+        val winnerCount = game[0].toInt()
+        db.execute("UPDATE $dbNameGames SET status=0,current='false',endTime=DateTime('now') WHERE current='true'")
+        db.execute("INSERT INTO $dbNameGames (current, status, startTime, winnerCount, winnerMessage, loserMessage) "+
+                "VALUES ('true', 1, DateTime('now'), $winnerCount, '${game[1]}', '${game[2]}')")
         success(json)
     }
 
@@ -98,7 +115,8 @@ object Finder {
                 MHD_lookup_connection_value(session.http, MHD_GET_ARGUMENT_KIND, "question") ?. toKString() ?: ""
         if (questionParam.isNotEmpty()) {
             val questionHint = questionParam.split("|||").map { db.escape(it)}
-            db.execute("INSERT INTO $dbNameQuestions (question, hint, valid) VALUES ('${questionHint[0]}', '${questionHint[1]}', 1)")
+            db.execute("INSERT INTO $dbNameQuestions (code, question, hint, valid) VALUES "+
+                    "(${questionHint[0].toInt()}, '${questionHint[1]}', '${questionHint[2]}', 1)")
             success(json)
         }
     }
@@ -120,22 +138,42 @@ object Finder {
 
     fun register(db: KSqlite, session: Session, json: KJsonObject) {
         val cookie = session.cookie
-        db.execute("UPDATE $dbNameUsers SET name = ${session.name} WHERE secret = '${session.cookie}'")
+        db.execute("UPDATE $dbNameUsers SET name = ${session.name} WHERE secret = '$cookie'")
+        var currentGame = 0
+        db.execute("SELECT id FROM $dbNameGames WHERE current = 'true'") { _, data ->
+            currentGame = data[0].toInt()
+            0
+        }
+        var place = 1
+        db.execute("SELECT COUNT(*) FROM $dbNameWinners WHERE game = $currentGame") { _, data ->
+            place = data[0].toInt() + 1
+            0
+        }
+        println("place would be $place")
+        // TODO: add place checker!
+        //db.execute("UPDATE $dbNameWinners WHERE game = $currentGame AND cookie = $cookie")
         success(json)
     }
 
     fun config(db: KSqlite, session: Session, json: KJsonObject) {
         val config = KJsonArray()
         var questions = 0
-        db.execute("SELECT question, hint FROM $dbNameQuestions WHERE valid = 1") { _, data ->
+        db.execute("SELECT code, question, hint FROM $dbNameQuestions WHERE valid = 1") { _, data ->
             val record = KJsonObject()
-            record.setString("question", data[0])
-            record.setString("hint", data[1])
+            record.setInt("code", data[0].toInt())
+            record.setString("question", data[1])
+            record.setString("hint", data[2])
             config.appendObject(record)
             questions++
             0
         }
+        var activeBeacons = 0
+        db.execute("SELECT COUNT(*) FROM $dbNameBeacons WHERE active <> 0") { _, data ->
+            activeBeacons = data[0].toInt()
+            0
+        }
         json.setInt("index", if (questions > 0) rand() % questions else 0)
+        json.setInt("active", activeBeacons)
         json.setArray("config", config)
         success(json)
     }
