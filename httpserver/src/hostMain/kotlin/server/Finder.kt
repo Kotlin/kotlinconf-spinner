@@ -8,7 +8,6 @@ import platform.posix.*
 
 object Finder {
     const val dbNameGames = "finderGames"
-    const val dbNameUsers = "finderUsers"
     const val dbNameQuestions = "finderQuestions"
     const val dbNameBeacons = "finderBeacons"
     const val dbNameResults = "finderResults"
@@ -24,11 +23,6 @@ object Finder {
                 winnerCount INTEGER,
                 winnerMessage TEXT,
                 loserMessage TEXT
-            );
-            CREATE TABLE IF NOT EXISTS ${dbNameUsers} (
-                cookie VARCHAR(64) NOT NULL NULL PRIMARY KEY,
-                name VARCHAR(255),
-                timestamp DATE
             );
             CREATE TABLE IF NOT EXISTS ${dbNameQuestions} (
                 code INTEGER,
@@ -51,7 +45,9 @@ object Finder {
                 timestamp DATE
             );
             CREATE TABLE IF NOT EXISTS ${dbNameWinners} (
-                cookie VARCHAR(64) NOT NULL NULL PRIMARY KEY,
+                cookie VARCHAR(64) NOT NULL,
+                uniq VARCHAR(255) NOT NULL UNIQUE,
+                name TEXT,
                 timestamp DATE,
                 game INTEGER,
                 place INTEGER
@@ -60,6 +56,10 @@ object Finder {
 
     fun success(json: KJsonObject) {
         json.setString("result", "OK")
+    }
+
+    fun failure(json: KJsonObject) {
+        json.setString("result", "FAILED")
     }
 
     fun start(db: KSqlite, session: Session, json: KJsonObject) {
@@ -138,20 +138,46 @@ object Finder {
 
     fun register(db: KSqlite, session: Session, json: KJsonObject) {
         val cookie = session.cookie
-        db.execute("UPDATE $dbNameUsers SET name = ${session.name} WHERE secret = '$cookie'")
         var currentGame = 0
-        db.execute("SELECT id FROM $dbNameGames WHERE current = 'true'") { _, data ->
+        var winnerCount = -1
+        var winnerMessage = "You won"
+        var loserMessage = "You lose"
+        db.execute("SELECT game,winnerCount,winnerMessage,loserMessage FROM $dbNameGames WHERE current = 'true'") { _, data ->
             currentGame = data[0].toInt()
+            winnerCount = data[1].toInt()
+            winnerMessage = data[2]
+            loserMessage = data[3]
             0
+        }
+        var actuallyFound = 0
+        db.execute("SELECT COUNT(*) FROM $dbNameResults WHERE cookie = '$cookie' and game = $currentGame")
+        { _, data ->
+            actuallyFound = data[0].toInt() + 1
+            0
+        }
+        if (actuallyFound < winnerCount) {
+            failure(json)
+            return
         }
         var place = 1
         db.execute("SELECT COUNT(*) FROM $dbNameWinners WHERE game = $currentGame") { _, data ->
             place = data[0].toInt() + 1
             0
         }
-        println("place would be $place")
-        // TODO: add place checker!
-        //db.execute("UPDATE $dbNameWinners WHERE game = $currentGame AND cookie = $cookie")
+        // We use `uniq` field to make sure only single record of winning during one game could exist.
+        try {
+            db.execute("INSERT INTO $dbNameWinners (cookie, name, timestamp, game, place, uniq) " +
+                    " VALUES ('$cookie', '${db.escape(session.name)}', DateTime('now'), $currentGame, $place, '${cookie}_${currentGame}')")
+        } catch (e: KSqliteError) {
+            println(e)
+            failure(json)
+            return
+        }
+        val isWinner = place <= winnerCount
+        json.setString("message", if (isWinner) winnerMessage else loserMessage)
+        json.setInt("winner", if (isWinner) 1 else 0)
+        json.setInt("place", place)
+        json.setInt("winnerCount", winnerCount)
         success(json)
     }
 
@@ -223,10 +249,9 @@ object Finder {
                         "('${session.cookie}', ${it.first}, ${it.second}, $gameId, DateTime('now'))")
             }
             val discoveredJson = KJsonArray().apply {
-                discovered.forEach {
-                    appendInt(it.first)
-                }
-                alreadyDiscovered.forEach {
+                val allFound = discovered.map {it.first}.toMutableSet()
+                allFound.addAll(alreadyDiscovered)
+                allFound.forEach {
                     appendInt(it)
                 }
             }

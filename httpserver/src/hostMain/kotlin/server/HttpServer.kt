@@ -146,11 +146,11 @@ fun initSession(http: HttpConnection, db: KSqlite): Session {
         println("no cookie found, creating one for $name!")
         makeSession(name, password, db, http)
     } else {
-        val cookie = cookieC.toKString()
+        val cookie = db.escape(cookieC.toKString())
         var color = -1
 
         val suppliedName = name
-        db.execute("SELECT color,name FROM sessions WHERE cookie='${db.escape(cookie)}'") {
+        db.execute("SELECT color,name FROM sessions WHERE cookie='$cookie'") {
             _, data ->
 
             color = data[0].toInt()

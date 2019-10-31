@@ -78,5 +78,21 @@ Following commands are available in the protocol
  strength field will increase until we'll get to `100`, when it will become discovered.
  
  Mobile client shall periodically send `proximity` messages to the server, and based on response shall
- update rendered data. When all beacons (as per `active` in `config` query) are discovered, `register` message
- shall be shown. It must show the provided message.
+ update rendered data.
+
+ When all beacons (as per `active` in `config` query) are discovered, `register` message
+ shall be sent.
+
+ Once client believes it has found all beacons, it should send `register` request (once), like this:
+
+    cli -f register -n "John Smith"
+
+ Response could be
+
+    Got {"message": "You won", "winner": 1, "place": 2, "winnerCount": 2, "result": "OK"}
+
+ or
+
+    Got {"message": "Not now", "winner": 0, "place": 3, "winnerCount": 2, "result": "OK"}
+
+ Second register request during the same game with same cookie will result in error.
