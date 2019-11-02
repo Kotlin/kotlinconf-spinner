@@ -74,7 +74,6 @@ fun makeHtml(url: String, session: Session): String {
             <title>Kotlin</title></head>
             <body>Hello ${session.name} from Kotlin/Native<br/>
             You used <b>$url</b><br/>
-            Your color is <b>${session.color}</b><br/>
             </body></html>
 """
 }

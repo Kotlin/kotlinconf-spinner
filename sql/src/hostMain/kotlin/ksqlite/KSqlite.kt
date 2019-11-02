@@ -54,7 +54,7 @@ class KSqlite {
     }
 
     // TODO: use sql3_prepare instead!
-    fun escape(input: String): String = input.replace("'", "\'")
+    fun escape(input: String): String = input.replace("'", "''")
 
     override fun toString(): String = "SQLite database in $dbPath"
 
