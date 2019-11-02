@@ -379,7 +379,7 @@ fun main(args: Array<String>) {
                             responseArray.size.convert(),
                             responseArray.refTo(0),
                             MHD_ResponseMemoryMode.MHD_RESPMEM_MUST_COPY)
-                    val expires = "Tue, 8 Sep 2020 21:43:04 GMT"
+                    val expires = "Tue, 08 Sep 2020 21:43:04 GMT"
                     MHD_add_response_header(response, "Content-Type", contentType)
                     MHD_add_response_header(response, "Set-Cookie", "cookie=${session.cookie}; Expires=$expires")
                     val result = MHD_queue_response(connection, MHD_HTTP_OK, response)
