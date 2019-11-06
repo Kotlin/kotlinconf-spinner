@@ -41,7 +41,7 @@ Following commands are available in the protocol
  
  Start new game with 5 winners:
 
-    cli -f start -P 'game=5|||Please come to the booth to get prize|||Maybe next time' -p <passwd>
+    cli -f start -P 'start=5|||Please come to the booth to get prize|||Maybe next time' -p <passwd>
 
  Add couple questions/hints associated with the code:
     
