@@ -198,8 +198,14 @@ object Finder {
             activeBeacons = data[0].toInt()
             0
         }
+        var winnerCount = 0
+        db.execute("SELECT winnerCount FROM $dbNameGames WHERE current = 'true'") { _, data ->
+            winnerCount = data[0].toInt()
+            0
+        }
         json.setInt("index", if (questions > 0) rand() % questions else 0)
-        json.setInt("active", activeBeacons)
+        json.setInt("activeBeacons", activeBeacons)
+        json.setInt("winnerCount", winnerCount)
         json.setArray("config", config)
         success(json)
     }
