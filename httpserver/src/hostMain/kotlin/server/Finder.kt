@@ -8,7 +8,8 @@ import platform.posix.*
 
 object Finder {
     const val dbNameGames = "finderGames"
-    const val dbNameQuestions = "finderQuestions"
+    const val dbNameHints = "finderHints"
+    const val dbNameFacts = "finderFacts"
     const val dbNameBeacons = "finderBeacons"
     const val dbNameResults = "finderResults"
     const val dbNameWinners = "finderWinners"
@@ -24,10 +25,13 @@ object Finder {
                 winnerMessage TEXT,
                 loserMessage TEXT
             );
-            CREATE TABLE IF NOT EXISTS ${dbNameQuestions} (
+            CREATE TABLE IF NOT EXISTS ${dbNameHints} (
                 code INTEGER,
-                question TEXT,
                 hint TEXT,
+                valid INTEGER
+            );
+            CREATE TABLE IF NOT EXISTS ${dbNameFacts}             (
+                fact TEXT,
                 valid INTEGER
             );
             CREATE TABLE IF NOT EXISTS ${dbNameBeacons} (
@@ -106,17 +110,31 @@ object Finder {
         }
     }
 
-    fun addQuestion(db: KSqlite, session: Session, json: KJsonObject) {
+    fun addHint(db: KSqlite, session: Session, json: KJsonObject) {
         if (!session.isAdmin(db)) {
             error(json, session, "Unauthorized")
             return
         }
-        val questionParam =
-                MHD_lookup_connection_value(session.http, MHD_GET_ARGUMENT_KIND, "question") ?. toKString() ?: ""
-        if (questionParam.isNotEmpty()) {
-            val questionHint = questionParam.split("|||").map { db.escape(it)}
-            db.execute("INSERT INTO $dbNameQuestions (code, question, hint, valid) VALUES "+
-                    "(${questionHint[0].toInt()}, '${questionHint[1]}', '${questionHint[2]}', 1)")
+        val hintParam =
+                MHD_lookup_connection_value(session.http, MHD_GET_ARGUMENT_KIND, "hint") ?. toKString() ?: ""
+        if (hintParam.isNotEmpty()) {
+            val codeHint = hintParam.split("|||").map { db.escape(it)}
+            db.execute("INSERT INTO $dbNameHints (code, hint, valid) VALUES "+
+                    "(${codeHint[0].toInt()}, '${codeHint[1]}', 1)")
+            success(json)
+        }
+    }
+
+    fun addFact(db: KSqlite, session: Session, json: KJsonObject) {
+        if (!session.isAdmin(db)) {
+            error(json, session, "Unauthorized")
+            return
+        }
+        val factParam =
+                MHD_lookup_connection_value(session.http, MHD_GET_ARGUMENT_KIND, "fact") ?. toKString() ?: ""
+        if (factParam.isNotEmpty()) {
+            val fact = db.escape(factParam)
+            db.execute("INSERT INTO $dbNameFacts (fact, valid) VALUES ('$fact', 1)")
             success(json)
         }
     }
@@ -182,15 +200,20 @@ object Finder {
     }
 
     fun config(db: KSqlite, session: Session, json: KJsonObject) {
-        val config = KJsonArray()
-        var questions = 0
-        db.execute("SELECT code, question, hint FROM $dbNameQuestions WHERE valid = 1") { _, data ->
+        val hintsArray = KJsonArray()
+        var hints = 0
+        db.execute("SELECT code, hint FROM $dbNameHints WHERE valid = 1") { _, data ->
             val record = KJsonObject()
             record.setInt("code", data[0].toInt())
-            record.setString("question", data[1])
-            record.setString("hint", data[2])
-            config.appendObject(record)
-            questions++
+            record.setString("hint", data[1])
+            hintsArray.appendObject(record)
+            hints++
+            0
+        }
+        val factsArray = KJsonArray()
+        db.execute("SELECT fact FROM $dbNameFacts WHERE valid = 1") { _, data ->
+            val record = KJsonObject()
+            factsArray.appendString(data[0])
             0
         }
         var activeBeacons = 0
@@ -203,10 +226,11 @@ object Finder {
             winnerCount = data[0].toInt()
             0
         }
-        json.setInt("index", if (questions > 0) rand() % questions else 0)
+        json.setInt("index", if (hints > 0) rand() % hints else 0)
         json.setInt("activeBeacons", activeBeacons)
         json.setInt("winnerCount", winnerCount)
-        json.setArray("config", config)
+        json.setArray("hints", hintsArray)
+        json.setArray("facts", factsArray)
         success(json)
     }
 

@@ -31,7 +31,8 @@ Following commands are available in the protocol
 | start       |     Y        | Start new game          |
 | stop        |     Y        | Stop current game       |
 | addBeacon   |     Y        | Adds new beacon         |
-| addQuestion |     Y        | Adds pair hint/info     |
+| addHint     |     Y        | Adds pair code/hint     |
+| addFact     |     Y        | Adds fact               |
 | status      |     N        | Current game status     |
 | register    |     N        | Register client(unused) |
 | proximity   |     N        | Proximity message       |
@@ -43,10 +44,16 @@ Following commands are available in the protocol
 
     cli -f start -P 'start=5|||Please come to the booth to get prize|||Maybe next time' -p <passwd>
 
- Add couple questions/hints associated with the code:
+ Add couple hints associated with the code:
     
-    cli -f addQuestion -P 'question=1|||Who?|||Me!' -p <passwd>
-    cli -f addQuestion -P 'question=2|||Where?|||There!' -p <passwd>
+    cli -f addHint -P 'hint=1|||Who?' -p <passwd>
+    cli -f addHint -P 'hint=2|||Where?' -p <passwd>
+ 
+ Add couple facts:
+     
+     cli -f addFact -P 'fact=Earth is spheric' -p <passwd>
+     cli -f addFact -P 'fact=Kotlin is great' -p <passwd>
+  
   
  Add couple beacons:
 
@@ -59,8 +66,8 @@ Following commands are available in the protocol
 
  Response will look like:
 
-    Got {"index": 1, "activeBeacons": 2, "winnerCount": 2, "config": [{"code": 1, "question": "Who?", "hint": "Me!"}, {"code": 2, "question": "Where?", "hint": "There!"}], "result": "OK"}
-
+    Got Got {"index": 1, "activeBeacons": 2, "winnerCount": 5, "hints": [{"code": 1, "hint": "Who?"}, {"code": 2, "hint": "Where?"}], "facts": ["Earth is spheric", "Kotlin is great"], "result": "OK"}
+    
  Server returns list of code/questions/hint pairs, along with recommended index of the question to ask.
  `active` shows how many beacons are currently active. When a person clicks on 
  certain undiscovered letter in the UI he/she shall be shown a question with the `code` assigned to this UI.
