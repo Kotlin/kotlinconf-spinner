@@ -1,8 +1,15 @@
 package kommon
 
+import kotlin.native.concurrent.SharedImmutable
+
+// TODO: bug, fix it.
+@SharedImmutable
 private val k0 = 0xc3a5c85c97cb3127U
+@SharedImmutable
 private val k1 = 0xb492b66fbe98f273U
+@SharedImmutable
 private val k2 = 0x9ae16a3b2f90404fU
+@SharedImmutable
 private val kMul = 0x9ddfea08eb382d69UL
 
 private fun toLongLE(b: ByteArray, i: Int): Long {

@@ -38,6 +38,7 @@ object Finder {
                 id INTEGER PRIMARY KEY,
                 code INTEGER,
                 name VARCHAR(255) NOT NULL UNIQUE,
+                hashedName VARCHAR(255),
                 threshold INTEGER,
                 active INTEGER
             );
@@ -102,10 +103,12 @@ object Finder {
             val beacon = beaconParam.split(",")
             val code = beacon[0].toInt()
             val name = db.escape(beacon[1])
+            val hashedName = name.cityHash64().toString(16)
             val threshold = beacon[2].toInt()
             val active = beacon[3].toInt()
 
-            db.execute("INSERT INTO $dbNameBeacons (code, name, threshold, active) VALUES ($code, '$name', $threshold, $active)")
+            db.execute("INSERT INTO $dbNameBeacons (code, name, hashedName, threshold, active) VALUES " +
+                    "($code, '$name', '$hashedName', $threshold, $active)")
             success(json)
         }
     }
@@ -246,7 +249,7 @@ object Finder {
             val strengths = data.associate { it.name to it.signal }
             val discovered = mutableSetOf<Pair<Int, Int>>()
             val near = mutableSetOf<Pair<Int, Int>>()
-            db.execute("SELECT code, name, threshold from ${dbNameBeacons} WHERE name IN ($set)") {
+            db.execute("SELECT code, hashedName, threshold from ${dbNameBeacons} WHERE hashedName IN ($set)") {
                 _, data ->
                 val code = data[0].toInt()
                 val name = data[1]

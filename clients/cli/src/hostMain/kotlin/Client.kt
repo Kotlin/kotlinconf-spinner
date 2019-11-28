@@ -1,5 +1,6 @@
 import kjson.*
 import kliopt.*
+import kommon.cityHash64
 import kurl.*
 import kommon.machineName
 import kotlin.system.exitProcess
@@ -57,6 +58,14 @@ fun main(args: Array<String>) {
     val kurl = KUrl("cookies.txt")
     val url = "$server/$service/$command"
     val urlParams = mutableMapOf("name" to name, "client" to "cli", "machine" to machine, "password" to password)
+    if (command == "proximity") {
+        // Replace device name with the hash.   println("p=$parameterValue")
+        parameterValue = parameterValue.split(',').map {
+            val deviceStrength = it.split(':').toMutableList()
+            deviceStrength[0] = deviceStrength[0].cityHash64().toString(16)
+            deviceStrength.joinToString(":")
+        }.joinToString(",")
+    }
     if (parameterName.isNotEmpty()) urlParams[parameterName] = parameterValue
     println("Connecting to $url as $name from $machine")
     println("passing parameters: $urlParams")
