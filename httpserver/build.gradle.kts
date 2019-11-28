@@ -13,7 +13,7 @@ kotlin {
         // Configure an interop.
         compilations["main"].cinterops.create("microhttpd")
         // Declare an output executable.
-        binaries.executable(listOf(RELEASE)) {
+        binaries.executable(listOf(DEBUG)) {
             baseName = "HttpServer"
         }
     }

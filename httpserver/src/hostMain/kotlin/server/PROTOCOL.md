@@ -66,7 +66,7 @@ Following commands are available in the protocol
 
  Response will look like:
 
-    Got Got {"index": 1, "activeBeacons": 2, "winnerCount": 5, "hints": [{"code": 1, "hint": "Who?"}, {"code": 2, "hint": "Where?"}], "facts": ["Earth is spheric", "Kotlin is great"], "result": "OK"}
+    Got {"index": 1, "activeBeacons": 2, "winnerCount": 5, "hints": [{"code": 1, "hint": "Who?"}, {"code": 2, "hint": "Where?"}], "facts": ["Earth is spheric", "Kotlin is great"], "result": "OK"}
     
  Server returns list of code/questions/hint pairs, along with recommended index of the question to ask.
  `active` shows how many beacons are currently active. When a person clicks on 

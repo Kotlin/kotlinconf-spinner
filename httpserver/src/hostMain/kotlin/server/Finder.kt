@@ -92,6 +92,8 @@ object Finder {
         success(json)
     }
 
+    fun doHash(input: String): String = input.cityHash64().toString(16)
+
     fun addBeacon(db: KSqlite, session: Session, json: KJsonObject) {
         if (!session.isAdmin(db)) {
             error(json, session, "Unauthorized")
@@ -103,7 +105,7 @@ object Finder {
             val beacon = beaconParam.split(",")
             val code = beacon[0].toInt()
             val name = db.escape(beacon[1])
-            val hashedName = name.cityHash64().toString(16)
+            val hashedName = doHash(name)
             val threshold = beacon[2].toInt()
             val active = beacon[3].toInt()
 
@@ -246,10 +248,12 @@ object Finder {
             val data = proximity.split(",").map { it.split(":").let {
                     BeaconInfo(it[0], it[1].toInt()) } }
             val set = data.joinToString(separator = ", ") { "'${db.escape(it.name)}'" }
-            val strengths = data.associate { it.name to it.signal }
+            val strengths = data.associate { it.name to it.signal } +
+                    data.associate { doHash(it.name) to it.signal }
             val discovered = mutableSetOf<Pair<Int, Int>>()
             val near = mutableSetOf<Pair<Int, Int>>()
-            db.execute("SELECT code, hashedName, threshold from ${dbNameBeacons} WHERE hashedName IN ($set)") {
+            db.execute("SELECT code, hashedName, threshold from ${dbNameBeacons} WHERE " +
+                    "hashedName IN ($set) OR name IN ($set)") {
                 _, data ->
                 val code = data[0].toInt()
                 val name = data[1]
