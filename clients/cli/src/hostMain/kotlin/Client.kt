@@ -32,7 +32,6 @@ fun addAll(kurl: KUrl, url: String, urlParams: MutableMap<String, String>, filen
         }
     }
 }
-}
 
 fun main(args: Array<String>) {
     var server: String? = null
