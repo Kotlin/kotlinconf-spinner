@@ -74,9 +74,28 @@ fun makeHtml(url: String, session: Session): String {
         <html><head>
             <title>Kotlin</title></head>
             <body>Hello ${session.name} from Kotlin/Native<br/>
-            You used <b>$url</b><br/>
+            You used <b>${url.escapeHTML()}</b><br/>
             </body></html>
 """
+}
+
+public fun String.escapeHTML(): String {
+    val text = this@escapeHTML
+    if (text.isEmpty()) return text
+
+    return buildString(length) {
+        for (idx in 0 until text.length) {
+            val ch = text[idx]
+            when (ch) {
+                '\'' -> append("&#x27;")
+                '\"' -> append("&quot;")
+                '&' -> append("&amp;")
+                '<' -> append("&lt;")
+                '>' -> append("&gt;")
+                else -> append(ch)
+            }
+        }
+    }
 }
 
 val contentTypes = mapOf(
